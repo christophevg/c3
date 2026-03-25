@@ -1,0 +1,7 @@
+*.pyc
+.DS_Store
+.local
+.coverage
+.python-version
+.env
+*.local

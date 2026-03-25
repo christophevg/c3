@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(pip show:*)",
+      "Bash(pip list:*)",
+      "Bash(make envs:*)",
+      "Bash(make lint:*)",
+      "Bash(make test:*)",
+      "Bash(make coverage:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(git add:*)"
+    ]
+  },
+  "attribution": {
+    "commit": "🤖 Implemented together with a coding agent.",
+    "pr": ""
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/bin/statusline.py"
+  }
+}
