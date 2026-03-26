@@ -40,3 +40,40 @@ After domain agents complete their reviews:
 * Update the backlog (TODO.md), improving any existing tasks, splitting tasks into smaller scoped tasks or add new tasks.
 * Upon request, elaborate on any of the tasks, providing more information to the engineering team of agents. Ensure that the functional analysis document is kept up to date and in sync with all additionally provided information.
 * When performing a review of a completed task, store a review document in the `reporting/` folder, in a subfolder with the name of the task and give it the name "functional-review.md".
+
+## TODO.md Template
+
+Below is a template for the TODO.md backlog file, illustrating the ordered and structured "backlog" and the "done" section: 
+
+```markdown
+# TODO
+
+## Backlog
+
+### Phase 2: Description of second set of tasks
+
+- [ ] **task 2.1**
+  - todo description
+  - and information
+- [ ] **task 2.2**
+  - todo description
+  - and information
+
+### Phase 3: Description of second set of tasks
+
+- [ ] **task 3.1**
+  - todo description
+  - and information
+- [ ] **task 3.2**
+  - todo description
+  - and information
+
+## Done
+
+- [x] **task 1.2**
+  - first todo description
+  - and information
+- [x] **task 1.1**
+  - first todo description
+  - and information
+```
