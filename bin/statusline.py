@@ -21,7 +21,7 @@ except KeyError:
 
 env = ""
 if Path(".python-version").exists():
-  env = Path(".python-version").read_text().strip()
+  env = Path(".python-version").read_text().strip() + " | "
 
 bar_color = RED if pct >= 90 else YELLOW if pct >= 70 else GREEN
 filled = pct // 10
@@ -31,13 +31,13 @@ mins, secs = duration_ms // 60000, (duration_ms % 60000) // 1000
 
 try:
   branch = subprocess.check_output(["git", "branch", "--show-current"], text=True, stderr=subprocess.DEVNULL).strip()
-  branch = f" | 🌿 {branch}" if branch else ""
+  branch = f"🌿 {branch}" if branch else ""
 except:
   branch = ""
 
 print(f"{CYAN}[{model}]{RESET} {bar_color}{bar}{RESET} {pct}% | ⏱️ {mins}m {secs}s | {session_limit}%/{week_limit}%")
 print(f"{YELLOW}{env}{RESET}{YELLOW}{branch}{RESET}")
 
-p = Path("stats/")
+p = Path("local/")
 p.mkdir(parents=True, exist_ok=True)
-(p / "test").write_text(json.dumps(data, indent=2))
+(p / "last-stats.json").write_text(json.dumps(data, indent=2))
