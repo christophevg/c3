@@ -28,6 +28,16 @@ After implementing changes, always check for:
 3. **Code quality** - DRY violations, unused imports, dead code
 4. **Best practices** - Exception handling patterns, test coverage
 
+## References
+
+Ensure that instructions from the following sources are adhered to:
+
+* AGENTS.md
+* python skill
+* fire skill
+* baseweb skill
+* database skill
+
 ## Deliverables
 
 * Create and maintain an up-to-date code review document, containing a categorized list of code-level issues that must/should be addressed, based on best practices and industry standards. Store the document in the `analysis/` folder and give it the name "code-review.md".
