@@ -37,3 +37,7 @@ except:
 
 print(f"{CYAN}[{model}]{RESET} {bar_color}{bar}{RESET} {pct}% | ⏱️ {mins}m {secs}s | {session_limit}%/{week_limit}%")
 print(f"{YELLOW}{env}{RESET}{YELLOW}{branch}{RESET}")
+
+p = Path("stats/")
+p.mkdir(parents=True, exist_ok=True)
+(p / "test").write_text(json.dumps(data, indent=2))
