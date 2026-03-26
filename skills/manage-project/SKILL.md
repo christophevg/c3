@@ -65,6 +65,7 @@ For each task in the backlog (in order), execute the following steps:
   - Invoke functional-analyst to review the implementation for functional correctness
   - Invoke api-architect to review API design compliance
   - Invoke ui-ux-designer to review UI/UX aspects
+  - Invoke code-reviewer to review coding aspects
   - If any agent finds issues, coordinate fixes by returning to step 6
   - Repeat until all three agents approve
   - Only proceed to step 8 when ALL agents have explicitly approved
