@@ -5,7 +5,7 @@ description: Use this skill any time when reviewing a session to improve existin
 
 # Lessons Learned
 
-Review everything you have done and learned in this session. Propose improvements to skills & `AGENTS.md` and/or propose the creation of any new skills to better support you in the future.
+Review everything you have done and learned in this session. Propose improvements to skills, agents, `CLAUDE.md`, `AGENTS.md` and/or propose the creation of any new skills/agents to better support you in the future.
 
 ## Review Checklist
 
