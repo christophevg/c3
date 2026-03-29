@@ -21,7 +21,8 @@ except KeyError:
 
 env = ""
 if Path(".python-version").exists():
-  env = Path(".python-version").read_text().strip() + " | "
+  env = Path(".python-version").read_text().strip()
+  env = f"🐍 {env} | "
 
 bar_color = RED if pct >= 90 else YELLOW if pct >= 70 else GREEN
 filled = pct // 10
@@ -35,7 +36,7 @@ try:
 except:
   branch = ""
 
-print(f"{CYAN}[{model}]{RESET} {bar_color}{bar}{RESET} {pct}% | ⏱️ {mins}m {secs}s | {session_limit}%/{week_limit}%")
+print(f"{CYAN}{model}:{RESET} {bar_color}{bar}{RESET} {pct}% | ⏱️ {mins}m {secs}s | {session_limit}%/{week_limit}%")
 print(f"{YELLOW}{env}{RESET}{YELLOW}{branch}{RESET}")
 
 p = Path("local/")
