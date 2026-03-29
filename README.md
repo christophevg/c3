@@ -147,7 +147,7 @@ The status line displays real-time context information:
 
 ```
 Claude Sonnet: ████████░░ 80% | ⏱️ 5m 32s | 45%/12%
-🐍 3.11 | feature-branch
+🐍 3.11 | 🌿 feature-branch
 ```
 
 ## Extending
