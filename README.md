@@ -39,6 +39,7 @@ Skills provide focused guidance for specific technologies and workflows:
 | Start Baseweb | `/start-baseweb-project` | Bootstrap new Baseweb projects |
 | Analysis Integration | `/analysis-integration` | Consolidate findings from domain agents |
 | Lessons Learned | `/lessons-learned` | Review session for improvements |
+| Transcribe Session | `/transcribe-session` | Create curated session transcripts |
 
 ### Agents
 
@@ -101,7 +102,8 @@ c3/
 │   ├── lessons-learned/      # Session review skill
 │   ├── manage-project/       # Project workflow orchestration
 │   ├── python/               # Python best practices
-│   └── start-baseweb-project/# Project bootstrapping
+│   ├── start-baseweb-project/# Project bootstrapping
+│   └── transcribe-session/   # Session transcription
 ├── bin/
 │   └── statusline.py         # Context display script
 ├── settings.json             # Claude Code configuration
@@ -144,8 +146,8 @@ except PyMongoError as e:
 The status line displays real-time context information:
 
 ```
-[Claude Sonnet] ████████░░ 80% | ⏱️ 5m 32s | 45%/12%
-🐍 3.11 | 🌿 feature-branch
+Claude Sonnet: ████████░░ 80% | ⏱️ 5m 32s | 45%/12%
+🐍 3.11 | feature-branch
 ```
 
 ## Extending
