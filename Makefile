@@ -10,5 +10,8 @@ MODEL ?= glm-5:cloud
 install:
 	ln -sF $(SRCS) $(TRG)
 
-claude:
+claude: update-claude
 	ollama launch claude --model ${MODEL}
+
+update-claude:
+	brew upgrade claude-code
