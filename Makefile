@@ -5,6 +5,9 @@ TOINSTALL=agents bin settings.json skills
 SRCS=$(addprefix $(SRC)/,$(TOINSTALL))
 
 MODEL ?= glm-5:cloud
+ARGS  ?=
+
+all: claude
 
 # symlink everything in ~/.claude
 install:
@@ -12,7 +15,7 @@ install:
 	ln -sF `pwd`/CLAUDE.global.md $(TRG)/CLAUDE.md
 
 claude: update-claude
-	ollama launch claude --model ${MODEL}
+	ollama launch claude --model ${MODEL} -- ${ARGS}
 
 update-claude:
 	brew upgrade claude-code
