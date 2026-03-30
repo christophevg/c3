@@ -9,7 +9,7 @@ MODEL ?= glm-5:cloud
 # symlink everything in ~/.claude
 install:
 	ln -sF $(SRCS) $(TRG)
-	ln -sF CLAUDE.global.md $(TRG)
+	ln -sF `pwd`/CLAUDE.global.md $(TRG)/CLAUDE.md
 
 claude: update-claude
 	ollama launch claude --model ${MODEL}
