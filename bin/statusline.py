@@ -2,7 +2,7 @@
 
 # See: https://code.claude.com/docs/en/statusline
 
-import json, sys, subprocess, os
+import json, sys, subprocess
 from pathlib import Path
 
 CYAN, GREEN, YELLOW, RED, RESET = "\033[36m", "\033[32m", "\033[33m", "\033[31m", "\033[0m"
@@ -12,29 +12,36 @@ model = data["model"]["display_name"]
 pct = int(data.get("context_window", {}).get("used_percentage", 0) or 0)
 duration_ms = data.get("cost", {}).get("total_duration_ms", 0) or 0
 
-env = ""
-if Path(".python-version").exists():
-  env = Path(".python-version").read_text().strip()
-  env = f"🐍 {env} | "
-
 bar_color = RED if pct >= 90 else YELLOW if pct >= 70 else GREEN
 filled = pct // 10
 bar = "█" * filled + "░" * (10 - filled)
 
 mins, secs = duration_ms // 60000, (duration_ms % 60000) // 1000
 
+line1_stats = [
+  f"{CYAN}{model}:{RESET} {bar_color}{bar}{RESET} {pct}%",
+  f"⏱️ {mins}m {secs}s"
+]
+
+line2_stats = []
+
+if Path(".python-version").exists():
+  line2_stats.append(f"🐍 {Path('.python-version').read_text().strip()}")
+
 try:
   branch = subprocess.check_output(["git", "branch", "--show-current"], text=True, stderr=subprocess.DEVNULL).strip()
-  branch = f"🌿 {branch}" if branch else ""
+  if branch:
+    line2_stats.append(f"🌿 {branch}")
 except:
-  branch = ""
+  pass
 
 cwd = Path.cwd().name
-cwd_display = f"📁 {cwd}" if cwd else ""
+if cwd:
+  line2_stats.append(f"📁 {cwd}")
 
-print(f"{CYAN}{model}:{RESET} {bar_color}{bar}{RESET} {pct}% | ⏱️ {mins}m {secs}s")
-print(f"{YELLOW}{env}{RESET}{YELLOW}{branch}{RESET} {cwd_display}")
+print(" | ".join(line1_stats))
+print(f"{YELLOW}" + f"{RESET} | {YELLOW}".join(line2_stats) + f"{RESET}" if line2_stats else "")
 
-p = Path("local/")
-p.mkdir(parents=True, exist_ok=True)
-(p / "last-stats.json").write_text(json.dumps(data, indent=2))
+# p = Path("local/")
+# p.mkdir(parents=True, exist_ok=True)
+# (p / "last-stats.json").write_text(json.dumps(data, indent=2))
