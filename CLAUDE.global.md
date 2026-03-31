@@ -35,9 +35,11 @@ This way I want to create a conglomerate agent that "acts" like me, yet faster, 
 
 ## Best Practices to Strictly Follow
 
-### Tool Usage
+### Tool & Agent Usage
 
-* VERY IMPORTANT: You MUST avoid using the Bash tool for search commands like find and grep. Instead use Grep, Glob, or Task to search.
+**VERY IMPORTANT**:
+* You MUST avoid using the Bash tool for search commands like find and grep. Instead use Grep, Glob, or Task to search.
+* You MUST use the `researcher agent` for all research.
 
 ### Information Gathering
 
