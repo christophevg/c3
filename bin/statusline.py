@@ -40,7 +40,8 @@ if cwd:
   line2_stats.append(f"📁 {cwd}")
 
 print(" | ".join(line1_stats))
-print(f"{YELLOW}" + f"{RESET} | {YELLOW}".join(line2_stats) + f"{RESET}" if line2_stats else "")
+if line2_stats:
+  print(" | ".join(f"{YELLOW}{s}{RESET}" for s in line2_stats))
 
 # p = Path("local/")
 # p.mkdir(parents=True, exist_ok=True)
