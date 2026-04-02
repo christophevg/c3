@@ -1,16 +1,4 @@
-MODEL ?= glm-5:cloud
-ARGS ?=
-
-all: claude
-
-claude:
-	ollama launch claude --model ${MODEL} -- $(ARGS)
-
-update:
-	claude --update
-
-resume: ARGS=--resume
-resume: claude
+-include ~/.claude/Makefile
 
 # Deployment: symlink everything in ~/.claude
 
@@ -23,3 +11,4 @@ SRCS=$(addprefix $(SRC)/,$(TOINSTALL))
 install:
 	ln -sF $(SRCS) $(TRG)
 	ln -sF `pwd`/CLAUDE.global.md $(TRG)/CLAUDE.md
+	ln -sF `pwd`/Makefile.claude $(TRG)/Makefile

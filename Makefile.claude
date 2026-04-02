@@ -1,0 +1,13 @@
+MODEL ?= glm-5:cloud
+ARGS ?=
+
+all: claude
+
+claude:
+	ollama launch claude --model ${MODEL} -- $(ARGS)
+
+update-claude:
+	claude --update
+
+resume: ARGS=--resume
+resume: claude
