@@ -1,0 +1,190 @@
+/* Default PDF Styling - Condensed Layout
+ *
+ * Designed for WeasyPrint with compact typography.
+ * Optimized for professional documents with reduced whitespace.
+ */
+
+/* Page setup - smaller margins for more content */
+@page {
+  margin: 1.5cm;
+  size: A4;
+  @bottom-center {
+    content: "Page " counter(page);
+    font-size: 8pt;
+    color: #666;
+  }
+}
+
+/* Typography - condensed */
+body {
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-size: 10pt;
+  line-height: 1.3;
+  color: #333;
+}
+
+/* Headings - smaller with tighter spacing */
+h1 {
+  font-size: 18pt;
+  margin-top: 0;
+  margin-bottom: 0.4em;
+  page-break-after: avoid;
+  bookmark-level: 1;
+}
+
+h2 {
+  font-size: 14pt;
+  margin-top: 1em;
+  margin-bottom: 0.3em;
+  page-break-after: avoid;
+  bookmark-level: 2;
+}
+
+h3 {
+  font-size: 12pt;
+  margin-top: 0.8em;
+  margin-bottom: 0.2em;
+  page-break-after: avoid;
+  bookmark-level: 3;
+}
+
+h4, h5, h6 {
+  font-size: 10pt;
+  font-weight: bold;
+  margin-top: 0.6em;
+  margin-bottom: 0.2em;
+  page-break-after: avoid;
+}
+
+/* Paragraphs - tight spacing */
+p {
+  margin-top: 0;
+  margin-bottom: 0.5em;
+}
+
+/* Code blocks - compact */
+code {
+  font-family: "SF Mono", "Consolas", monospace;
+  font-size: 8.5pt;
+  background-color: #f5f5f5;
+  padding: 0.1em 0.25em;
+}
+
+pre {
+  font-family: "SF Mono", "Consolas", monospace;
+  font-size: 8.5pt;
+  background-color: #f5f5f5;
+  padding: 0.6em;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  margin-top: 0.3em;
+  margin-bottom: 0.3em;
+}
+
+pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+/* Lists - compact */
+ul, ol {
+  margin-top: 0;
+  margin-bottom: 0.5em;
+  padding-left: 1.3em;
+}
+
+li {
+  margin-bottom: 0.15em;
+}
+
+/* Nested lists */
+ul ul, ol ol, ul ol, ol ul {
+  margin-top: 0.15em;
+  margin-bottom: 0.15em;
+}
+
+/* Tables - styled headers with background */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 0.6em;
+  break-inside: avoid;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 4pt 6pt;
+  text-align: left;
+}
+
+/* Table header with background color */
+th {
+  background-color: #2c3e50;
+  color: white;
+  font-weight: bold;
+  font-size: 9pt;
+}
+
+/* Striped rows */
+tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+/* Repeat headers across pages */
+thead {
+  break-after: avoid;
+}
+
+/* Links */
+a {
+  color: #0066cc;
+  text-decoration: none;
+}
+
+/* Images */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Blockquotes - compact */
+blockquote {
+  margin: 0.5em 0;
+  padding-left: 0.8em;
+  border-left: 2px solid #ddd;
+  color: #666;
+  font-style: italic;
+}
+
+/* Horizontal rules */
+hr {
+  border: none;
+  border-top: 1px solid #ddd;
+  margin: 0.8em 0;
+}
+
+/* Page breaks */
+.page-break {
+  page-break-after: always;
+}
+
+/* Section separators */
+section {
+  margin-bottom: 1em;
+}
+
+/* Definition lists */
+dl {
+  margin-top: 0;
+  margin-bottom: 0.5em;
+}
+
+dt {
+  font-weight: bold;
+  margin-top: 0.3em;
+}
+
+dd {
+  margin-left: 1.5em;
+  margin-bottom: 0.3em;
+}
