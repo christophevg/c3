@@ -7,6 +7,10 @@ description: Use this skill any time when editing Python code
 
 When creating Python code, ALWAYS use the best practices in the sections below.
 
+## Always use 2 space indentation
+
+Always use 2 space indentation!
+
 ## All Imports on Top
 
 Always put all imports at the top of the module.

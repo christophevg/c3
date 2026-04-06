@@ -2,6 +2,16 @@
 
 Patterns for configuring navigation in Baseweb applications.
 
+## Before Creating Pages
+
+**Validation Checklist:**
+
+- [ ] Check existing navigation sections in your project's `components/navigation.js`
+- [ ] Use an existing section, or create a new one with `Navigation.add_section()` first
+- [ ] Verify page route doesn't conflict with existing routes
+- [ ] Ensure `index` values don't duplicate existing pages
+- [ ] Test that page loads before adding complex functionality
+
 ## Navigation Object
 
 The global `Navigation` object manages all pages and sections in the application menu.
