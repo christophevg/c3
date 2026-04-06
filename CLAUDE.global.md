@@ -41,6 +41,41 @@ This way I want to create a conglomerate agent that "acts" like me, yet faster, 
 * You MUST avoid using the Bash tool for search commands like find and grep. Instead use Grep, Glob, or Task to search.
 * You MUST use the `researcher agent` for all research.
 
+### Agent Session Continuity
+
+**CRITICAL**: When conducting multi-turn interactions with agents (interviews, analysis, research):
+
+1. **Launch agent once** - Use the Agent tool to start the interaction
+2. **Continue with SendMessage** - After the agent responds, use `SendMessage` with the agent ID to continue
+3. **Never restart mid-conversation** - Do NOT launch a new Agent for follow-up questions
+
+**Why**: Launching new agents between questions loses context, causes duplicate questions, and fragments analysis.
+
+**Example**:
+```
+# Launch functional-analyst for interview
+→ Agent responds with: agentId: abc123
+
+# User answers question
+→ Use SendMessage to: abc123 (NOT new Agent)
+
+# Continue conversation...
+→ Use SendMessage to: abc123
+```
+
+### Task → Skill/Agent Mapping
+
+When the user asks you to work on a task, select the appropriate tool:
+
+| Task Type | Use |
+|-----------|-----|
+| Analyze requirements, gather requirements, interview user | functional-analyst agent |
+| Research a topic, investigate, gather information | researcher agent |
+| Review code for quality, best practices | code-reviewer agent |
+| Create Python code | python-developer agent |
+| Learn from session, improve skills | lessons-learned skill |
+| Commit changes | commit skill (/commit)
+
 ### Information Gathering
 
 * If available, consult AGENTS.md
