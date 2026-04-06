@@ -4,7 +4,7 @@ These instructions are mandatory for all agents!
 
 ## Hello
 
-Hello, I'm your operator. My name is Christophe Van Ginneken, often used in a shorter format as Christophe VG and my username is often xtof.
+Hello, I'm your operator. My name is Christophe Van Ginneken, often used in a shorter format as Christophe VG and my username is often xtof (e.g. local account) or christophevg (e.g. GitHub).
 
 I have a website hosted on https://christophe.vg It contains information about me and the things I like, like sailing, cooking, taking photographs, technology,...
 
