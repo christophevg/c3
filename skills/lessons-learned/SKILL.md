@@ -130,3 +130,63 @@ How to validate improvements work:
 - Test case: [What scenario would exercise this improvement?]
 - Expected behavior: [What should happen with the improvement?]
 - Success criteria: [How do we know it worked?]
+
+---
+
+## Implementation Step (CRITICAL)
+
+After presenting the analysis above, you MUST:
+
+### 7. Ask for Confirmation
+
+Present the proposed changes and ask the user to confirm:
+
+```
+Based on this analysis, I propose to:
+1. Update skill X: [description of change]
+2. Update skill Y: [description of change]
+3. Create new skill Z: [description]
+4. Save memory A: [description]
+5. Save memory B: [description]
+
+Should I proceed with implementing these updates?
+```
+
+**DO NOT proceed without explicit user approval.**
+
+Use the AskUserQuestion tool with options:
+- "Yes, implement all proposed changes"
+- "Yes, but let me select which changes to implement"
+- "No, I want to modify the proposals first"
+
+### 8. Implement Approved Changes
+
+Only after user confirmation:
+
+1. **Update existing skills**
+   - Read current skill file
+   - Apply improvements using Edit tool
+   - Verify changes
+
+2. **Create new skills**
+   - Write skill file to appropriate location
+   - Add to skill index if needed
+   - Create symlink if following incubator workflow
+
+3. **Save memories**
+   - Write feedback memories for user corrections
+   - Write project memories for workflow preferences
+   - Write reference memories for external resources
+   - Update MEMORY.md index
+
+4. **Commit changes**
+   - Stage all modified files
+   - Commit with descriptive message
+
+### 9. Report Completion
+
+After implementing:
+- List all changes made
+- Confirm memories saved
+- Confirm commits created
+- Note any follow-up actions needed
