@@ -25,15 +25,6 @@ This skill supports:
 | Debugging | Diagnose and resolve Baseweb-specific issues |
 | Refactoring | Improve existing code structure and patterns |
 
-## Critical Workflow Note
-
-**NEVER start server instances.** The user controls all server processes.
-
-When testing:
-- Ask the user to start servers
-- Provide commands like `make run` or `TEST_PAGE=true make run`
-- Wait for user confirmation before proceeding with tests
-
 ## When to Use This Skill
 
 Use this skill when:

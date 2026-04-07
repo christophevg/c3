@@ -8,6 +8,16 @@ Comprehensive patterns for Vuetify V2 feedback components: alerts, snackbars, di
 
 Convey important information to users.
 
+**V2 Banner Alternative:**
+Vuetify V2 does not have a standalone `v-banner` component. Use `v-alert` for notifications or `v-sheet` for structural banners.
+
+**Example (Banner style):**
+```vue
+<v-alert type="info" dismissible>
+  This is a banner-style notification.
+</v-alert>
+```
+
 **Key Props:**
 
 | Prop | Type | Description |
@@ -536,6 +546,27 @@ Loading placeholder for content.
   type="card"
   :boilerplate="loading"
 />
+```
+
+## Ratings
+
+### v-rating
+
+Input/Display for star ratings.
+
+**Key Props:**
+
+| Prop | Type | Description |
+| :--- | :--- | :--- |
+| `v-model` | number | Current rating |
+| `length` | number | Total stars (default 5) |
+| `readonly` | boolean | Non-interactive |
+| `half-increments` | boolean | Allows half-stars |
+
+**Example:**
+
+```vue
+<v-rating v-model="rating" color="amber" length="5" half-increments></v-rating>
 ```
 
 ## See Also

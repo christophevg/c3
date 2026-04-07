@@ -563,9 +563,83 @@ Additional information on hover.
 </v-tooltip>
 ```
 
-## See Also
+## Data Iterators and Specialized Lists
 
+### v-data-iterator
+A flexible alternative to `v-data-table` that provides data-management logic (sorting, searching, pagination) but allows the user to define the UI (e.g., a grid of cards).
+
+**Key Props:**
+| Prop | Type | Description |
+| :--- | :--- | :--- |
+| `items` | Array | The data to display |
+| `search` | Any | Filter string for the data |
+| `pagination.sync` | Object | Controls pagination/sorting state |
+| `content-tag` | String | Wrapper element (default: `'div'`) |
+| `content-class` | String | CSS class for the wrapper |
+
+**Key Slots:**
+| Slot | Props | Description |
+| :--- | :--- | :--- |
+| `default` | `{ items }` | Scoped slot to render items using `v-for` |
+| `header` | - | Content above the iterator |
+| `footer` | - | Content below the iterator |
+
+**Example:**
+```vue
+<v-data-iterator 
+  :items="myItems" 
+  :search="searchQuery"
+  content-tag="div"
+  content-class="row"
+>
+  <template v-slot:default="{ items }">
+    <div v-for="item in items" :key="item.id" class="col-12 col-md-4">
+      <v-card>
+        <v-card-title>{{ item.title }}</v-card-title>
+      </v-card>
+    </div>
+  </template>
+</v-data-iterator>
+```
+
+### v-simple-table
+A lightweight wrapper for standard HTML tables without the overhead of `v-data-table`.
+
+**Key Props:**
+| Prop | Type | Description |
+| :--- | :--- | :--- |
+| `fixed-header` | Boolean | Fixes header to top |
+| `height` | String/Number | Sets table height |
+
+**Example:**
+```vue
+<v-simple-table fixed-header height="300px">
+  <thead
+    class="grey lighten-2"
+  >
+    <tr>
+      <th class="text-left">Name</th>
+      <th class="text-left">Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr v-for="item in items" :key="item.name">
+      <td>{{ item.name }}</td>
+      <td>{{ item.value }}</td>
+    </tr>
+  </tbody>
+</v-simple-table>
+```
+
+## Advanced Data Display (V3 Features in V2)
+The following components are only available in Vuetify 3. For V2 projects, use third-party libraries:
+- `v-infinite-scroll` $\rightarrow$ Use `vue-infinite-scroll`
+- `v-virtual-scroll` $\rightarrow$ Use `vue-virtual-scroll-list`
+- `v-sparkline` $\rightarrow$ Use `vue-chartjs` or `ApexCharts`
+
+## See Also
 - [Vuetify Data Tables](https://vuetifyjs.com/en/components/data-tables/)
 - [Vuetify Cards](https://vuetifyjs.com/en/components/cards/)
 - [Vuetify Lists](https://vuetifyjs.com/en/components/lists/)
 - [Vuetify Expansion Panels](https://vuetifyjs.com/en/components/expansion-panels/)
+

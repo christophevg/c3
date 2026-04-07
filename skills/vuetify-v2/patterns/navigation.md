@@ -2,7 +2,55 @@
 
 Comprehensive patterns for Vuetify V2 navigation components.
 
+## Toolbars and System Bars
+
+### v-toolbar
+Primary source of site navigation and a versatile container for GUI layouts.
+
+**Key Props:**
+| Prop | Type | Description |
+| :--- | :--- | :--- |
+| `app` | boolean | Integrates into application layout sizing |
+| `color` | string | CSS or material color |
+| `dark` / `light` | boolean | Theme variants |
+| `dense` | boolean | Reduces height |
+| `flat` | boolean | Removes box-shadow |
+| `prominent` | boolean | Increases height |
+
+**Example:**
+```vue
+<v-toolbar app color="primary" dark>
+  <v-toolbar-title>My Application</v-toolbar-title>
+  <v-toolbar-items>
+    <v-btn flat>Home</v-btn>
+    <v-btn flat>About</v-btn>
+  </v-toolbar-items>
+</v-toolbar>
+```
+
+### v-system-bar
+Mimics a system status bar (mobile status bar or desktop window bar).
+
+**Key Props:**
+| Prop | Type | Description |
+| :--- | :--- | :--- |
+| `color` | string | Background color |
+| `dark` | boolean | White text/icons |
+| `height` | number | Defaults to 24 (32 if `window` is true) |
+| `window` | boolean | Increases default height to 32px |
+| `app` | boolean | Integrates into layout system |
+
+**Example:**
+```vue
+<v-system-bar dark color="primary">
+  <v-icon>mdi-wifi</v-icon>
+  <v-spacer></v-spacer>
+  <span>12:30 PM</span>
+</v-system-bar>
+```
+
 ## App Bar
+
 
 ### v-app-bar
 

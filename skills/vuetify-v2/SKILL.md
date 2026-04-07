@@ -1,5 +1,5 @@
 ---
-name: vuetify
+name: vuetify-v2
 description: Use this skill when creating or modifying Vuetify V2 UI components in Baseweb projects
 triggers:
   - when creating Vuetify components
@@ -52,6 +52,13 @@ Key V2 vs V3 differences to remember:
 - `v-tooltip` - Additional information on hover
 - `v-sheet` - Simple styled container
 
+### Selection
+- `v-chip-group` - Makes chips interactive for tag selection and filters
+- `v-btn-group` - Select between options (V2 alternative to v-btn-toggle)
+- `v-carousel` - Display multiple visual content
+- `v-window` - Display content based on model (tabs alternative)
+- `v-stepper` - Linear progress for forms (multi-step forms)
+
 ### Navigation
 - `v-app-bar` - Top-level navigation
 - `v-fab` - Floating Action Button
@@ -103,15 +110,15 @@ Key V2 vs V3 differences to remember:
 - `v-rating` - User feedback
 
 ### Images & Icons
-- `v-avatar` - User avatars
+- `v-img` - Flexible image display with lazy loading
+- `v-responsive` - Maintain aspect ratios for layout
+- `v-parallax` - 3D scrolling effect for hero sections
 - `v-icon` - Material Design Icons
-- `v-img` - Flexible image display
-- `v-parallax` - 3D effect images
 
 ### Pickers
-- `v-date-picker` - Date selection
+- `v-date-picker` - Date and month selection
 - `v-time-picker` - Time selection
-- `v-color-picker` - Color selection
+- `v-color-picker` - Visual color selection
 
 ## When to Use This Skill
 
@@ -159,6 +166,16 @@ Use this skill when:
   />
   <v-btn :disabled="!valid" @click="submit">Submit</v-btn>
 </v-form>
+```
+
+### Chip Group (Tag Selection)
+
+```vue
+<v-chip-group v-model="selected" multiple column active-class="primary--text">
+  <v-chip filter>Vue.js</v-chip>
+  <v-chip filter>React</v-chip>
+  <v-chip filter>Angular</v-chip>
+</v-chip-group>
 ```
 
 ### Data Table
@@ -214,12 +231,14 @@ Use this skill when:
 
 This skill includes detailed patterns in separate files:
 
-- `patterns/layout.md` - Grid system and responsive design
+- `patterns/selection.md` - Selection components and content panes
 - `patterns/forms.md` - Form components and validation
 - `patterns/navigation.md` - Navigation components
-- `patterns/data-display.md` - Tables, cards, lists
+- `patterns/data-display.md` - Tables, cards, lists, and iterators
 - `patterns/feedback.md` - Alerts, snackbars, dialogs
 - `patterns/theming.md` - Colors and theming
+- `patterns/images-icons.md` - Images, aspect ratios, and parallax
+- `patterns/pickers.md` - Color, date, and time pickers
 - `patterns/vue-form-generator-integration.md` - Using VueFormGenerator with Vuetify
 
 ## VueFormGenerator Integration

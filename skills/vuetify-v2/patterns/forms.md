@@ -16,6 +16,12 @@ Wraps form elements with validation support.
 | `reset()` | void | Clears fields and validation |
 | `resetValidation()` | void | Clears validation only |
 
+**V2 Compatibility Note:**
+Vuetify V2 does not have standalone components for `v-input`, `v-number-input`, or `v-otp-input`.
+- For **Numeric Input**: Use `<v-text-field type="number">`.
+- For **OTP Input**: Implement a custom group of `v-text-field` components.
+- `v-input` is an internal base class and not for direct use.
+
 **Basic Usage:**
 
 ```vue
@@ -298,6 +304,168 @@ Select from list with custom entry.
   label="Tags"
 />
 ```
+
+## Chip Selection
+
+### v-chip-group
+
+Makes chips interactive for tag selection and filters. Wraps `v-chip` components and provides selection behavior.
+
+**Key Props:**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | any | - | Selected value(s) |
+| `multiple` | boolean | false | Enable multi-select |
+| `mandatory` | boolean | false | Require at least one selection |
+| `active-class` | string | - | CSS class for selected chips |
+| `column` | boolean | false | Display chips in column layout |
+| `center-active` | boolean | false | Center the active chip |
+
+**Key Events:**
+
+| Event | Description |
+|-------|-------------|
+| `change` | Emitted when selection changes |
+
+**Single Selection:**
+
+```vue
+<template>
+  <v-chip-group v-model="selected" mandatory>
+    <v-chip>Option 1</v-chip>
+    <v-chip>Option 2</v-chip>
+    <v-chip>Option 3</v-chip>
+  </v-chip-group>
+</template>
+
+<script>
+export default {
+  data: () => ({
+    selected: 0 // Index of selected chip
+  })
+}
+</script>
+```
+
+**Multiple Selection:**
+
+```vue
+<template>
+  <v-chip-group v-model="selected" multiple column>
+    <v-chip filter>Tag 1</v-chip>
+    <v-chip filter>Tag 2</v-chip>
+    <v-chip filter>Tag 3</v-chip>
+  </v-chip-group>
+</template>
+
+<script>
+export default {
+  data: () => ({
+    selected: [0, 2] // Array of selected indices
+  })
+}
+</script>
+```
+
+**Filter Chips with Active Class:**
+
+```vue
+<v-chip-group v-model="filter" active-class="primary--text" mandatory>
+  <v-chip filter outlined>All</v-chip>
+  <v-chip filter outlined>Active</v-chip>
+  <v-chip filter outlined>Inactive</v-chip>
+  <v-chip filter outlined>Pending</v-chip>
+</v-chip-group>
+```
+
+**With Custom Colors:**
+
+```vue
+<v-chip-group v-model="category" mandatory>
+  <v-chip color="primary" filter>Electronics</v-chip>
+  <v-chip color="success" filter>Books</v-chip>
+  <v-chip color="warning" filter>Clothing</v-chip>
+  <v-chip color="error" filter>Sports</v-chip>
+</v-chip-group>
+```
+
+**Dynamic Items:**
+
+```vue
+<template>
+  <v-chip-group v-model="selected" multiple column>
+    <v-chip
+      v-for="tag in tags"
+      :key="tag.id"
+      :value="tag.id"
+      filter
+    >
+      {{ tag.name }}
+    </v-chip>
+  </v-chip-group>
+</template>
+
+<script>
+export default {
+  data: () => ({
+    selected: [],
+    tags: [
+      { id: 1, name: 'Vue.js' },
+      { id: 2, name: 'React' },
+      { id: 3, name: 'Angular' }
+    ]
+  })
+}
+</script>
+```
+
+**Combined with v-chip Props:**
+
+```vue
+<v-chip-group v-model="selected" multiple>
+  <v-chip filter outlined>Outlined</v-chip>
+  <v-chip filter large>Large</v-chip>
+  <v-chip filter small>Small</v-chip>
+  <v-chip filter label>Label</v-chip>
+</v-chip-group>
+```
+
+**Usage in Form:**
+
+```vue
+<v-form ref="form" v-model="valid">
+  <v-label>Filter by status:</v-label>
+  <v-chip-group v-model="status" column active-class="primary--text">
+    <v-chip filter>All</v-chip>
+    <v-chip filter>Active</v-chip>
+    <v-chip filter>Pending</v-chip>
+    <v-chip filter>Archived</v-chip>
+  </v-chip-group>
+
+  <v-label>Select tags:</v-label>
+  <v-chip-group v-model="tags" multiple column>
+    <v-chip
+      v-for="tag in availableTags"
+      :key="tag"
+      :value="tag"
+      filter
+    >
+      {{ tag }}
+    </v-chip>
+  </v-chip-group>
+</v-form>
+```
+
+**Use Cases:**
+
+| Use Case | Configuration |
+|----------|---------------|
+| Filter categories | `mandatory` + single selection |
+| Multi-select tags | `multiple` + `column` |
+| Tab alternative | `mandatory` + `active-class` |
+| Toggle buttons | With `filter` chips |
+| Status filter | `mandatory` + styled chips |
 
 ## Boolean Inputs
 
