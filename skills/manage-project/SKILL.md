@@ -27,7 +27,14 @@ When activated, follow this sequential workflow:
   - Review the most recent functional analysis
   - Review the current backlog (TODO.md)
   - Provide API design perspective and improvements
+  - **Create analysis document in `analysis/` folder** (mandatory)
   - Update TODO.md with API-related considerations
+
+  **Note**: The api-architect MUST be invoked for ANY task involving:
+  - API endpoints (creating, modifying, extending)
+  - Data models and schemas
+  - Authentication/authorization design
+  - API refactoring
 
 3. **Invoke ui-ux-designer agent** to:
   - Review the most recent functional analysis
@@ -55,6 +62,7 @@ For each task in the backlog (in order), execute the following steps:
 6. **Implementation**:
   - Invoke the python-developer agent (or appropriate specialized agent) to implement the task
   - Instruct the agent to follow general agent instructions found in `AGENTS.md` and `CLAUDE.md`, as well as python, baseweb, fire and database skills.
+  - **If the task involves API work**: First invoke api-architect to design/review the API, ensure analysis document is created
   - **The developer agent MUST run tests and verify all pass before completing** - do not run tests yourself
   - Provide the developer with the task details from TODO.md and relevant analysis documents
   - The developer agent handles all coding work
