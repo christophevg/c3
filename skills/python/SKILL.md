@@ -172,3 +172,37 @@ def test_authenticated_endpoint(self, client):
 1. Mock `kookiecooky.auth_middleware.get_valid_session`, not `kookiecooky.pages.auth.get_valid_session`
 2. Use Bearer token authentication in tests (more reliable than cookies)
 3. Always include the Authorization header in authenticated requests
+
+## Extending Third-Party Frameworks
+
+When creating classes that extend third-party framework classes (e.g., Textual's App, FastAPI's APIRouter):
+
+### Pre-Implementation Checklist
+
+1. **Review parent class API** - Check documentation for existing properties/methods
+2. **Check for naming conflicts** - Ensure new names don't shadow parent class members
+3. **Use descriptive prefixes/suffixes** - E.g., `theme_name` instead of `theme` if parent has `theme`
+
+### Common Pitfalls
+
+```python
+# WRONG - shadows parent property
+class App(TextualApp):
+    @property
+    def theme(self) -> str:  # Conflicts with TextualApp.theme
+        return self._theme
+
+# CORRECT - uses distinct name
+class App(TextualApp):
+    @property
+    def theme_name(self) -> str:  # No conflict
+        return self._theme_name
+```
+
+### Framework-Specific Considerations
+
+| Framework | Common Conflicts | Solution |
+|-----------|-----------------|----------|
+| Textual | `theme`, `title`, `styles` | Use `theme_name`, `app_title`, `custom_styles` |
+| FastAPI | `get`, `post`, `router` | Names are usually fine (decorator methods) |
+| Pydantic | `model_`, `schema_` | Avoid underscore prefixes in field names |

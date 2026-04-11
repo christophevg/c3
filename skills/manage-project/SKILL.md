@@ -386,3 +386,22 @@ Use the Feature Development Workflow when:
 - Both workflows end with the implementation review cycle (functional, API/UX, code)
 - **Analysis cache**: When valid cache exists, offer to skip re-analysis for efficiency
 - **When in doubt**: Run fresh analysis. Cost of re-analysis is time; cost of stale analysis is wrong implementations.
+
+## Documentation Updates
+
+After completing a batch of tasks (e.g., a phase), update documentation:
+
+1. **Update API reference** in `docs/api/` for new public APIs
+2. **Update changelog** in `docs/development/changelog.md`
+3. **Update showcase** if features were demonstrated
+4. **Ask user to update screenshot** if showcase changed:
+   - Run `make screenshot` to capture current showcase
+   - Verify screenshot shows new features
+   - Copy to `docs/_static/` for documentation
+
+### Documentation Skill
+
+For comprehensive documentation setup and maintenance, use the `documentation` skill:
+- Sets up Sphinx for readthedocs.org
+- Creates API reference pages
+- Maintains changelog and guides
