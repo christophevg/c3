@@ -1,3 +1,6 @@
+-include .env
+-include .env.local
+
 MODEL ?= glm-5:cloud
 ARGS ?=
 
