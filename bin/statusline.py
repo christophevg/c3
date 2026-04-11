@@ -26,7 +26,11 @@ line1_stats = [
 line2_stats = []
 
 if Path(".python-version").exists():
-  line2_stats.append(f"🐍 {Path('.python-version').read_text().strip()}")
+  lines = Path('.python-version').read_text().strip().splitlines()
+  version = lines[0] if lines else ""
+  if len(lines) > 1:
+    version += f" (+{len(lines) - 1})"
+  line2_stats.append(f"🐍 {version}")
 
 try:
   branch = subprocess.check_output(["git", "branch", "--show-current"], text=True, stderr=subprocess.DEVNULL).strip()
