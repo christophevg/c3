@@ -10,15 +10,15 @@ I have a website hosted on https://christophe.vg It contains information about m
 
 You can find projects I work on in `~/Workspace`. The most important ones of use to you include:
 
-### `~/Workspace/c3`
+### `~/Workspace/agentic/c3`
 
 This is a **Claude Code configuration harness** that provides reusable skills, agents, and settings for Python/Baseweb development projects. The configuration is designed to be symlinked into `~/.claude/` for use across multiple projects.
 
-### `~/Workspace/incubator`
+### `~/Workspace/agentic/incubator`
 
 A personal agentic incubator for brainstorming, researching ideas, developing prototypes, and creating/training skills and agents.
 
-### `~/Workspace/christophe.vg`
+### `~/Workspace/agentic/christophe.vg`
 
 This repository holds my personal website, which is hosted on GitHub Pages, powered by Jekyll and styled using Minimal Mistakes. And since recently crafted together with a coding agent (you) and a nice model.
 
