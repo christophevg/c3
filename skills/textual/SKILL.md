@@ -1,6 +1,6 @@
 ---
 name: textual
-description: Guide Python Textual framework for building terminal user interfaces (TUIs) with CSS styling and reactive state. Use when user mentions textual, TUI, terminal UI, or code imports textual. Use for interactive apps when Rich is insufficient.
+description: Guide Python Textual framework for building terminal user interfaces (TUIs) with CSS styling and reactive state. Use when user mentions textual, TUI, terminal UI, or code imports textual. Use for interactive apps when Rich is insufficient. MUST be used BEFORE exploring Textual code or running one-off scripts to understand Textual APIs.
 ---
 
 # Textual
@@ -21,11 +21,16 @@ Guide Python's Textual framework for building sophisticated terminal user interf
 
 ## When to Use This Skill
 
+**IMPORTANT: Use this skill BEFORE exploring Textual code or running one-off Python scripts.** This skill contains comprehensive API knowledge that can save significant exploration time.
+
 Use this skill when:
 - User mentions "textual", "TUI", "terminal UI", "text-based UI"
 - Code imports `textual` or `from textual import`
 - User asks about building interactive terminal applications
 - Rich alone would require too much overhead
+- You need to understand Textual widget APIs (TextArea, Input, DataTable, etc.)
+- You need to know key bindings, cursor movement, selection handling
+- You need to implement auto-height or dynamic widget sizing
 
 Ask clarification when:
 - User asks about "terminal app" or "console output" (could be Rich or Textual)

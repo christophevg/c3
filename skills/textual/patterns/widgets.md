@@ -153,6 +153,175 @@ def on_text_area_changed(self, event: TextArea.Changed):
   text = event.text_area.text
 ```
 
+### Extending TextArea
+
+Common patterns for extending TextArea:
+
+```python
+from textual.widgets import TextArea
+from textual.geometry import Size
+from textual.widgets.text_area import Selection
+
+class CustomTextArea(TextArea):
+  DEFAULT_CSS = """
+  CustomTextArea {
+    height: auto;  /* Auto-height */
+    min-height: 1;
+  }
+  """
+  
+  BINDINGS = [
+    ("f7", "select_all", "Select all"),
+    ("ctrl+shift+a", "select_all", "Select all"),
+  ]
+  
+  def __init__(self, max_height: int = 10, **kwargs):
+    self._max_height = max_height
+    super().__init__(**kwargs)
+  
+  def get_content_height(self, container: Size, viewport: Size, width: int) -> int:
+    """Override for auto-height based on content."""
+    lines = self.wrapped_document.height  # Visual lines after soft wrap
+    return max(1, min(lines, self._max_height))
+```
+
+### TextArea Key Bindings
+
+| Binding | Action | Notes |
+|---------|--------|-------|
+| Arrow keys | `cursor_up/down/left/right` | Move cursor |
+| Ctrl+← / Ctrl+→ | `cursor_word_left/right` | Word movement |
+| Home / Ctrl+A | `cursor_line_start` | NOT select all! |
+| End / Ctrl+E | `cursor_line_end` | End of line |
+| F7 | `select_all` | Select all text |
+| F6 | `select_line` | Select current line |
+| Shift+arrows | `cursor_*(select=True)` | Extend selection |
+| Ctrl+C | `copy` | Copy to clipboard |
+| Ctrl+V | `paste` | Paste from clipboard |
+| Ctrl+X | `cut` | Cut to clipboard |
+| Ctrl+Z | `undo` | Undo last edit |
+| Ctrl+Y | `redo` | Redo last undone edit |
+
+### TextArea Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `text` | `str` | Get/set full text content |
+| `cursor_location` | `tuple[int, int]` | (row, col) cursor position |
+| `selection` | `Selection` | Current selection |
+| `selected_text` | `str` | Selected text string |
+| `wrapped_document.height` | `int` | Visual lines (after soft wrap) |
+| `document` | `Document` | Underlying document |
+| `read_only` | `bool` | Read-only mode |
+
+### Selection Handling
+
+```python
+from textual.widgets.text_area import Selection
+
+# Get current selection
+sel = text_area.selection  # Selection(start=(row, col), end=(row, col))
+text = text_area.selected_text  # Selected string
+
+# Set selection programmatically
+text_area.selection = Selection((0, 0), (0, 5))  # Select first 5 chars
+
+# Select all
+text_area.select_all()
+
+# Clear selection (move cursor)
+text_area.cursor_location = (0, 0)
+```
+
+### Cursor Movement with Selection
+
+```python
+# Basic movement (no selection)
+text_area.action_cursor_right()
+text_area.action_cursor_left()
+text_area.action_cursor_up()
+text_area.action_cursor_down()
+
+# Movement with selection
+text_area.action_cursor_right(select=True)
+text_area.action_cursor_left(select=True)
+
+# Word movement
+text_area.action_cursor_word_right()
+text_area.action_cursor_word_left()
+
+# Line start/end
+text_area.action_cursor_line_start()
+text_area.action_cursor_line_end()
+```
+
+### Auto-Height Pattern
+
+For widgets that grow with content:
+
+```python
+class AutoGrowTextArea(TextArea):
+  DEFAULT_CSS = """
+  AutoGrowTextArea {
+    height: auto;
+    min-height: 1;
+  }
+  """
+  
+  def __init__(self, max_height: int = 10, **kwargs):
+    self._max_height = max_height
+    super().__init__(**kwargs)
+  
+  def get_content_height(self, container: Size, viewport: Size, width: int) -> int:
+    """Return visual line count, clamped to max_height."""
+    # wrapped_document.height returns visual lines (after soft wrapping)
+    # Returns 1 for empty document (minimum height)
+    lines = self.wrapped_document.height
+    return max(1, min(lines, self._max_height))
+```
+
+### Important: Import Locations
+
+```python
+# Selection is NOT in textual.widgets!
+from textual.widgets.text_area import Selection  # Correct
+
+# Size is in textual.geometry
+from textual.geometry import Size
+
+# Key events are in textual.events
+from textual.events import Key
+
+# Messages are in textual.message
+from textual.message import Message
+```
+
+### Common Pitfalls
+
+1. **Ctrl+A is NOT select all** - It moves to line start (like Home). Use F7 or add your own binding.
+
+2. **wrapped_document.height requires mounting** - Returns 1 if widget not mounted. The `get_content_height` method is called during layout after mounting.
+
+3. **Selection direction matters** - When selecting backwards (left/up), `selection.start > selection.end`.
+
+4. **Terminal may intercept Cmd+A on macOS** - Terminal apps intercept `Cmd+A` for "Select All" in the terminal window. Use F7 or Ctrl+Shift+A instead.
+
+5. **Selection import path** - `Selection` is in `textual.widgets.text_area`, NOT `textual.widgets`.
+
+### Selection Backward Behavior
+
+When selecting backwards:
+- `selection.start` = original cursor position
+- `selection.end` = new cursor position
+- `selection.start > selection.end` (reversed)
+
+```python
+# Selecting left from position 5
+text_area.cursor_location = (0, 5)
+text_area.action_cursor_left(select=True)
+# Result: selection.start = (0, 5), selection.end = (0, 4)
+```
+
 ## Collapsible Widget
 
 ```python

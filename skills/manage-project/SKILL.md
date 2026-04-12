@@ -229,7 +229,17 @@ For each task in the backlog (in order), execute the following steps:
   - Present the plan for user approval
   - Store the plan in the `reporting/`, in a subfolder with the name of the task and give it the name "plan.md".
 
-6. **Implementation**:
+6. **Check for domain-specific skills** (BEFORE implementation):
+  - **CRITICAL**: Before exploring code or running one-off scripts, check if a domain-specific skill exists:
+    - `textual` - Textual TUI framework widgets and patterns
+    - `rich` - Rich console output
+    - `database` - MongoDB database operations
+    - `fire` - Fire CLI framework
+    - `baseweb` / `vuetify` - Web UI frameworks
+  - If a skill exists for the framework/domain, **invoke it first** to get API knowledge and patterns
+  - This saves significant exploration time by providing consolidated knowledge
+
+7. **Implementation**:
   - Invoke the python-developer agent (or appropriate specialized agent) to implement the task
   - Instruct the agent to follow general agent instructions found in `AGENTS.md` and `CLAUDE.md`, as well as python, baseweb, fire and database skills.
   - **If the task involves API work**: First invoke api-architect to design/review the API, ensure analysis document is created
@@ -237,18 +247,18 @@ For each task in the backlog (in order), execute the following steps:
   - Provide the developer with the task details from TODO.md and relevant analysis documents
   - The developer agent handles all coding work
 
-7. **Implementation Review Cycle (MANDATORY)**:
+8. **Implementation Review Cycle (MANDATORY)**:
   ⚠️ **This step is MANDATORY and cannot be skipped.**
 
   - Invoke functional-analyst to review the implementation for functional correctness
   - Invoke api-architect to review API design compliance
   - Invoke ui-ux-designer to review UI/UX aspects
   - Invoke code-reviewer to review coding aspects
-  - If any agent finds issues, coordinate fixes by returning to step 6
+  - If any agent finds issues, coordinate fixes by returning to step 7
   - Repeat until all three agents approve
-  - Only proceed to step 8 when ALL agents have explicitly approved
+  - Only proceed to step 9 when ALL agents have explicitly approved
 
-8. **Task Completion**:
+9. **Task Completion**:
   - Mark the task as completed
   - Move the completed task from the "Backlog" section to the "Done" section in TODO.md
   - Ensure the `reporting/` folder exists
@@ -258,13 +268,13 @@ For each task in the backlog (in order), execute the following steps:
     - Lessons learned
     - Files modified
 
-9. **Commit Changes**:
+10. **Commit Changes**:
   - Ask the user to commit changes or provide commit guidance
   - Use conventional commit message format
 
-10. **Exit plan mode**: Exit plan mode.
+11. **Exit plan mode**: Exit plan mode.
 
-11. **Repeat**: Continue with the next task from step 5 until all tasks are complete.
+12. **Repeat**: Continue with the next task from step 5 until all tasks are complete.
 
 ---
 
