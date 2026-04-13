@@ -233,7 +233,37 @@ Information confirmed by multiple sources:
 [2] Source Title - https://url2 - Accessed {Date}
 ```
 
-### 6. Update Indexes
+### 6. Completeness Audit
+
+**Before finalizing the report**, verify that every search performed during the session is accounted for in SOURCES.md:
+
+1. Review your search history — count all WebSearch operations performed
+2. Count all search entries in SOURCES.md
+3. If any searches are missing from SOURCES.md:
+   - If the search was relevant and useful: add it as a proper source entry
+   - If the search was unproductive or led to excluded findings: add it to the "Excluded Findings" section with explicit reasoning
+   - **Never silently drop a search.** Every WebSearch must appear in SOURCES.md in one section or the other.
+
+This prevents gaps where potentially relevant research is silently dropped, which would require the user to flag missing searches.
+
+### 7. Near-Miss Tier for Ranked Recommendations
+
+When producing ranked recommendations (top-3, top-5, etc.), include a **"Near-Miss Tier"** section:
+
+```markdown
+## Near-Miss Tier
+
+The following candidates ranked just below the top recommendations and may be preferred depending on different priorities:
+
+### {Name} — {Brief Reason}
+- **Why it nearly made the cut**: {What makes it strong}
+- **Why it ranked below**: {Specific trade-off that placed it below the cutoff}
+- **Best for**: {When this candidate would actually be the better choice}
+```
+
+This lets the user make their own trade-offs without needing to request additional research rounds. Include 2-3 near-miss candidates for every ranked recommendation.
+
+### 8. Update Indexes
 
 After completing research, update `research/INDEX.md`:
 
@@ -285,9 +315,11 @@ Before completing, verify:
 - [ ] Search queries recorded in SOURCES.md
 - [ ] Fetched URLs recorded with timestamps
 - [ ] **Fetched folder EXISTS and contains fetch files for EVERY WebFetch**
+- [ ] Completeness audit performed (all searches in SOURCES.md)
 - [ ] Excluded findings recorded (if any)
 - [ ] Resource Comparison section added (if sources disagree)
 - [ ] Executive summary captures key findings
+- [ ] Near-miss tier included (if producing ranked recommendations)
 - [ ] INDEX.md updated with new entry
 - [ ] README.md complete with all findings
 
