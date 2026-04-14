@@ -1,11 +1,55 @@
 ---
 name: manage-project
-description: Use this skill to manage the entire project workflow, orchestrating specialized agents (functional analyst, API architect, UI/UX designer) to ensure proper analysis, design, implementation, and review of all tasks. Handles both new features and bug fixes with appropriate workflows.
+description: Use this skill to manage the entire project workflow, orchestrating specialized agents (functional analyst, API architect, UI/UX designer) to ensure proper analysis, design, implementation, and review of all tasks. Handles both new features and bug fixes with appropriate workflows. Examples: "Start working on the project", "Implement the next task", "Fix the authentication bug".
 ---
 
 # Manage Project
 
-This skill is invoked by the user to manage the entire project workflow, orchestrating specialized agents (functional analyst, API architect, UI/UX designer) to ensure proper analysis, design, implementation, and review of all tasks.
+This skill is invoked by the user to manage the entire project workflow, orchestrating specialized agents to ensure proper analysis, design, implementation, and review of all tasks.
+
+## Workflow Overview
+
+```
+User Request
+    │
+    ▼
+Task Type Detection ──── Bug ───► Bug Fixing Workflow
+    │
+    ▼ Feature
+Project State Detection
+    │
+    ├── New Project ───────────► Phase 1A (Analysis)
+    │                                  │
+    │                                  ▼
+    │                             Research (conditional)
+    │                                  │
+    ├── Incomplete Setup ───────► Phase 1B (Review)
+    │                                  │
+    │                                  ▼
+    │                             Research (conditional)
+    │                                  │
+    └── Ready for Work ─────────► Task from Backlog
+                                       │
+                                       ▼
+                               Task Scope Classification
+                                       │
+                                       ▼
+                               Phase 2 (Domain Review)
+                                       │
+                                       ▼
+                               Phase 3 (Consensus)
+                                       │
+                                       ▼
+                               Phase 4 (Implementation)
+                                       │
+                                       ▼
+                               Review Cycle (parallelized)
+                                       │
+                                       ▼
+                                   Commit
+```
+
+---
 
 ## Task Type Detection
 
@@ -47,6 +91,7 @@ When the task is identified as a bug, invoke the **bug-fixing skill** for the co
    - Review bug validity and scope
    - Confirm bug exists or reject with reason
    - Flag if UI changes are involved
+   - Flag if security-related (auth, data, input, files)
 
 4. **Create bug analysis report**:
    - Path: `docs/bug-analysis/{bug-id}.md`
@@ -72,24 +117,36 @@ When the task is identified as a bug, invoke the **bug-fixing skill** for the co
    - Update test to expect correct behavior
    - Run all tests
 
-### Phase B6: Implementation Review Cycle
+### Phase B6: Implementation Review
 
-8. **Invoke review agents** (MANDATORY):
-   - functional-analyst: Functional correctness
-   - ui-ux-designer: UI changes (if flagged)
-   - code-reviewer: Code quality and patterns
+8. **Review cycle (based on bug scope)**:
 
-9. **Handle rejections**:
+   **Step B6a: Functional Review (Blocking)**
+   - Invoke functional-analyst: Functional correctness
+   - Must pass before proceeding
+
+   **Step B6b: Domain Reviews (Parallel, based on scope)**
+   - `ui-ux-designer`: UI changes (if flagged in B2)
+   - `security-engineer`: Security validation (if auth/data/input/files affected)
+
+   **Step B6c: Quality Reviews (Parallel)**
+   - `code-reviewer`: Code quality and patterns
+   - `testing-engineer`: Test quality and coverage
+
+   **Step B6d: Documentation (If User-Facing)**
+   - `end-user-documenter`: Update user docs (if applicable)
+
+   **Step B6e: Handle Rejections**
    - Iterate with feedback (max 2 rounds)
    - Return to Phase B5 if fixes needed
 
 ### Phase B7: Documentation & Closure
 
-10. **Complete bug fix**:
-    - Update bug analysis report
-    - Ensure regression test in codebase
-    - Document commit message
-    - Close issue or mark resolved
+9. **Complete bug fix**:
+   - Update bug analysis report
+   - Ensure regression test in codebase
+   - Document commit message
+   - Close issue or mark resolved
 
 ---
 
@@ -97,126 +154,170 @@ When the task is identified as a bug, invoke the **bug-fixing skill** for the co
 
 When the task is identified as a feature, follow this sequential workflow:
 
-### Phase 0: Analysis Cache Check
+### Phase 0: Project State Detection
 
-Before running analysis phases, check for valid cached analysis:
+Check the project's analysis artifacts to determine the appropriate workflow:
 
-#### Cache Validation Steps
+| State | `analysis/functional.md` | `TODO.md` | Action |
+|-------|--------------------------|-----------|--------|
+| **New Project** | Missing | Missing | Initial Analysis (Phase 1A) |
+| **Incomplete Setup** | Exists | Missing | Review and Backlog (Phase 1B) |
+| **Ready for Work** | Exists | Exists | Propose Next Task |
 
-1. **Check for session file**: Look for `analysis/.session`
+#### State Detection Steps
 
-2. **Verify completeness**: All required analyst documents exist:
-   - `analysis/functional.md` (required)
-   - `analysis/api.md` (required for API work)
-   - `analysis/ui-ux.md` (required for UI work)
-
-3. **Verify freshness**: Session created within threshold
-   - Default: Same calendar day (00:00 to 23:59)
-   - Check `created` timestamp in session file
-
-4. **Verify integrity**: Source files unchanged since analysis:
-   - Compute checksum of `README.md`
-   - Compute checksum of `TODO.md`
-   - Compare with checksums in session file
-
-#### If Valid Cache Exists
-
-Report to user:
-```
-Recent analysis found (created: {timestamp}).
-Analysts completed: {list}
-Source files unchanged: README.md, TODO.md
-
-Skip re-analysis and proceed to implementation?
-- "yes" or "skip" — Skip analysis, proceed to Phase 4
-- "no" or "run" — Run fresh analysis (Phase 1)
-- "show" — Show cached analysis summary
-```
-
-**User responses:**
-- **yes/skip**: Skip to Phase 4, load cached analysis context
-- **no/run**: Proceed with Phase 1 (fresh analysis)
-- **show**: Display summary of cached analysis, then ask again
-
-#### If Invalid/Missing Cache
-
-Proceed with Phase 1 (fresh analysis).
-
-**Invalid cache conditions:**
-- Session file missing
-- Required analyst documents missing
-- Source file checksums mismatch
-- Session created on different calendar day
-
-#### Force/Skip Flags
-
-Support explicit user control:
-- `/manage-project --skip-analysis` — Skip analysis (use cached, no confirmation)
-- `/manage-project --force-analysis` — Force re-analysis (ignore cache)
+1. Check if `analysis/functional.md` exists
+2. Check if `TODO.md` exists with prioritized tasks
 
 ---
 
-### Phase 1: Functional Analysis
+### Phase 1A: Initial Functional Analysis (New Project)
 
-1. **Invoke the functional-analyst agent** to:
-  - Review requirements in README.md
-  - Review previous functional analysis reports in `analysis/` folder
-  - Validate if tasks in TODO.md are up-to-date and cover all requirements
-  - Interview the user to clarify aspects if needed
-  - Create or update the functional analysis document in `analysis/`
-  - Update the backlog (TODO.md) with atomic, well-defined tasks
+When `analysis/functional.md` or `TODO.md` is missing:
+
+1. **Invoke functional-analyst agent** to:
+   - Review high-level functional requirements (README.md, existing documentation)
+   - Review existing code structure if available
+   - Interview user to clarify topics needing more information
+   - Create `analysis/functional.md` with comprehensive functional analysis
+   - Create `TODO.md` with prioritized backlog of atomic, well-defined tasks
+
+2. **Conditional: Invoke researcher agent when**:
+   - Functional analysis identifies gaps needing best practices proposals
+   - User explicitly requests research to address functional-analyst questions
+   - Technology choice needs evaluation and recommendations
+
+   **Researcher delivers**:
+   - Research findings in `research/{topic}.md`
+   - Technology recommendations with pros/cons
+   - Best practices proposals for identified gaps
+
+Then proceed to **Task Scope Classification** (below).
+
+---
+
+### Phase 1B: Review and Backlog Creation (Existing Analysis)
+
+When `analysis/functional.md` exists but `TODO.md` is missing:
+
+1. **Invoke functional-analyst agent** to:
+   - Review existing `analysis/functional.md`
+   - Review current project state
+   - Interview user to update understanding if needed
+   - Create `TODO.md` with prioritized backlog
+
+2. **Conditional: Invoke researcher agent when**:
+   - Existing analysis needs technology investigation
+   - User requests research for specific questions
+
+Then proceed to **Task Scope Classification** (below).
+
+---
+
+### Task Scope Classification
+
+After Phase 1A or 1B completes, classify the task scope:
+
+| Scope | Indicators | Required Domain Agents |
+|-------|------------|------------------------|
+| **Backend only** | "API", "endpoint", "backend", "data model", no UI | api-architect, security-engineer* |
+| **Frontend only** | "UI", "UX", "frontend", "component", "page", no backend | ui-ux-designer |
+| **Full stack** | Both backend and frontend mentioned | api-architect, ui-ux-designer, security-engineer* |
+| **Documentation only** | "document", "readme", "guide" | end-user-documenter |
+| **Research only** | "research", "investigate", "evaluate" | researcher |
+
+#### Security Task Detection
+
+Include `security-engineer` when task involves:
+- Authentication or authorization changes
+- Sensitive data handling (PII, credentials, payments)
+- External API integrations
+- User input processing
+- File operations
+- Configuration changes affecting security
+
+#### Ready for Work State
+
+When both `analysis/functional.md` and `TODO.md` exist:
+
+**Use AskUserQuestion tool to propose next task:**
+
+```
+Question: "Project analysis complete. Next task from backlog: {task-id} - {task-title}. Proceed with this task?"
+
+Options:
+- "Yes, start implementation" (Recommended)
+- "Show all tasks in backlog"
+- "Run fresh analysis"
+```
+
+If user approves, classify task scope (see table above) and proceed to **Phase 2**.
+
+---
 
 ### Phase 2: Cross-Domain Review
 
-2. **Invoke api-architect agent** to:
-  - Review the most recent functional analysis
-  - Review the current backlog (TODO.md)
-  - Provide API design perspective and improvements
-  - **Create analysis document in `analysis/` folder** (mandatory)
-  - Update TODO.md with API-related considerations
+Invoke domain agents **based on task scope classification**.
 
-  **Note**: The api-architect MUST be invoked for ANY task involving:
-  - API endpoints (creating, modifying, extending)
-  - Data models and schemas
-  - Authentication/authorization design
-  - API refactoring
+#### Parallel Invocation
 
-3. **Invoke ui-ux-designer agent** to:
-  - Review the most recent functional analysis
-  - Review the current backlog (TODO.md)
-  - Provide UX/UI perspective and improvements
-  - Update TODO.md with UI/UX-related considerations
+Domain agents run in **parallel** where independent:
+- `api-architect` + `security-engineer` (both review architecture aspects)
+- `ui-ux-designer` (independent from backend reviews)
+
+#### Agent Invocation by Scope
+
+**For Backend only:**
+```
+Invoke api-architect: Review API design, create analysis document
+Invoke security-engineer: Review security architecture (if security-related)
+```
+
+**For Frontend only:**
+```
+Invoke ui-ux-designer: Review UX design, create analysis document
+```
+
+**For Full stack:**
+```
+Invoke api-architect: Review API design, create analysis document
+Invoke ui-ux-designer: Review UX design, create analysis document
+Invoke security-engineer: Review security architecture (if security-related)
+```
+
+#### Each Domain Agent:
+
+2. **Invoke api-architect agent** (if Backend or Full stack):
+   - Review the most recent functional analysis
+   - Review the current backlog (TODO.md)
+   - Provide API design perspective and improvements
+   - **Create analysis document in `analysis/` folder** (mandatory)
+   - Update TODO.md with API-related considerations
+
+3. **Invoke ui-ux-designer agent** (if Frontend or Full stack):
+   - Review the most recent functional analysis
+   - Review the current backlog (TODO.md)
+   - Provide UX/UI perspective and improvements
+   - Update TODO.md with UI/UX-related considerations
+
+4. **Invoke security-engineer agent** (if security-related):
+   - Review the most recent functional analysis
+   - Review the current backlog (TODO.md)
+   - Provide security architecture perspective
+   - Create analysis document in `analysis/` folder
+   - Update TODO.md with security considerations
+
+---
 
 ### Phase 3: Consensus and Backlog Finalization
 
-4. **Facilitate agent agreement**:
-  - Ask all three agents (functional-analyst, api-architect, ui-ux-designer) to confirm the backlog is valid
-  - If agents disagree, coordinate resolution until consensus is reached
-  - Create a consensus summary report in the `reporting/` folder, in a subfolder with the name of the task and give it the name "consensus.md".
-  - Only proceed to implementation when all agents agree
+5. **Facilitate agent agreement among all invoked domain agents**:
+   - Collect feedback from all domain agents invoked in Phase 2
+   - Coordinate resolution if agents disagree
+   - Create a consensus summary report in `reporting/{task-name}/consensus.md`
+   - Only proceed to implementation when all invoked agents approve
 
-5. **Create analysis session file**:
-
-After consensus is reached, create `analysis/.session`:
-
-```yaml
-created: {ISO timestamp}
-project: {project name from README.md or directory}
-analysts:
-  - functional-analyst
-  - api-architect
-  - ui-ux-designer
-checksums:
-  README.md: {sha256 hash}
-  TODO.md: {sha256 hash}
-consensus: {path to consensus.md}
-tasks:
-  - {task-1.1}
-  - {task-1.2}
-  - ...
-```
-
-This session file enables cache validation in future invocations.
+**Note:** Not all tasks require all agents. Consensus is among agents that were invoked.
 
 ---
 
@@ -224,123 +325,114 @@ This session file enables cache validation in future invocations.
 
 For each task in the backlog (in order), execute the following steps:
 
-5. **Enter plan mode**: Enter plan mode and:
-  - Create a detailed implementation plan for the current task
-  - Present the plan for user approval
-  - Store the plan in the `reporting/`, in a subfolder with the name of the task and give it the name "plan.md".
+#### Step 5: Plan Mode
 
-6. **Check for domain-specific skills** (BEFORE implementation):
-  - **CRITICAL**: Before exploring code or running one-off scripts, check if a domain-specific skill exists:
-    - `textual` - Textual TUI framework widgets and patterns
-    - `rich` - Rich console output
-    - `database` - MongoDB database operations
-    - `fire` - Fire CLI framework
-    - `baseweb` / `vuetify` - Web UI frameworks
-  - If a skill exists for the framework/domain, **invoke it first** to get API knowledge and patterns
-  - This saves significant exploration time by providing consolidated knowledge
+Enter plan mode and:
+- Create a detailed implementation plan for the current task
+- Present the plan for user approval
+- Store the plan in `reporting/{task-name}/plan.md`
 
-7. **Implementation**:
-  - Invoke the python-developer agent (or appropriate specialized agent) to implement the task
-  - Instruct the agent to follow general agent instructions found in `AGENTS.md` and `CLAUDE.md`, as well as python, baseweb, fire and database skills.
-  - **If the task involves API work**: First invoke api-architect to design/review the API, ensure analysis document is created
-  - **The developer agent MUST run tests and verify all pass before completing** - do not run tests yourself
-  - Provide the developer with the task details from TODO.md and relevant analysis documents
-  - The developer agent handles all coding work
+#### Step 6: Check Domain Skills
 
-8. **Implementation Review Cycle (MANDATORY)**:
-  ⚠️ **This step is MANDATORY and cannot be skipped.**
+**CRITICAL**: Before exploring code or running one-off scripts, check if a domain-specific skill exists:
 
-  - Invoke functional-analyst to review the implementation for functional correctness
-  - Invoke api-architect to review API design compliance
-  - Invoke ui-ux-designer to review UI/UX aspects
-  - Invoke code-reviewer to review coding aspects
-  - If any agent finds issues, coordinate fixes by returning to step 7
-  - Repeat until all three agents approve
-  - Only proceed to step 9 when ALL agents have explicitly approved
-
-9. **Task Completion**:
-  - Mark the task as completed
-  - Move the completed task from the "Backlog" section to the "Done" section in TODO.md
-  - Ensure the `reporting/` folder exists
-  - Create a summary report in `reporting/` folder, in a subfolder with the name of the task and give it the name "summary.md", including:
-    - What was implemented
-    - Key decisions made
-    - Lessons learned
-    - Files modified
-
-10. **Commit Changes**:
-  - Ask the user to commit changes or provide commit guidance
-  - Use conventional commit message format
-
-11. **Exit plan mode**: Exit plan mode.
-
-12. **Repeat**: Continue with the next task from step 5 until all tasks are complete.
-
----
-
-## Session File Format
-
-The `analysis/.session` file tracks analysis state for cache validation:
-
-```yaml
-created: 2026-04-09T10:30:00Z
-project: my-project
-analysts:
-  - functional-analyst
-  - api-architect
-  - ui-ux-designer
-checksums:
-  README.md: sha256:abc123def456...
-  TODO.md: sha256:789abc012def...
-consensus: reporting/my-task/consensus.md
-tasks:
-  - task-1.1
-  - task-1.2
-  - task-2.1
-```
-
-### Fields
-
-| Field | Description |
+| Skill | When to Use |
 |-------|-------------|
-| created | ISO timestamp when analysis was completed |
-| project | Project name (from README.md or directory) |
-| analysts | List of agents that completed analysis |
-| checksums | SHA256 hashes of source files |
-| consensus | Path to consensus document |
-| tasks | List of task IDs from TODO.md |
+| `textual` | Textual TUI framework widgets and patterns |
+| `rich` | Rich console output |
+| `database` | MongoDB database operations |
+| `fire` | Fire CLI framework |
+| `baseweb` / `vuetify` | Web UI frameworks |
+| `python` | Python coding standards (always relevant) |
 
-### Checksum Calculation
+If a skill exists for the framework/domain, **invoke it first** to get API knowledge and patterns. This saves significant exploration time.
 
-Use SHA256 hash of file content:
-```bash
-sha256sum README.md
-sha256sum TODO.md
-```
+#### Step 7: Implementation
 
-Store as: `sha256:{hash}`
+Invoke the `python-developer` agent (or appropriate specialized agent) to:
+- Implement the task following the plan
+- Follow general agent instructions in `AGENTS.md` and `CLAUDE.md`
+- Follow domain skills (python, baseweb, fire, database, etc.)
+- **Run tests and verify all pass before completing**
+- Provide the developer with task details from TODO.md and relevant analysis documents
+
+#### Step 8: Implementation Review Cycle
+
+⚠️ **This step is MANDATORY and cannot be skipped.**
+
+**Step 8a: Functional Review (Blocking)**
+- Invoke functional-analyst to review functional correctness
+- Must pass before proceeding to domain reviews
+- If rejected: return to Step 7 with feedback
+
+**Step 8b: Domain Reviews (Parallel, based on scope)**
+
+Invoke domain agents that were invoked in Phase 2:
+- `api-architect`: API design compliance (if Backend or Full stack)
+- `ui-ux-designer`: UX compliance (if Frontend or Full stack)
+- `security-engineer`: Security review (if security-related)
+
+**Step 8c: Quality Reviews (Parallel)**
+- `code-reviewer`: Code quality and patterns
+- `testing-engineer`: Test coverage and quality
+
+**Step 8d: Documentation (If User-Facing)**
+
+For tasks with user-facing changes:
+- Invoke `end-user-documenter` to create/update documentation
+- Documentation must be synced with implementation
+
+**Step 8e: Handle Rejections**
+- Collect all rejection feedback
+- Return to Step 7 with consolidated feedback (max 2 rounds)
+- Only proceed to Step 9 when ALL invoked agents approve
+
+#### Step 9: Task Completion
+
+- Mark the task as completed
+- Move the completed task from "Backlog" to "Done" section in TODO.md
+- Ensure `reporting/` folder exists
+- Create summary report in `reporting/{task-name}/summary.md` including:
+  - What was implemented
+  - Key decisions made
+  - Lessons learned
+  - Files modified
+
+#### Step 10: Commit Changes
+
+- Ask user to commit changes or provide commit guidance
+- Use conventional commit message format
+
+#### Step 11: Exit Plan Mode
+
+Exit plan mode.
+
+#### Step 12: Repeat
+
+Continue with next task from Step 5 until all tasks complete.
 
 ---
 
-## Cache Invalidation
+## Review Cycle Execution Order
 
-The analysis cache is invalidated when:
-
-| Condition | Reason |
-|-----------|--------|
-| Session file missing | No previous analysis |
-| Analyst document missing | Incomplete analysis |
-| README.md checksum mismatch | Requirements changed |
-| TODO.md checksum mismatch | Tasks changed |
-| Different calendar day | Stale analysis |
-| User requests `--force-analysis` | Explicit override |
-
-### Handling Invalidation
-
-When cache is invalid:
-1. Delete the session file if it exists
-2. Proceed with Phase 1 (fresh analysis)
-3. Create new session file after Phase 3
+```
+Step 1: functional-analyst     ← BLOCKING (must pass first)
+    │
+    ▼
+Step 2: Domain Reviews         ← PARALLEL (independent perspectives)
+    ├── api-architect
+    ├── ui-ux-designer
+    └── security-engineer
+    │
+    ▼
+Step 3: Quality Reviews        ← PARALLEL (independent perspectives)
+    ├── code-reviewer
+    └── testing-engineer
+    │
+    ▼
+Step 4: Documentation          ← IF user-facing
+    └── end-user-documenter
+```
 
 ---
 
@@ -351,6 +443,8 @@ When invoking specialized agents, use clear prompts that specify:
 - What documents to review (AGENTS.md, CLAUDE.md, README.md, analysis/, TODO.md)
 - What deliverables are expected
 - Any specific concerns or focus areas
+
+---
 
 ## When to Use Bug-Fixing Workflow
 
@@ -365,53 +459,72 @@ Use the Feature Development Workflow when:
 - Task is about new functionality
 - Requirements describe desired features
 
+---
+
 ## Communication with User
 
 - Provide clear status updates at each phase transition
 - Report any blockers or issues that require user input
 - Summarize agent findings and decisions
-- When cached analysis found, report details and ask for confirmation
+- When project is ready for work, propose next task from backlog
+
+### Using AskUserQuestion Tool
+
+**CRITICAL**: When asking the user for input and there are **limited possible answers (<7)**, use the AskUserQuestion tool instead of plain text prompts.
+
+This applies to situations like:
+- **Task approval**: "Proceed with this task?" (yes/no)
+- **Workflow selection**: "Which workflow to use?" (bug/feature)
+- **Priority decisions**: "Which task to prioritize?" (list of tasks)
+- **Conflict resolution**: "How to resolve this issue?" (finite options)
+- **Branch selection**: "Which branch?" (list of branches)
+
+---
 
 ## File Conventions
 
 | File | Path |
 |------|------|
-| Analysis documents | `analysis/{topic}.md` |
-| Analysis session | `analysis/.session` |
-| Consensus Summary | `reporting/{task-name}/consensus.md` |
+| Functional analysis | `analysis/functional.md` |
+| API analysis | `analysis/api-{topic}.md` |
+| UX analysis | `analysis/ux-{topic}.md` |
+| Security analysis | `analysis/security-{topic}.md` |
+| Research findings | `research/{topic}.md` |
+| Technology recommendations | `research/{topic}/recommendations.md` |
+| Consensus summary | `reporting/{task-name}/consensus.md` |
 | Plan | `reporting/{task-name}/plan.md` |
 | Implementation review report | `reporting/{task-name}/{topic}-review.md` |
-| Development summary report | `reporting/{task-name}/development-summary.md` |
-| Implementation summary report | `reporting/{task-name}/summary.md` |
+| Task summary | `reporting/{task-name}/summary.md` |
 | Bug analysis | `docs/bug-analysis/{bug-id}.md` |
+
+---
 
 ## Notes
 
 - The functional-analyst owns the TODO.md structure
-- Domain agents (api-architect, ui-ux-designer) contribute to TODO.md through the functional-analyst
+- Domain agents (api-architect, ui-ux-designer, security-engineer) contribute to TODO.md through the functional-analyst
 - Resolve conflicts between domain recommendations based on project priorities
 - Ensure all tasks have verifiable acceptance criteria before implementation
 - **For bugs**: The bug-fixing skill handles the complete workflow including TDD (test first)
-- **For features**: Follow the feature development phases with API/UX design reviews
-- Both workflows end with the implementation review cycle (functional, API/UX, code)
-- **Analysis cache**: When valid cache exists, offer to skip re-analysis for efficiency
-- **When in doubt**: Run fresh analysis. Cost of re-analysis is time; cost of stale analysis is wrong implementations.
+- **For features**: Follow the feature development phases with domain design reviews
+- **Research** is conditional - invoke when gaps identified or technology choices needed
+- **Security review** is scoped to security-related tasks
+- **Documentation** is part of task completion for user-facing changes
+- **Parallel reviews** improve efficiency without sacrificing quality
+- **User can request reanalysis**: Use "reanalyze" option when proposing next task to run fresh analysis
 
-## Documentation Updates
+---
 
-After completing a batch of tasks (e.g., a phase), update documentation:
+## Agent Quick Reference
 
-1. **Update API reference** in `docs/api/` for new public APIs
-2. **Update changelog** in `docs/development/changelog.md`
-3. **Update showcase** if features were demonstrated
-4. **Ask user to update screenshot** if showcase changed:
-   - Run `make screenshot` to capture current showcase
-   - Verify screenshot shows new features
-   - Copy to `docs/_static/` for documentation
-
-### Documentation Skill
-
-For comprehensive documentation setup and maintenance, use the `documentation` skill:
-- Sets up Sphinx for readthedocs.org
-- Creates API reference pages
-- Maintains changelog and guides
+| Agent | Phase | When to Invoke |
+|-------|-------|----------------|
+| functional-analyst | 1A, 1B, 4 (review) | Always |
+| researcher | 1A, 1B | When gaps or tech choices |
+| api-architect | 2, 4 (review) | Backend or Full stack tasks |
+| ui-ux-designer | 2, 4 (review) | Frontend or Full stack tasks |
+| security-engineer | 2, 4 (review) | Security-related tasks |
+| python-developer | 4 (implementation) | Always for Python projects |
+| code-reviewer | 4 (review) | Always |
+| testing-engineer | 4 (review) | Always |
+| end-user-documenter | 4 (completion) | User-facing changes |
