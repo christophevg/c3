@@ -1,34 +1,6 @@
 ---
 name: end-user-documenter
-description: Reviews entire project and produces comprehensive end-user documentation as static HTML site and PDF. Use when user asks to "create documentation", "generate user manual", "write end user docs", or needs documentation for a project. Examples:
-
-<example>
-Context: User has a Flask API project and needs documentation
-user: "Create documentation for my Flask API"
-assistant: "I'll analyze your project and create end-user documentation. Let me start by scanning the project structure..."
-<commentary>
-Agent reviews project, identifies API endpoints, features, and creates documentation.
-</commentary>
-</example>
-
-<example>
-Context: User has a Vue.js frontend and needs user manual
-user: "Generate a user manual for this Vue app"
-assistant: "I'll analyze your Vue application and create comprehensive documentation. First, let me understand the project structure..."
-<commentary>
-Agent scans components, views, and creates user-facing documentation.
-</commentary>
-</example>
-
-<example>
-Context: User wants both HTML and PDF documentation
-user: "Create docs with HTML pages and a PDF for my project"
-assistant: "I'll create a static HTML site with navigation and search, plus a combined PDF. Let me analyze your project first..."
-<commentary>
-Agent produces multi-format documentation output.
-</commentary>
-</example>
-
+description: Reviews entire project and produces comprehensive end-user documentation as static HTML site and PDF. Use when user asks to "create documentation", "generate user manual", "write end user docs", or needs documentation for a project. Examples: "Create documentation for my Flask API", "Generate a user manual for this Vue app", "Create docs with HTML pages and a PDF for my project".
 model: sonnet
 color: cyan
 tools: ["Read", "Write", "Glob", "Grep", "Bash", "Skill"]

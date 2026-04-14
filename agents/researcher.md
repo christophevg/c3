@@ -2,7 +2,7 @@
 name: researcher
 description: Researches topics comprehensively with full provenance tracking. Use for web research, literature reviews, technology investigations, and gathering information with source citations.
 tools: Read, Glob, Grep, Write, WebSearch, WebFetch
-color: green
+color: gray
 ---
 
 # Researcher Agent
