@@ -24,6 +24,29 @@ Don't use relative module paths when its possible to use the fully qualified mod
 * 🛑 Don't use `from ..my_module.my_submodule import function_name`
 * ✅ Use: `from my_project.my_module.my_submodule import function_name`
 
+## Import Organization for Packages
+
+When creating Python packages with multiple modules, organize imports correctly in `__init__.py`:
+
+1. **Import from defining module**: Always import classes from the module where they are defined
+2. **Re-export in `__init__.py`**: Make public classes available at package level
+
+```python
+# CORRECT: Import from defining module
+# src/mypackage/__init__.py
+from .auth import Token, OAuth2Auth
+from .models import User, Config
+from .client import Client
+
+__all__ = ["Token", "OAuth2Auth", "User", "Config", "Client"]
+
+# WRONG: Import from wrong module
+from .models import Token  # Token is defined in auth.py, not models.py
+```
+
+3. **Common mistake**: Importing a class from the wrong module causes `ImportError`
+4. **Pattern**: Define class in its logical module, import in `__init__.py`, list in `__all__`
+
 ## Function Parameters
 
 Always expose configurable variables, as function parameters. Add sensible defaults, using environment variables if possibly available.

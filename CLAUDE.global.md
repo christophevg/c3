@@ -93,6 +93,7 @@ When the user asks you to work on a task, select the appropriate tool:
 ### Information Gathering
 
 * If available, consult AGENTS.md
+* Always use AskUserQuestion if there are less than 7 responses possible. Especially when asking for permission to proceed or not. When simply asking for permission to proceed as proposed, always add the option to given specific instructions.
 
 ### Planning and Explaining
 

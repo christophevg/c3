@@ -2,7 +2,11 @@
 -include .env.local
 
 MODEL ?= glm-5:cloud
-ARGS ?=
+ARGS  ?=
+
+ifdef TREE
+ARGS := $(ARGS) -w $(TREE)
+endif
 
 all: claude
 
