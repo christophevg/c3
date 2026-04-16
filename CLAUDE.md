@@ -25,75 +25,43 @@ c3/
 └── Makefile          # Installation commands
 ```
 
-## Skills
+## Skills Overview
 
-Skills are invoked via `/skill-name` and provide specialized guidance:
+Skills are invoked via `/skill-name`. See README.md for complete catalog.
 
-### Project Management Skills
+| Category | Skills | Purpose |
+|----------|--------|---------|
+| **Project** | project, project-feature, project-manage, project-status | Feature intake and implementation workflow |
+| **Domain** | python, database, baseweb, fire, textual, rich | Framework/library expertise |
+| **Development** | develop-skill, develop-agent | Create skills and agents |
+| **Utility** | commit, bug-fixing, naming, git-activity-report, ... | Common workflows and tools |
 
-| Skill | Purpose |
-|-------|---------|
-| `/project` | Dispatcher for project management skills |
-| `/project-feature` | Capture and scope new features |
-| `/project-status` | Show project status snapshot |
-| `/project-manage` | Full project workflow (features and bugs) |
+## Agents Overview
 
-### Domain Skills
+Agents are specialized for structured project development. See README.md for complete catalog.
 
-| Skill | Purpose |
-|-------|---------|
-| `/python` | Python coding standards and testing patterns |
-| `/database` | MongoDB access code patterns and security |
-| `/baseweb` | Baseweb/Vue/Vuetify best practices |
-| `/fire` | Python Fire CLI patterns |
-| `/textual` | Textual TUI framework patterns |
-| `/rich` | Rich console output patterns |
-
-### Utility Skills
-
-| Skill | Purpose |
-|-------|---------|
-| `/start-baseweb-project` | Bootstrap new Baseweb projects |
-| `/analysis-integration` | Consolidate findings from domain agents |
-| `/lessons-learned` | Review session for improvements |
-| `/bug-fixing` | TDD-based bug fixing workflow |
-
-## Agents
-
-Specialized agents for structured project development:
-
-- **functional-analyst**: Translates requirements into tasks, owns TODO.md
-- **api-architect**: Designs RESTful APIs and data models
-- **ui-ux-designer**: Designs user interfaces and user flows
-- **python-developer**: Implements code following project conventions
-- **code-reviewer**: Reviews code for quality and best practices
+| Role | Agents |
+|------|--------|
+| **Analysis** | functional-analyst, researcher, api-architect |
+| **Design** | ui-ux-designer |
+| **Implementation** | python-developer |
+| **Review** | code-reviewer, testing-engineer, security-engineer |
+| **Documentation** | end-user-documenter |
 
 ## Project Management Workflow
 
 The `/project` dispatcher routes to specialized skills:
 
 - **`/project feature <description>`** — Capture new feature ideas
-  - Minimal descriptions → added to unsorted backlog
-  - Detailed descriptions → full scoping with functional-analyst
-
 - **`/project status`** — Quick overview of project state
-  - TODO.md task counts by priority
-  - Next 3 tasks from backlog
-
 - **`/project manage`** — Full implementation workflow
-  - Picks tasks from TODO.md backlog
-  - Orchestrates analysis, design, implementation, review
-  - Handles both features and bugs
 
 ### Implementation Workflow (via `/project-manage`)
 
 1. **Functional Analysis** - functional-analyst reviews requirements and creates TODO.md
 2. **Cross-Domain Review** - api-architect and ui-ux-designer provide perspective
 3. **Consensus** - Agents agree on backlog before implementation
-4. **Implementation Loop** - For each task:
-   - Plan → Implement → Review cycle
-   - All agents must approve before task completion
-   - Reports stored in `reporting/` folder
+4. **Implementation Loop** - For each task: Plan → Implement → Review cycle
 
 ## Key Conventions
 

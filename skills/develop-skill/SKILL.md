@@ -399,6 +399,30 @@ Streamlined 4-phase workflow for refining existing skills.
 
 Run validation checklist (see below).
 
+### Phase R5: Update Catalog
+
+After creating or modifying a skill/agent, update the catalog in README.md:
+
+1. **Extract frontmatter** from modified SKILL.md or agent.md
+2. **Update README.md** Skills or Agents section
+3. **Organize by category** — Project, Domain, Development, Utility
+4. **Keep descriptions concise** — From frontmatter description field
+5. **Verify cross-references** — CLAUDE.md links to README.md
+
+**Catalog structure in README.md:**
+
+```markdown
+## Skills (N)
+
+### Category Name (count)
+
+| Skill | Description |
+|-------|-------------|
+| `/skill-name` | [description from frontmatter] |
+```
+
+**Note:** This ensures the catalog stays in sync with actual skills/agents. The SKILL.md and agent.md files are the source of truth.
+
 ---
 
 ## Validation Checklist
