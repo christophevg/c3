@@ -49,11 +49,39 @@ This way I want to create a conglomerate agent that "acts" like me, yet faster, 
 
 ## Best Practices to Strictly Follow
 
-### Tool & Agent Usage
+### Tool Selection
 
-**VERY IMPORTANT**:
-* You MUST avoid using the Bash tool for search commands like find and grep. Instead use Grep, Glob, or Task to search.
-* You MUST use the `researcher agent` for all research.
+**NEVER use Bash for file operations when a dedicated tool exists** — this is not negotiable:
+
+| Operation | Use | Never |
+|-----------|-----|-------|
+| Search for files | Glob | `find`, `ls` |
+| Search file contents | Grep | `grep`, `rg` |
+| Read files | Read | `cat`, `head`, `tail` |
+| Edit existing files | Edit | `sed`, `awk` |
+| Create new files | Write | `echo >`, `cat >`, heredocs |
+| Fetch web content | WebFetch | `curl`, `wget` (for simple fetches) |
+| Search the web | WebSearch | manual browser lookup |
+
+**Why**: Dedicated tools provide structured output, proper permission handling, and make your actions transparent and reviewable. Bash commands bypass these controls.
+
+### Makefile Usage
+
+**Prefer Makefile targets over constructing Bash commands.**
+
+When a project has a `Makefile`, check it first and use its targets:
+
+| Instead of | Use |
+|------------|-----|
+| `pytest tests/` | `make test` |
+| `pip install -e .` | `make install` |
+| Custom build commands | `make build` |
+
+**Why**: Makefile targets encapsulate project-specific knowledge, ensure consistent execution, and are already documented for the project. Constructing Bash calls bypasses this and risks missing setup steps.
+
+### Research
+
+**Always use the `researcher agent` for all research tasks.** Do not perform web searches or investigations yourself — delegate to the specialist.
 
 ### Agent Session Continuity
 
@@ -88,35 +116,33 @@ When the user asks you to work on a task, select the appropriate tool:
 | Review code for quality, best practices | code-reviewer agent |
 | Create Python code | python-developer agent |
 | Learn from session, improve skills | lessons-learned skill |
-| Commit changes | commit skill (/commit)
+| Commit changes | commit skill (/commit) |
 
-### Information Gathering
+### Asking Questions
 
-* If available, consult AGENTS.md
-* Always use AskUserQuestion if there are less than 7 responses possible. Especially when asking for permission to proceed or not. When simply asking for permission to proceed as proposed, always add the option to given specific instructions.
+**Ask one question at a time.** Never present a numbered or bulleted list of questions.
+
+- Use the **AskUserQuestion tool** for choice-based questions — it provides a clean selection menu with an "Other" option for custom input
+- For open questions, ask one, wait for the answer, then ask the next
+- Only present multiple questions at once if the user explicitly requests an overview first
+
+**Why**: Long question lists overwhelm and force the user to compose complex answers. Iterative questioning keeps the conversation flowing naturally.
 
 ### Planning and Explaining
 
 * Always begin with an overview of your plan
-* Always explain your actions before executing them.
+* Always explain your actions before executing them
 
 ### Style and Formatting
 
-* Always use two spaces for indentation in all file types.
-
-### When Working in a Code-Driven Project
-
-* Always write tests for new functionality and integrate them into the `tests` directory.
-* Ensure that all tests are working at all times.
-* Maintain test coverage.
-* Ensure that every exception in the backend code is captured gracefully and reported back to the client in a human readable format. Also log the problem with context.
+* Always use two spaces for indentation in all file types
 
 ### Things to Ignore
 
-* Ignore the `local` folder.
-* Ignore files with `.local` extension.
-* Ignore the `notes` folder.
+* Ignore the `local` folder
+* Ignore files with `.local` extension
+* Ignore the `notes` folder
 
-### Basic Workflow
+### Project Workflow
 
-* Continue working on unchecked tasks from the `TODO.md` file in a top-down manner. Treat each task as the next prompt to process. Cross the Markdown checkbox when a task is completed and move it to the bottom of the file. At the end of each task, request a review before proceeding to the next task.
+For project management tasks, use the `/project` dispatcher skill which routes to specialized workflows. See the `project` skill for details.
