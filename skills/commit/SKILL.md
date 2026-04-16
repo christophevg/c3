@@ -149,6 +149,20 @@ Show user:
 - Any sensitive files detected
 - Suggested commit boundaries
 
+Then use AskUserQuestion to confirm the approach:
+```
+AskUserQuestion with:
+  question: "How would you like to proceed with these changes?"
+  header: "Commit plan"
+  options:
+    - label: "Proceed with suggested commits"
+      description: "Create commits as proposed above"
+    - label: "Combine into single commit"
+      description: "Merge all changes into one commit"
+    - label: "Cancel"
+      description: "Abort without committing"
+```
+
 ### 3. Validate Pre-conditions
 
 - Check for `.pre-commit-config.yaml` or `package.json` with lint-staged
@@ -176,10 +190,33 @@ For multiple logical changes:
 
 **CRITICAL:** Never commit without user verification.
 
+### Using AskUserQuestion for Confirmation
+
+Always use the AskUserQuestion tool to request commit confirmation. This provides a clean UX with multiple choice options:
+
+```
+AskUserQuestion with:
+  question: "Ready to commit? [commit message preview]"
+  header: "Commit"
+  options:
+    - label: "Yes, proceed"
+      description: "Create the commit with the proposed message"
+    - label: "No, cancel"
+      description: "Abort the commit operation"
+    - label: "Edit message first"
+      description: "You want to modify the commit message before proceeding"
+  multiSelect: false
+```
+
+The tool automatically provides an "Other" option for custom input, allowing the user to specify alternative instructions.
+
+### Verification Workflow
+
 Per user memory (`commit_after_testing.md`):
 1. Wait for visual confirmation of changes
 2. User runs incremental builds locally
-3. Only proceed after explicit approval
+3. Request explicit approval via AskUserQuestion
+4. Only proceed after user selects "Yes, proceed"
 
 ## Edge Cases
 
