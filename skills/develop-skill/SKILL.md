@@ -1,48 +1,103 @@
 ---
 name: develop-skill
-description: Guide creation of Claude Code skills. Use when creating a new skill, developing a skill, or when the user says "create a skill", "develop a skill", or "I need a skill that". Follows 6-phase workflow: interview, research check, plan structure, create analysis, create skill files, test.
+description: Guide creation and refinement of Claude Code skills. Use when creating a new skill, developing a skill, reorganizing skills, or when the user says "create a skill", "develop a skill", "refactor skills", or "I need a skill that". Follows context-aware workflow based on incubator vs operational context.
 ---
 
 # develop-skill
 
-Guide users through creating Claude Code skills with proper structure, writing style, and testing methodology.
+Guide users through creating and refining Claude Code skills with proper structure, writing style, and validation methodology.
 
 ## Overview
 
-| Phase | Purpose |
-|-------|---------|
-| 1. Interview | Clarify purpose, triggers, content, scope |
-| 2. Research Check | Verify research completeness (if applicable) |
-| 3. Plan Structure | Decide directory structure and progressive disclosure |
-| 4. Create Analysis | Document functional analysis |
-| 5. Create Files | Build SKILL.md and bundled resources |
-| 6. Test | Symlink and validate |
+| Capability | Description |
+|------------|-------------|
+| Context detection | Incubator (prototype) vs C3 (operational) |
+| New skill workflow | 6-phase development for new skills |
+| Refinement workflow | 4-phase streamlining for existing skills |
+| Pattern catalog | Dispatcher, domain, workflow, utility patterns |
+| Validation | Built-in quality checks throughout |
 
 ## When to Use This Skill
 
 Use this skill when:
-- User wants to create a new Claude Code skill
 - User says "create a skill" or "develop a skill"
-- User describes needing a skill for a specific purpose
-- User has completed research and wants to create a skill from it
+- User says "add a new skill"
+- User says "reorganize skills" or "refactor skills"
+- User describes a pattern that should become a skill
+- Modifying existing skill structure (refinement)
+- User mentions skill development in any context
+- Working on skills in any capacity
 
-## Phase 1: Interview
+## Context Detection
+
+Before starting, detect the development context:
+
+| Context | Indicators | Workflow |
+|---------|------------|----------|
+| **Incubator** | Working in `~/Workspace/agentic/incubator`, creating from scratch | Full 6-phase workflow |
+| **C3 Operational** | Working in `~/Workspace/agentic/c3`, refining existing skills | Streamlined refinement workflow |
+
+**C3 Operational context skips:**
+- `ideas/{skill}/analysis/functional.md`
+- `ideas/{skill}/idea.md`
+- `ideas/{skill}/TODO.md`
+
+**C3 Operational context adds:**
+- Validation against existing skill patterns
+- Progressive disclosure check
+- Line count validation
+- Immediate symlink testing
+
+## Common Skill Patterns
+
+| Pattern | Example | When to Use |
+|---------|---------|-------------|
+| **Dispatcher** | `/project` → `/project-*` | Multiple related sub-skills |
+| **Domain** | `/database`, `/python` | Framework/library expertise |
+| **Workflow** | `/bug-fixing`, `/commit` | Multi-step process |
+| **Utility** | `/naming`, `/markdown-to-pdf` | Single-purpose tool |
+
+### Dispatcher Pattern
+
+When creating a dispatcher skill:
+
+1. **Define routing table** — Map intent keywords to sub-skills
+2. **Sub-skill invocation** — Can be direct OR via dispatcher
+3. **Keep dispatcher minimal** — Under 100 lines
+4. **Reference sub-skills** — Table with links
+
+Example routing table:
+```markdown
+| Input Pattern | Routes To | Example |
+|---------------|-----------|---------|
+| `feature`, `add` | project-feature | `/project feature add auth` |
+| `status`, `backlog` | project-status | `/project status` |
+| Default | project-manage | `/project` |
+```
+
+---
+
+## New Skill Workflow (Incubator)
+
+Full 6-phase workflow for creating skills from scratch.
+
+### Phase 1: Interview
 
 Ask clarifying questions to understand the skill:
 
-### Purpose Questions
+**Purpose Questions:**
 
 1. **What does this skill help accomplish?**
 2. **When should this skill trigger?** What specific user requests or contexts?
 3. **Are there existing skills this relates to or could conflict with?**
 
-Check the KB before creating:
+Check before creating:
 - `kb/patterns/` for related patterns
 - `kb/references/` for research
 - `.claude/skills/` for existing skills
 - `ideas/` for skills in development
 
-### Content Questions
+**Content Questions:**
 
 4. **What guidance should the skill provide?** What would a developer need to know?
 5. **Should it bundle additional resources?**
@@ -54,19 +109,19 @@ Check the KB before creating:
 
 6. **Is there existing research to incorporate?** Point to research documents in `research/` folder.
 
-### Scope Questions
+**Scope Questions:**
 
 7. **What should this skill NOT do?** Boundaries are important.
 8. **What decisions should it make vs. ask the user?**
 9. **Should it delegate to other skills or agents?**
 
-### Testing Questions
+**Testing Questions:**
 
 10. **How will you test this skill triggers correctly?**
 11. **What scenarios should it handle?**
 12. **What edge cases exist?**
 
-## Phase 2: Research Completeness Check
+### Phase 2: Research Completeness Check
 
 If the skill is based on research in `research/`, verify completeness:
 
@@ -84,11 +139,11 @@ If research is incomplete, either:
 1. Complete the research first, OR
 2. Explicitly note gaps in the skill's limitations
 
-## Phase 3: Plan Skill Structure
+### Phase 3: Plan Skill Structure
 
 Decide on the skill's architecture:
 
-### Directory Structure
+**Directory Structure:**
 
 ```
 skill-name/
@@ -105,7 +160,7 @@ skill-name/
     └── *
 ```
 
-### Progressive Disclosure Planning
+**Progressive Disclosure Planning:**
 
 | Level | Content | Size Target |
 |-------|---------|-------------|
@@ -118,34 +173,9 @@ Plan what content goes at each level:
 - **Body**: Core guidance, patterns, common issues
 - **Bundled**: Detailed references, large examples
 
-### Description Writing
+### Phase 4: Create Analysis Document (Incubator Only)
 
-Requirements for the `description` field:
-- **Single-line format**: Description must be ONE line. Use inline examples like `Examples: "Example 1", "Example 2"`.
-- Use third-person ("This skill guides...")
-- Include WHAT and WHEN
-- Front-load key use case (descriptions truncated at 250 characters)
-- Use specific trigger phrases
-
-Good example:
-```yaml
-description: Extract text and tables from PDF files. Use when working with PDFs, documents, or when user mentions PDF. Examples: "Extract tables from invoice.pdf", "Read PDF content".
-```
-
-Bad example (multi-line - DO NOT USE):
-```yaml
-description: Extract text from PDFs. Examples:
-
-<example>
-user: "Extract from invoice.pdf"
-</example>
-```
-
-This breaks YAML parsing - the `<example>` blocks are ignored.
-
-## Phase 4: Create Analysis Document
-
-Always create `ideas/{skill-name}/analysis/functional.md`:
+Create `ideas/{skill-name}/analysis/functional.md`:
 
 ```markdown
 # {Skill Name} - Functional Analysis
@@ -189,11 +219,13 @@ Always create `ideas/{skill-name}/analysis/functional.md`:
 - [skill1] - [relationship]
 ```
 
-## Phase 5: Create Skill Files
+**Note:** Skip this phase in C3 operational context.
+
+### Phase 5: Create Skill Files
 
 Create the skill directory and files:
 
-### Create Directory Structure
+**Create Directory Structure:**
 
 ```bash
 mkdir -p ideas/{skill-name}/artifacts/skill/{skill-name}/{patterns,templates,references,scripts,assets}
@@ -201,7 +233,7 @@ mkdir -p ideas/{skill-name}/artifacts/skill/{skill-name}/{patterns,templates,ref
 
 Only create directories that will have content.
 
-### SKILL.md Template
+**SKILL.md Template:**
 
 ```markdown
 ---
@@ -253,7 +285,7 @@ Use this skill when:
 - {skill1} - {relationship}
 ```
 
-### Writing Style Rules
+**Writing Style Rules:**
 
 | Section | Voice |
 |---------|-------|
@@ -263,7 +295,7 @@ Use this skill when:
 
 **Keep SKILL.md under 500 lines.** Move detailed content to `references/` or `patterns/`.
 
-### Create idea.md
+**Create idea.md (Incubator only):**
 
 ```markdown
 # {skill-name}
@@ -285,7 +317,7 @@ Use this skill when:
 YYYY-MM-DD
 ```
 
-### Create TODO.md
+**Create TODO.md (Incubator only):**
 
 ```markdown
 # {skill-name} TODO
@@ -300,34 +332,34 @@ YYYY-MM-DD
 - [ ] Update registry
 ```
 
-## Phase 6: Symlink and Test
+### Phase 6: Symlink and Test
 
-### Create Symlink
+**Create Symlink:**
 
 ```bash
 ln -sf ideas/{skill-name}/artifacts/skill/{skill-name} .claude/skills/{skill-name}
 ```
 
-### Test Trigger Conditions
+**Test Trigger Conditions:**
 
 Verify the skill triggers correctly:
 1. Test each trigger phrase from the analysis
 2. Verify skill activates when expected
 3. Verify skill does NOT activate inappropriately
 
-### Test Content
+**Test Content:**
 
 1. **SKILL.md loads** and is well-structured
 2. **Progressive disclosure works** - bundled resources load when needed
 3. **Writing style is correct** - imperative in body, third-person in description
 
-### Test Guidance
+**Test Guidance:**
 
 1. Skill provides expected guidance
 2. Patterns are clear and applicable
 3. Edge cases are handled
 
-### Update Registry
+**Update Registry (Incubator only):**
 
 Add to `.claude/REGISTRY.md`:
 
@@ -335,48 +367,96 @@ Add to `.claude/REGISTRY.md`:
 | {skill-name} | incubating | ideas/{skill-name}/artifacts/skill/{skill-name} | — |
 ```
 
-## Common Mistakes to Avoid
-
-| Mistake | Problem | Fix |
-|---------|---------|-----|
-| SKILL.md over 500 lines | Context bloat | Move to references/ |
-| Vague description | Skill doesn't trigger | Add specific trigger phrases |
-| Second-person in description | Discovery problems | Use third-person |
-| Everything in one file | No progressive disclosure | Split by domain |
-| Deep nesting | Files not read | Keep references one level |
-| Windows paths | Errors on Unix | Use forward slashes |
-| Multi-line examples in frontmatter | YAML parsing fails | Use inline examples |
-
-**IMPORTANT: YAML Frontmatter Format**
-
-The frontmatter `description` field must be a **single line**. Multi-line content (like `<example>` blocks) breaks YAML parsing:
-
-✅ **Correct format:**
-```yaml
 ---
-name: my-skill
-description: One-line description. Use when X. Examples: "Example 1", "Example 2".
----
-```
 
-❌ **Broken format (DO NOT USE):**
-```yaml
----
-description: One-line description. Examples:
+## Refinement Workflow (C3 Operational)
 
-<example>
-Context: ...
-user: "..."
-</example>
+Streamlined 4-phase workflow for refining existing skills.
+
+### Phase R1: Analyze Current State
+
+1. **Read existing SKILL.md**
+2. **Check line count** — Flag if >500 lines
+3. **Check description format** — Single-line with inline examples?
+4. **Check directory structure** — references/ needed?
+5. **Identify pattern** — Dispatcher, domain, workflow, utility?
+
+### Phase R2: Identify Improvements
+
+1. **What's changing?** — Trigger conditions, content, or structure
+2. **Progressive disclosure needed?** — Should content move to references/?
+3. **Any patterns to extract?** — Large sections → reference files
+4. **Description accurate?** — Reflects current triggers and purpose
+
+### Phase R3: Implement Changes
+
+1. **Update SKILL.md content**
+2. **Create/extract reference files** if needed
+3. **Update description** if triggers change
+4. **Maintain existing structure** unless restructuring explicitly requested
+
+### Phase R4: Validate
+
+Run validation checklist (see below).
 
 ---
-```
 
-The `<example>` blocks are NOT parsed as part of the description - they're treated as unknown YAML keys and ignored.
+## Validation Checklist
+
+After creating/modifying any skill, validate:
+
+**Structure:**
+- [ ] **Line count** — SKILL.md under 500 lines
+- [ ] **Directory structure** — Only needed directories exist
+- [ ] **Symlink** — Installed via `make install`
+
+**Description:**
+- [ ] **Single-line** — No newlines in description
+- [ ] **Inline examples** — Format: `Examples: "ex1", "ex2"`
+- [ ] **Third-person** — "This skill..." not "You can..."
+
+**Content:**
+- [ ] **Progressive disclosure** — Large content in references/
+- [ ] **Writing style** — Imperative in body
+- [ ] **Pattern files** — Listed if they exist
+
+**Functionality:**
+- [ ] **Trigger test** — Skill activates when expected
+- [ ] **No conflicts** — Doesn't shadow existing skills
+
+---
+
+## Description Writing
+
+See `references/description-format.md` for detailed requirements on writing skill descriptions.
+
+**Key requirements:**
+- Single-line format with inline examples
+- Third-person voice
+- Front-load key use case
+
+---
+
+## Common Mistakes
+
+See `references/common-mistakes.md` for common pitfalls and fixes.
+
+**Key pitfalls:**
+- SKILL.md over 500 lines
+- Vague descriptions
+- Multi-line examples in frontmatter (breaks YAML)
+
+---
 
 ## Related Skills
 
 - develop-agent - Complementary workflow for agent creation
-- promote-skill - Copy skill to global C3 after testing
 - researcher - For research phase if needed
 - functional-analyst - For complex skill analysis
+
+---
+
+## Reference Files
+
+- `references/description-format.md` — Description writing requirements
+- `references/common-mistakes.md` — Common pitfalls and fixes
