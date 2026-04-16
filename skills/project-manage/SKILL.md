@@ -1,5 +1,5 @@
 ---
-name: manage-project
+name: project-manage
 description: Use this skill to manage the entire project workflow, orchestrating specialized agents (functional analyst, API architect, UI/UX designer) to ensure proper analysis, design, implementation, and review of all tasks. Handles both new features and bug fixes with appropriate workflows. Examples: "Start working on the project", "Implement the next task", "Fix the authentication bug".
 ---
 
@@ -61,92 +61,11 @@ Before starting, detect whether the task is a **feature** or a **bug**:
 | **Feature** | "add", "create", "implement", "build", "new", "feature", "enhance" |
 
 **If the task is a BUG:**
-- Use the **Bug Fixing Workflow** (see below)
-- Invoke the **bug-fixing skill** for the specialized workflow
+- Invoke the **bug-fixing skill** for the complete TDD-based workflow
+- See `references/bug-workflow-integration.md` for how bug workflow integrates with project management
 
 **If the task is a FEATURE:**
 - Use the **Feature Development Workflow** (continue to Phase 0)
-
----
-
-## Bug Fixing Workflow
-
-When the task is identified as a bug, invoke the **bug-fixing skill** for the complete workflow:
-
-### Phase B1: Bug Intake
-
-1. **Parse bug description** from:
-   - Free-form text
-   - Issue reference (e.g., "#123")
-   - Bug report file path
-
-2. **Detect project context**:
-   - Language and framework
-   - Test infrastructure
-   - Coding conventions
-
-### Phase B2: Bug Analysis
-
-3. **Invoke functional-analyst agent** to:
-   - Review bug validity and scope
-   - Confirm bug exists or reject with reason
-   - Flag if UI changes are involved
-   - Flag if security-related (auth, data, input, files)
-
-4. **Create bug analysis report**:
-   - Path: `docs/bug-analysis/{bug-id}.md`
-   - Post as comment if issue/ticket exists
-
-### Phase B3: Root Cause Investigation
-
-5. Apply systematic debugging:
-   - Isolate, gather information, form hypotheses
-   - Use 5 Whys (simple) or Fishbone (complex)
-   - Document root cause
-
-### Phase B4: Test Creation (TDD)
-
-6. **Create failing test first**:
-   - Determine test type (unit/integration/E2E)
-   - Test demonstrates bug (passes with incorrect behavior)
-
-### Phase B5: Fix Implementation
-
-7. **Invoke python-developer agent** to:
-   - Implement minimal fix
-   - Update test to expect correct behavior
-   - Run all tests
-
-### Phase B6: Implementation Review
-
-8. **Review cycle (based on bug scope)**:
-
-   **Step B6a: Functional Review (Blocking)**
-   - Invoke functional-analyst: Functional correctness
-   - Must pass before proceeding
-
-   **Step B6b: Domain Reviews (Parallel, based on scope)**
-   - `ui-ux-designer`: UI changes (if flagged in B2)
-   - `security-engineer`: Security validation (if auth/data/input/files affected)
-
-   **Step B6c: Quality Reviews (Parallel)**
-   - `code-reviewer`: Code quality and patterns
-   - `testing-engineer`: Test quality and coverage
-
-   **Step B6d: Documentation (If User-Facing)**
-   - `end-user-documenter`: Update user docs (if applicable)
-
-   **Step B6e: Handle Rejections**
-   - Iterate with feedback (max 2 rounds)
-   - Return to Phase B5 if fixes needed
-
-### Phase B7: Documentation & Closure
-
-9. **Complete bug fix**:
-   - Update bug analysis report
-   - Ensure regression test in codebase
-   - Document commit message
-   - Close issue or mark resolved
 
 ---
 
@@ -360,6 +279,8 @@ Invoke the `python-developer` agent (or appropriate specialized agent) to:
 
 ⚠️ **This step is MANDATORY and cannot be skipped.**
 
+See `references/review-cycle.md` for detailed review sequence.
+
 **Step 8a: Functional Review (Blocking)**
 - Invoke functional-analyst to review functional correctness
 - Must pass before proceeding to domain reviews
@@ -528,3 +449,10 @@ This applies to situations like:
 | code-reviewer | 4 (review) | Always |
 | testing-engineer | 4 (review) | Always |
 | end-user-documenter | 4 (completion) | User-facing changes |
+
+---
+
+## Reference Files
+
+- `references/bug-workflow-integration.md` — How bug workflow integrates with project management
+- `references/review-cycle.md` — Detailed review cycle execution

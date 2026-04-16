@@ -29,16 +29,34 @@ c3/
 
 Skills are invoked via `/skill-name` and provide specialized guidance:
 
+### Project Management Skills
+
+| Skill | Purpose |
+|-------|---------|
+| `/project` | Dispatcher for project management skills |
+| `/project-feature` | Capture and scope new features |
+| `/project-status` | Show project status snapshot |
+| `/project-manage` | Full project workflow (features and bugs) |
+
+### Domain Skills
+
 | Skill | Purpose |
 |-------|---------|
 | `/python` | Python coding standards and testing patterns |
 | `/database` | MongoDB access code patterns and security |
 | `/baseweb` | Baseweb/Vue/Vuetify best practices |
 | `/fire` | Python Fire CLI patterns |
-| `/manage-project` | Orchestrates multi-agent workflow |
+| `/textual` | Textual TUI framework patterns |
+| `/rich` | Rich console output patterns |
+
+### Utility Skills
+
+| Skill | Purpose |
+|-------|---------|
 | `/start-baseweb-project` | Bootstrap new Baseweb projects |
 | `/analysis-integration` | Consolidate findings from domain agents |
 | `/lessons-learned` | Review session for improvements |
+| `/bug-fixing` | TDD-based bug fixing workflow |
 
 ## Agents
 
@@ -52,7 +70,22 @@ Specialized agents for structured project development:
 
 ## Project Management Workflow
 
-The `/manage-project` skill orchestrates a structured workflow:
+The `/project` dispatcher routes to specialized skills:
+
+- **`/project feature <description>`** — Capture new feature ideas
+  - Minimal descriptions → added to unsorted backlog
+  - Detailed descriptions → full scoping with functional-analyst
+
+- **`/project status`** — Quick overview of project state
+  - TODO.md task counts by priority
+  - Next 3 tasks from backlog
+
+- **`/project manage`** — Full implementation workflow
+  - Picks tasks from TODO.md backlog
+  - Orchestrates analysis, design, implementation, review
+  - Handles both features and bugs
+
+### Implementation Workflow (via `/project-manage`)
 
 1. **Functional Analysis** - functional-analyst reviews requirements and creates TODO.md
 2. **Cross-Domain Review** - api-architect and ui-ux-designer provide perspective
