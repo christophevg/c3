@@ -300,7 +300,7 @@ Enter plan mode and:
 |-------|-------------|
 | `textual` | Textual TUI framework widgets and patterns |
 | `rich` | Rich console output |
-| `database` | MongoDB database operations |
+| `pymongo` | MongoDB database operations |
 | `fire` | Fire CLI framework |
 | `baseweb` / `vuetify` | Web UI frameworks |
 | `python` | Python coding standards (always relevant) |
@@ -312,7 +312,7 @@ If a skill exists for the framework/domain, **invoke it first** to get API knowl
 Invoke the `python-developer` agent (or appropriate specialized agent) to:
 - Implement the task following the plan
 - Follow general agent instructions in `AGENTS.md` and `CLAUDE.md`
-- Follow domain skills (python, baseweb, fire, database, etc.)
+- Follow domain skills (python, baseweb, fire, pymongo, etc.)
 - **Run tests and verify all pass before completing**
 - Provide the developer with task details from TODO.md and relevant analysis documents
 

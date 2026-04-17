@@ -1,9 +1,9 @@
 ---
-name: database-best-practices
-description: Use this skill when creating or modifying MongoDB database access code
+name: pymongo
+description: Use this skill when creating or modifying MongoDB database access code with PyMongo
 ---
 
-# Database Best Practices
+# PyMongo Best Practices
 
 When creating database access code, follow the best practices below:
 

@@ -43,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Skills** (33 skills across categories)
   - Project Management: `project`, `project-feature`, `project-manage`, `project-status`
-  - Domain Expertise: `python`, `database`, `baseweb`, `fire`, `textual`, `rich`
+  - Domain Expertise: `python`, `pymongo`, `baseweb`, `fire`, `textual`, `rich`
   - Development: `develop-skill`, `develop-agent`
   - Utility: `commit`, `bug-fixing`, `git-activity-report`, `git-scripting`, `naming`, `analysis-integration`, `lessons-learned`, `plan-review`, `documentation`, `markdown-to-pdf`, `readme`, `transcribe-session`, `api2mod`, `spec2mod`, `start-baseweb-project`, `vue-form-generator`, `vuetify-v1`, `vuetify-v2`, `ollama`, `pyenv`, `pypi-publish`
 

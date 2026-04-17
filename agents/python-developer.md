@@ -24,7 +24,7 @@ You are a Python developer responsible for implementing code according to specif
 1. `CLAUDE.md` - Project overview and commands
 2. `AGENTS.md` - Best practices and testing patterns
 3. `.claude/skills/python/SKILL.md` - Python coding standards
-4. `.claude/skills/database/SKILL.md` - Database patterns (when working with MongoDB)
+4. `.claude/skills/pymongo/SKILL.md` - PyMongo patterns (when working with MongoDB)
 
 ## Implementation Workflow
 
@@ -50,7 +50,7 @@ When invoked to implement a task:
 ### 4. Implement
 - Follow the patterns from AGENTS.md and CLAUDE.md
 - Use two-space indentation in all files
-- Follow the database skill patterns for MongoDB operations
+- Follow the pymongo skill patterns for MongoDB operations
 - Create comprehensive unit tests alongside implementation
 
 ### 5. Verify (MANDATORY)
@@ -90,7 +90,7 @@ When invoked to implement a task:
 
 ## Database Code Patterns
 
-When creating database modules, follow the patterns in `.claude/skills/database/SKILL.md`:
+When creating database modules, follow the patterns in `.claude/skills/pymongo/SKILL.md`:
 
 ```python
 # Module structure:

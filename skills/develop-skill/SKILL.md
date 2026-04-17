@@ -1,6 +1,6 @@
 ---
 name: develop-skill
-description: Guide creation and refinement of Claude Code skills. Use when creating, developing, reviewing, improving, or working on skills. Examples: "create a skill for X", "review the database skill", "improve the commit skill", "work on the python skill".
+description: Guide creation and refinement of Claude Code skills. Use when creating, developing, reviewing, improving, or working on skills. Examples: "create a skill for X", "review the pymongo skill", "improve the commit skill", "work on the python skill".
 ---
 
 # develop-skill
@@ -53,7 +53,7 @@ Before starting, detect the development context:
 | Pattern | Example | When to Use |
 |---------|---------|-------------|
 | **Dispatcher** | `/project` → `/project-*` | Multiple related sub-skills |
-| **Domain** | `/database`, `/python` | Framework/library expertise |
+| **Domain** | `/pymongo`, `/python` | Framework/library expertise |
 | **Workflow** | `/bug-fixing`, `/commit` | Multi-step process |
 | **Utility** | `/naming`, `/markdown-to-pdf` | Single-purpose tool |
 

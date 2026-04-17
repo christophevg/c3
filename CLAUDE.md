@@ -32,7 +32,7 @@ Skills are invoked via `/skill-name`. See README.md for complete catalog.
 | Category | Skills | Purpose |
 |----------|--------|---------|
 | **Project** | project, project-feature, project-manage, project-status | Feature intake and implementation workflow |
-| **Domain** | python, database, baseweb, fire, textual, rich | Framework/library expertise |
+| **Domain** | python, pymongo, baseweb, fire, textual, rich | Framework/library expertise |
 | **Development** | develop-skill, develop-agent | Create skills and agents |
 | **Utility** | commit, bug-fixing, naming, git-activity-report, ... | Common workflows and tools |
 

@@ -373,7 +373,7 @@ Ensure that instructions from the following sources are adhered to:
 
 - AGENTS.md — Project-specific agent instructions
 - CLAUDE.md — Project-specific Claude instructions
-- Applicable skills — python, fire, baseweb, database
+- Applicable skills — python, fire, baseweb, pymongo
 - Style guides — PEP8, project conventions
 
 ## Deliverables
