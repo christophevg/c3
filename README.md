@@ -228,7 +228,9 @@ flowchart TB
         U -->|Parallel| M2[API Architect]
         U -->|Parallel| N2[UI/UX Designer]
         U -->|Parallel| O2[Security Engineer]
-        U --> V{Quality Reviews}
+        M2 --> V{Quality Reviews}
+        N2 --> V
+        O2 --> V
         V -->|Parallel| W[Code Reviewer]
         V -->|Parallel| X[Testing Engineer]
         W --> Y{User-facing?}
