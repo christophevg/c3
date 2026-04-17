@@ -176,29 +176,63 @@ The `/project` dispatcher orchestrates a structured development workflow:
 
 ```mermaid
 flowchart TB
+    subgraph Phase0["Phase 0: Project State"]
+        A[Start] --> B{State?}
+        B -->|New Project| C[Phase 1A: Initial Analysis]
+        B -->|Incomplete Setup| D[Phase 1B: Review & Backlog]
+        B -->|Ready for Work| E[Check Unsorted Items]
+        E --> F{Unsorted?}
+        F -->|Yes| G[Sort or Skip?]
+        F -->|No| H[Propose Next Task]
+    end
+
     subgraph Phase1["Phase 1: Analysis"]
-        A[README.md<br/>Requirements] --> B[Functional Analyst]
-        B -->|Requirements, Tasks, TODO.md| C[API Architect]
-        C -->|Endpoints, Data models| D[UI/UX Designer]
-        D -->|User flows, Components| E[Consensus]
+        C --> I[Functional Analyst]
+        D --> I
+        I -->|Optional| J[Researcher]
+        J -->|Tech recommendations| I
+        I -->|functional.md, TODO.md| K[Task Scope Classification]
+        G -->|Sort| I
+        G -->|Skip| H
     end
 
-    subgraph Phase2["Phase 2: Implementation (per task)"]
-        F[Plan] --> G[Python Developer]
-        G -->|Code, Tests, Lint| H{Review Cycle}
-        H --> I[Functional Analyst]
-        I --> J[API Architect]
-        J --> K[UI/UX Designer]
-        K --> L[Code Reviewer]
-        L --> M{All Approve?}
-        M -->|No| G
-        M -->|Yes| N[Complete Task]
-        N --> O{More Tasks?}
+    subgraph Phase2["Phase 2: Domain Review"]
+        K --> L{Scope?}
+        L -->|Backend| M[API Architect]
+        L -->|Frontend| N[UI/UX Designer]
+        L -->|Full Stack| M
+        L -->|Full Stack| N
+        L -->|Security-related| O[Security Engineer]
+        M --> P[Phase 3: Consensus]
+        N --> P
+        O --> P
     end
 
-    Phase1 --> Phase2
-    O -->|Yes| F
-    O -->|No| P[Project Complete]
+    subgraph Phase4["Phase 4: Implementation (per task)"]
+        H --> Q[Plan]
+        Q --> R[Python Developer]
+        R --> S{Review Cycle}
+        S -->|Functional Review| T[Functional Analyst]
+        T -->|Pass| U{Domain Reviews}
+        U -->|Parallel| M
+        U -->|Parallel| N
+        U -->|Parallel| O
+        U --> V{Quality Reviews}
+        V -->|Parallel| W[Code Reviewer]
+        V -->|Parallel| X[Testing Engineer]
+        W --> Y{User-facing?}
+        X --> Y
+        Y -->|Yes| Z[End-User Documenter]
+        Y -->|No| AA{All Approve?}
+        Z --> AA
+        AA -->|No| R
+        AA -->|Yes| AB[Complete Task]
+        AB --> AC{More Tasks?}
+    end
+
+    P --> Q
+    AC -->|Yes| Q
+    AC -->|No| AD[Project Complete]
 ```
 
 ---
