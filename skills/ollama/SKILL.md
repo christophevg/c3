@@ -1,6 +1,6 @@
 ---
 name: ollama
-description: Guide Python ollama library for LLM integration including chat, tool calling, streaming, embeddings, and model management. Use when user mentions ollama or llm in Python context. Primary use case: agentic loops with tool calling.
+description: Guide Python ollama library for LLM integration including chat, tool calling, streaming, embeddings, model management, web search, and image generation. Use when user mentions ollama or imports ollama in Python. Examples: "using ollama", "ollama.chat", "from ollama import".
 ---
 
 # Ollama
@@ -13,10 +13,12 @@ Guide Python's ollama library for local LLM integration including chat, tool cal
 |------------|-------------|
 | Chat API | Conversational AI with streaming and thinking |
 | Tool Calling | Function calling for agentic workflows |
-| Generate API | Single prompt generation |
+| Generate API | Single prompt generation with structured output |
 | Embeddings | Text vectorization |
 | Model Management | List, pull, push, create, delete models |
 | Vision | Image analysis with multimodal models |
+| Image Generation | Experimental image creation (macOS) |
+| Web Search/Fetch | Search and fetch web content (cloud API) |
 | Cloud Models | Access cloud-hosted models via ollama.com |
 
 ## When to Use This Skill
@@ -35,6 +37,16 @@ Use this skill when:
 import ollama
 
 response = ollama.chat(model='gemma3', messages=[...])
+```
+
+### Environment Variables
+
+```bash
+# Ollama server address (default: http://127.0.0.1:11434)
+export OLLAMA_HOST=http://localhost:11434
+
+# API key for cloud services (web search, cloud models)
+export OLLAMA_API_KEY=your_api_key
 ```
 
 ### Custom Client
@@ -69,6 +81,8 @@ async def main():
   client = AsyncClient()
   response = await client.chat(model='gemma3', messages=[...])
 ```
+
+See `references/configuration.md` for full configuration options.
 
 ## Chat API
 
@@ -221,6 +235,24 @@ response = ollama.generate(
 print(response.response)
 ```
 
+### Generate Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `model` | Model name |
+| `prompt` | Input prompt |
+| `suffix` | Text to append after generation (FIM) |
+| `system` | System prompt |
+| `context` | Token array from previous response |
+| `stream` | Enable streaming |
+| `think` | Enable thinking trace |
+| `format` | JSON schema for structured output |
+| `images` | Images for multimodal input |
+| `options` | Model parameters |
+| `logprobs` | Return log probabilities |
+
+See `references/api-generate.md` for full reference.
+
 ## Embeddings
 
 ```python
@@ -241,6 +273,9 @@ models = ollama.list()
 # Pull model
 ollama.pull('gemma3')
 
+# Push model to registry
+ollama.push('username/gemma3')
+
 # Delete model
 ollama.delete('gemma3')
 
@@ -249,7 +284,19 @@ info = ollama.show('gemma3')
 
 # Running models
 running = ollama.ps()
+
+# Copy model
+ollama.copy('gemma3', 'backup/gemma3')
+
+# Create custom model
+ollama.create(
+  model='my-assistant',
+  from_='gemma3',
+  system='You are a helpful assistant.'
+)
 ```
+
+See `references/api-models.md` for full reference.
 
 ## Vision/Multimodal
 
@@ -263,6 +310,51 @@ response = ollama.chat(
   }]
 )
 ```
+
+## Web Search/Fetch (Cloud API)
+
+Requires `OLLAMA_API_KEY` environment variable.
+
+```python
+import os
+from ollama import Client
+
+client = Client(
+  host='https://ollama.com',
+  headers={'Authorization': 'Bearer ' + os.environ['OLLAMA_API_KEY']}
+)
+
+# Search the web
+results = client.web_search('Python async best practices', max_results=5)
+for result in results.results:
+  print(f"{result.title}: {result.url}")
+
+# Fetch a web page
+page = client.web_fetch('https://python.org')
+print(page.content)
+```
+
+See `references/api-web.md` for full reference.
+
+## Image Generation (Experimental)
+
+Currently macOS only.
+
+```python
+import base64
+import ollama
+
+# Generate image
+response = ollama.generate(
+  model='x/z-image-turbo',
+  prompt='a sunset over mountains'
+)
+
+with open('output.png', 'wb') as f:
+  f.write(base64.b64decode(response.image))
+```
+
+See `patterns/image-generation.md` for patterns.
 
 ## Error Handling
 
@@ -286,6 +378,7 @@ except ConnectionError:
 - `patterns/agentic-loop.md` - Agent loop with streaming
 - `patterns/streaming.md` - Streaming patterns
 - `patterns/tool-calling.md` - Tool calling patterns
+- `patterns/image-generation.md` - Image generation patterns
 
 ## Template Files
 
@@ -295,8 +388,11 @@ except ConnectionError:
 ## Reference Files
 
 - `references/api-chat.md` - Chat API reference
+- `references/api-generate.md` - Generate API reference
 - `references/api-models.md` - Model management API
+- `references/api-web.md` - Web search/fetch API
 - `references/response-objects.md` - Response types
+- `references/configuration.md` - Environment variables and client config
 
 ## Related Skills
 

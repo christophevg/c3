@@ -1,4 +1,8 @@
 {
+  "attribution": {
+    "commit": "🤖 Implemented together with a coding agent.",
+    "pr": ""
+  },
   "permissions": {
     "allow": [
       "Bash(python:*)",
@@ -13,12 +17,9 @@
       "Bash(git add:*)"
     ]
   },
-  "attribution": {
-    "commit": "🤖 Implemented together with a coding agent.",
-    "pr": ""
-  },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/bin/statusline.py"
-  }
+  },
+  "awaySummaryEnabled": false
 }
