@@ -15,7 +15,7 @@ This symlinks `agents/`, `skills/`, `bin/`, and `settings.json` into `~/.claude/
 
 ---
 
-## Skills (30)
+## Skills (31)
 
 Skills provide focused guidance for specific technologies and workflows. Invoked via `/skill-name`.
 
@@ -72,6 +72,7 @@ Skills provide focused guidance for specific technologies and workflows. Invoked
 |-------|-------------|
 | `/documentation` | Set up or update project documentation for Sphinx/readthedocs.org. |
 | `/markdown-to-pdf` | Convert folders of Markdown files to a single PDF with table of contents. |
+| `/readme` | Create and maintain README.md files for agentic projects. Detects project type, generates appropriate structure, selects badges. |
 | `/transcribe-session` | Create curated transcript of the current or recent session. |
 
 #### API & Code Generation
