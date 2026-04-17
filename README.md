@@ -1,13 +1,13 @@
-# C3 - Claude Code Configuration Harness
+# C3 - Christophe's Coding Crew
 
 [![Platform](https://img.shields.io/badge/platform-mac%20%7C%20linux-lightgrey.svg)][platform]
 [![License](https://img.shields.io/github/license/christophevg/c3.svg)][license]
 
-A reusable collection of skills, agents, and settings for Python/Baseweb development projects. Designed to be symlinked into `~/.claude/` for use across multiple projects.
+A personal collection of skills and agents for agentic coding and other stuff. Designed to be symlinked into `~/.claude/` for use across multiple projects.
 
 ## Requirements
 
-- **Claude Code CLI** — Anthropic's official CLI for Claude
+- **Agentic Coding Tool** — A tool that supports skills/agents (Claude Code, etc.)
 - **Python 3.10+** — For statusline script
 - **Make** — For installation targets
 
@@ -62,7 +62,7 @@ Skills provide focused guidance for specific technologies and workflows. Invoked
 | Skill | Description |
 |-------|-------------|
 | `/python` | Python coding standards and testing patterns. |
-| `/database` | MongoDB access code patterns and security. |
+| `/pymongo` | MongoDB/PyMongo access patterns and security. |
 | `/baseweb` | Baseweb/Vue/Vuetify best practices. |
 | `/fire` | Python Fire CLI patterns. |
 | `/textual` | Textual TUI framework for building terminal user interfaces with CSS styling and reactive state. |
