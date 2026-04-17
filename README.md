@@ -1,6 +1,15 @@
 # C3 - Claude Code Configuration Harness
 
+[![Platform](https://img.shields.io/badge/platform-mac%20%7C%20linux-lightgrey.svg)][platform]
+[![License](https://img.shields.io/github/license/christophevg/c3.svg)][license]
+
 A reusable collection of skills, agents, and settings for Python/Baseweb development projects. Designed to be symlinked into `~/.claude/` for use across multiple projects.
+
+## Requirements
+
+- **Claude Code CLI** — Anthropic's official CLI for Claude
+- **Python 3.10+** — For statusline script
+- **Make** — For installation targets
 
 ## Quick Start
 
@@ -12,6 +21,26 @@ make install
 ```
 
 This symlinks `agents/`, `skills/`, `bin/`, and `settings.json` into `~/.claude/`.
+
+## Personal Configuration
+
+Create `~/.claude/PERSONAL.md` with your personal preferences:
+
+```bash
+cp PERSONAL.md.template ~/.claude/PERSONAL.md
+# Edit with your name, projects, and goals
+```
+
+The `CLAUDE.global.md` file imports this via `@~/.claude/PERSONAL.md`. If the file doesn't exist, the import is silently skipped.
+
+### What Goes in PERSONAL.md
+
+| Section | Content |
+|---------|---------|
+| Name & Identity | How you want Claude to address you |
+| Projects | Important project paths and context |
+| Goals | Your objectives for working with Claude |
+| Agent Name | Optional: give your agent a name/personality |
 
 ---
 
@@ -186,3 +215,16 @@ c3/
 ├── README.md         # This file
 └── Makefile          # Installation commands
 ```
+
+---
+
+## Contributing
+
+Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## License
+
+[MIT](LICENSE)
+
+[platform]: #
+[license]: LICENSE
