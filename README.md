@@ -93,7 +93,6 @@ Skills provide focused guidance for specific technologies and workflows. Invoked
 |-------|-------------|
 | `/analysis-integration` | Integrate findings from multiple domain agents and update backlog coherently. |
 | `/lessons-learned` | Review session to improve existing skills/agents or create new ones. |
-| `/plan-review` | Review cross-project priorities and manage master PLAN.md. |
 
 #### Documentation
 

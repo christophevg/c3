@@ -84,5 +84,4 @@ User: /project
 The project dispatcher works alongside these related skills:
 
 - **bug-fixing** — Used by project-manage for bug workflows
-- **plan-review** — Cross-project priorities (separate from project-*)
 - **start-baseweb-project** — Bootstrap new projects (separate from project-*)

@@ -65,7 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### 2026-04-16
 - Reorganized project management into dispatcher pattern
 - Enhanced `develop-skill` with context detection workflow
-- Added `git-activity-report`, `naming`, `plan-review`, `pyenv` skills
+- Added `git-activity-report`, `naming`, `pyenv` skills
 - Added `spec2mod` skill for OpenAPI to Python module generation
 - Simplified `api2mod` to orchestrator role
 
