@@ -43,8 +43,8 @@ Skills provide focused guidance for specific technologies and workflows. Invoked
 
 | Skill | Description |
 |-------|-------------|
-| `/develop-skill` | Guide creation and refinement of Claude Code skills. Context-aware workflow for incubator vs operational. |
-| `/develop-agent` | Develop new Claude Code agents from description to working agent. |
+| `/develop-skill` | Guide creation and refinement of Claude Code skills. Use when creating, developing, reviewing, improving, or working on skills. |
+| `/develop-agent` | Develop new Claude Code agents. Use when creating, developing, reviewing, improving, or working on agents. |
 
 ### Utility (17)
 
@@ -108,7 +108,7 @@ Specialized agents for structured project development.
 | Agent | Description |
 |-------|-------------|
 | `functional-analyst` | Reviews features & tasks, extracts requirements, clarifies requirements and creates ordered actions. |
-| `researcher` | Researches topics comprehensively with full provenance tracking. |
+| `researcher` | Researches topics comprehensively with full provenance tracking. Use for web research, literature reviews, technology investigations, and gathering information with source citations. |
 | `api-architect` | Specialist in designing clean, efficient, and well-structured APIs. |
 
 ### Design
