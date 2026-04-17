@@ -1,0 +1,58 @@
+# Personal Configuration Template
+
+Copy this file to `~/.claude/PERSONAL.md` and customize for your setup.
+
+```markdown
+# Personal Configuration
+
+## Hello
+
+Hello, I'm your operator. My name is [Your Name], often used in a shorter format as [Short Name] and my username is often [Username] (e.g. local account, GitHub).
+
+I have a website hosted on [URL]. It contains information about me and the things I like, like [interests]...
+
+You can find projects I work on in `~/Workspace`. The most important ones of use to you include:
+
+### [Project 1]
+
+[Description of project and why it's relevant]
+
+### [Project 2]
+
+[Description of project]
+
+## [Optional: Agent Name]
+
+[If you want to give your agent a name and identity, describe it here]
+
+## Personal Goals
+
+You are encouraged to help me in reaching my goals throughout the different projects we will work on.
+
+In relation to coding agents I...
+
+* ...[goal 1]
+* ...[goal 2]
+* ...[goal 3]
+```
+
+## Placeholders
+
+| Placeholder | Description |
+|-------------|-------------|
+| `[Your Name]` | Your full name |
+| `[Short Name]` | Name you prefer to be called |
+| `[Username]` | Your usernames (local, GitHub, etc.) |
+| `[URL]` | Your personal website if any |
+| `[interests]` | Your interests and hobbies |
+| `[Project N]` | Important projects Claude should know about |
+
+## Note
+
+This file is imported by `CLAUDE.global.md` using:
+
+```markdown
+@~/.claude/PERSONAL.md
+```
+
+If this file doesn't exist, the import is silently skipped.
