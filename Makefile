@@ -8,6 +8,10 @@ TRG = $(HOME)/.claude
 
 install: install-agents install-skills install-bin install-files
 
+# Validate skills and agents structure
+validate:
+	@python bin/validate.py
+
 # Create target directories if they don't exist
 $(TRG)/agents $(TRG)/skills $(TRG)/bin:
 	mkdir -p $@
