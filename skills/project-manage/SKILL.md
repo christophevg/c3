@@ -28,25 +28,36 @@ Project State Detection
     │                                  ▼
     │                             Research (conditional)
     │                                  │
-    └── Ready for Work ─────────► Task from Backlog
+    └── Ready for Work ─────────► Check Unsorted Items
                                        │
-                                       ▼
-                               Task Scope Classification
-                                       │
-                                       ▼
-                               Phase 2 (Domain Review)
-                                       │
-                                       ▼
-                               Phase 3 (Consensus)
-                                       │
-                                       ▼
-                               Phase 4 (Implementation)
-                                       │
-                                       ▼
-                               Review Cycle (parallelized)
-                                       │
-                                       ▼
-                                   Commit
+                                       ├── Has Unsorted ──► Ask: Sort or Skip?
+                                       │                            │
+                                       │                            ├── Sort ──► Functional Analysis
+                                       │                            │                   │
+                                       │                            └── Skip ─────────────┤
+                                       │                                                │
+                                       └── No Unsorted ──────────────────────────────────┤
+                                                                                        │
+                                                                                        ▼
+                                                                                Propose Next Task
+                                                                                        │
+                                                                                        ▼
+                                                                                Task Scope Classification
+                                                                                        │
+                                                                                        ▼
+                                                                                Phase 2 (Domain Review)
+                                                                                        │
+                                                                                        ▼
+                                                                                Phase 3 (Consensus)
+                                                                                        │
+                                                                                        ▼
+                                                                                Phase 4 (Implementation)
+                                                                                        │
+                                                                                        ▼
+                                                                                Review Cycle (parallelized)
+                                                                                        │
+                                                                                        ▼
+                                                                                    Commit
 ```
 
 ---
@@ -81,7 +92,7 @@ Check the project's analysis artifacts to determine the appropriate workflow:
 |-------|--------------------------|-----------|--------|
 | **New Project** | Missing | Missing | Initial Analysis (Phase 1A) |
 | **Incomplete Setup** | Exists | Missing | Review and Backlog (Phase 1B) |
-| **Ready for Work** | Exists | Exists | Propose Next Task |
+| **Ready for Work** | Exists | Exists | Check for Unsorted Items |
 
 #### State Detection Steps
 
@@ -158,6 +169,36 @@ Include `security-engineer` when task involves:
 #### Ready for Work State
 
 When both `analysis/functional.md` and `TODO.md` exist:
+
+**Step 1: Check for Unsorted Items**
+
+Read `TODO.md` and check for an `## Unsorted` section at the top. Unsorted items are quick ideas the user captured but haven't been analyzed and integrated into the prioritized backlog.
+
+**Step 2: Determine Next Action**
+
+| Condition | Action |
+|-----------|--------|
+| No unsorted items | Proceed directly to proposing next backlog task |
+| Unsorted items exist | Ask user whether to sort unsorted items first |
+
+**If unsorted items exist, use AskUserQuestion tool:**
+
+```
+Question: "Found {count} unsorted item(s) in TODO.md. These are quick ideas not yet analyzed. How would you like to proceed?"
+
+Options:
+- "Sort unsorted items first" — Run functional analysis to integrate them into backlog
+- "Show next backlog task" — Proceed with existing prioritized tasks
+- "Show all tasks" — Display both unsorted and backlog items
+```
+
+**Step 3: Handle User Choice**
+
+- **"Sort unsorted items first"**: Invoke functional-analyst to analyze each unsorted item and integrate into prioritized backlog, then propose next task
+- **"Show next backlog task"**: Proceed to propose task selection (below)
+- **"Show all tasks"**: Display full TODO.md and ask again
+
+**Step 4: Propose Next Task (when no unsorted items or user chose to skip)**
 
 **Use AskUserQuestion tool to propose next task:**
 
@@ -418,6 +459,46 @@ This applies to situations like:
 | Task summary | `reporting/{task-name}/summary.md` |
 | Bug analysis | `docs/bug-analysis/{bug-id}.md` |
 
+### TODO.md Structure
+
+```markdown
+# TODO
+
+## Unsorted
+
+- [ ] Quick idea 1 (captured but not yet analyzed)
+- [ ] Quick idea 2 (needs functional analysis)
+
+## Backlog (Prioritized)
+
+### P1 - Critical
+
+- [ ] Critical task with clear acceptance criteria
+
+### P2 - High
+
+- [ ] High priority task
+
+### P3 - Medium
+
+- [ ] Medium priority task
+
+### P4 - Low
+
+- [ ] Low priority task
+
+## Done
+
+- [x] Completed task
+```
+
+**Unsorted Section Rules:**
+- Placed at the top of TODO.md
+- Contains items that need functional analysis before prioritization
+- Items are short ideas without acceptance criteria
+- When analyzed, functional-analyst moves them to appropriate priority in Backlog
+- Optional section — only present when user has captured unsorted ideas
+
 ---
 
 ## Notes
@@ -433,6 +514,7 @@ This applies to situations like:
 - **Documentation** is part of task completion for user-facing changes
 - **Parallel reviews** improve efficiency without sacrificing quality
 - **User can request reanalysis**: Use "reanalyze" option when proposing next task to run fresh analysis
+- **Unsorted items**: Quick ideas captured at top of TODO.md that need analysis before prioritization. Offer to sort them before working on backlog, but allow user to skip and proceed with prioritized tasks.
 
 ---
 
