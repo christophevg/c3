@@ -3,7 +3,17 @@
 [![Platform](https://img.shields.io/badge/platform-mac%20%7C%20linux-lightgrey.svg)][platform]
 [![License](https://img.shields.io/github/license/christophevg/c3.svg)][license]
 
-A personal collection of skills and agents for agentic coding and other stuff. Designed to be symlinked into `~/.claude/` for use across multiple projects.
+> A personal collection of skills and agents for agentic coding and other stuff. 
+
+When I finally had the time to explore the agentic world, I entered a realm that I absolutely adore. I’ve always been fascinated by automation and workflow structuring, and working in an agentic context aligns perfectly with these interests. It’s primarily about developing skills, training agents, and refining their behavior.
+
+## Philosophy
+
+The agentic workflow is built on a simple belief: **create small automation steps, use them, and iteratively improve**. Each skill and agent in this repository emerged from real needs, was refined through use, and continues to evolve.
+
+This repository serves as my personal “Coding Crew,” although within a month, I had already outgrown its initial playful name beyond the realm of mere coding. 
+
+Well, names tend to stick.
 
 ## Requirements
 
@@ -12,6 +22,8 @@ A personal collection of skills and agents for agentic coding and other stuff. D
 - **Make** — For installation targets
 
 ## Quick Start
+
+C3 is designed to be installed in `~/.claude/` for use across multiple projects. I personally use symlinks so keep the folder clean. The Makefile provides a target to install everything that way:
 
 ```bash
 # Clone and install
