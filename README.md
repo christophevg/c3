@@ -225,9 +225,9 @@ flowchart TB
         R --> S{Review Cycle}
         S -->|Functional Review| T[Functional Analyst]
         T -->|Pass| U{Domain Reviews}
-        U -->|Parallel| M
-        U -->|Parallel| N
-        U -->|Parallel| O
+        U -->|Parallel| M2[API Architect]
+        U -->|Parallel| N2[UI/UX Designer]
+        U -->|Parallel| O2[Security Engineer]
         U --> V{Quality Reviews}
         V -->|Parallel| W[Code Reviewer]
         V -->|Parallel| X[Testing Engineer]
