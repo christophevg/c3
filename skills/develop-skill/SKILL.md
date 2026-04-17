@@ -1,6 +1,6 @@
 ---
 name: develop-skill
-description: Guide creation and refinement of Claude Code skills. Use when creating a new skill, developing a skill, reorganizing skills, or when the user says "create a skill", "develop a skill", "refactor skills", or "I need a skill that". Follows context-aware workflow based on incubator vs operational context.
+description: Guide creation and refinement of Claude Code skills. Use when creating, developing, reviewing, improving, or working on skills. Examples: "create a skill for X", "review the database skill", "improve the commit skill", "work on the python skill".
 ---
 
 # develop-skill
