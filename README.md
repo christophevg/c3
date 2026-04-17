@@ -15,7 +15,7 @@ This symlinks `agents/`, `skills/`, `bin/`, and `settings.json` into `~/.claude/
 
 ---
 
-## Skills (29)
+## Skills (30)
 
 Skills provide focused guidance for specific technologies and workflows. Invoked via `/skill-name`.
 
@@ -46,7 +46,7 @@ Skills provide focused guidance for specific technologies and workflows. Invoked
 | `/develop-skill` | Guide creation and refinement of Claude Code skills. Use when creating, developing, reviewing, improving, or working on skills. |
 | `/develop-agent` | Develop new Claude Code agents. Use when creating, developing, reviewing, improving, or working on agents. |
 
-### Utility (17)
+### Utility (18)
 
 #### Git & Workflow
 
@@ -96,6 +96,7 @@ Skills provide focused guidance for specific technologies and workflows. Invoked
 |-------|-------------|
 | `/ollama` | Guide Python ollama library for LLM integration including chat, tool calling, streaming, embeddings. |
 | `/pyenv` | Manage Python versions and virtual environments with PyEnv. |
+| `/pypi-publish` | Publish Python packages to PyPI with proper checks and workflow. Use when publishing to PyPI, releasing a package, or before running twine upload. |
 
 ---
 
