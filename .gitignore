@@ -3,3 +3,6 @@ local
 # Python
 __pycache__/
 *.py[cod]
+
+# Personal configuration (create your own)
+PERSONAL.md
