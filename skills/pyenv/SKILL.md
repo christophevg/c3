@@ -1,3 +1,8 @@
+---
+name: pyenv
+description: Manage Python versions and virtual environments with PyEnv
+---
+
 # PyEnv Skill
 
 Manage Python versions and virtual environments with PyEnv. Provides intelligent environment setup with best practice guidance.
