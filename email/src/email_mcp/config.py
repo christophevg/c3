@@ -108,6 +108,8 @@ class ServerConfig(BaseSettings):
     env_prefix="EMAIL_",
     env_nested_delimiter="__",
     extra="ignore",
+    # Treat empty strings as None
+    env_parse_none_str="",
   )
 
   # Account configuration (JSON string from env)
