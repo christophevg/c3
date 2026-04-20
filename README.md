@@ -3,29 +3,50 @@
 [![Platform](https://img.shields.io/badge/platform-mac%20%7C%20linux-lightgrey.svg)][platform]
 [![License](https://img.shields.io/github/license/christophevg/c3.svg)][license]
 
-> A personal collection of skills and agents for agentic coding and other stuff. 
+> A personal collection of skills and agents for agentic coding and other stuff.
 
-When I finally had the time to explore the agentic world, I entered a realm that I absolutely adore. I’ve always been fascinated by automation and workflow structuring, and working in an agentic context aligns perfectly with these interests. It’s primarily about developing skills, training agents, and refining their behavior.
+## Disclaimer
+
+> ⚠️ **Before installing any plugin**: Plugins can execute arbitrary commands on your machine. Always review a plugin's code before installing it.
+>
+> This is **my personal collection**. It is in constant flux. I try to keep the plugin version stable and usable, but **YMMV** 😇
+
+---
 
 ## Philosophy
 
-The agentic workflow is built on a simple belief: **create small automation steps, use them, and iteratively improve**. Each skill and agent in this repository emerged from real needs, was refined through use, and continues to evolve.
+The agentic workflow is built on a simple belief: **create small automation steps, use them, and iteratively improve**. Each skill and agent emerged from real needs, was refined through use, and continues to evolve.
 
-This repository serves as my personal “Coding Crew,” although within a month, I had already outgrown its initial playful name beyond the realm of mere coding. 
+### The Skill Evolution Cycle
 
-Well, names tend to stick.
+```mermaid
+flowchart LR
+    A[Idea] --> B(["/develop-skill"])
+    A --> C(["/develop-agent"])
+    B --> D[skills/]
+    C --> E[agents/]
+    D --> F["make local"]
+    E --> F
+    F --> G[Use in Sessions]
+    G --> H(["/lessons-learned"])
+    H --> I[Auto-Improve]
+    I --> J{Stable?}
+    J -->|No| G
+    J -->|Yes| K[Push to GitHub]
+```
 
-## Requirements
+- **Create**: Use `/develop-skill` or `/develop-agent` to design new skills/agents
+- **Test locally**: `make local` runs with `--plugin-dir ./`
+- **Use/Refine loop**: Use in sessions, run `/lessons-learned` to capture improvements
+- **Distribute**: Push to GitHub when stable
 
-- **Claude Code** — The agentic coding tool
-- **Python 3.10+** — For statusline script (optional)
-- **Make** — For symlink installation (optional)
+---
 
-## Quick Start
+## Installation
 
-### As a Plugin (Recommended)
+### As a Plugin (End Users)
 
-C3 is distributed as a Claude Code plugin via the christophe.vg marketplace:
+Install from the christophe.vg marketplace:
 
 ```bash
 # Add the marketplace
@@ -35,193 +56,118 @@ claude plugin marketplace add christophevg/marketplace
 claude plugin install c3@christophe.vg
 ```
 
-This makes all skills and agents available with namespacing (e.g., `/c3:python`, `/c3:commit`).
+Skills and agents are namespaced (e.g., `/c3:python`, `/c3:commit`).
 
-### Via Symlink (Development)
+### Local Development
 
-For development or advanced customization, symlink into `~/.claude/`:
+To develop or test the latest version locally:
 
 ```bash
-# Clone and install
+# Clone the repository
 git clone https://github.com/christophevg/c3.git
 cd c3
-make install
+
+# Test locally (overrides installed plugin)
+make local
 ```
 
-This symlinks `agents/`, `skills/`, `bin/`, and `settings.json` into `~/.claude/`.
-
-## Personal Configuration
-
-Create `~/.claude/PERSONAL.md` with your personal preferences:
-
-```bash
-cp PERSONAL.md.template ~/.claude/PERSONAL.md
-# Edit with your name, projects, and goals
-```
-
-The `CLAUDE.global.md` file imports this via `@~/.claude/PERSONAL.md`. If the file doesn't exist, the import is silently skipped.
-
-### What Goes in PERSONAL.md
-
-| Section | Content |
-|---------|---------|
-| Name & Identity | How you want Claude to address you |
-| Projects | Important project paths and context |
-| Goals | Your objectives for working with Claude |
-| Agent Name | Optional: give your agent a name/personality |
+The `make local` target runs Claude with `--plugin-dir ./` to test unreleased changes.
 
 ---
 
 ## Skills (38)
 
-Skills provide focused guidance for specific technologies and workflows. Invoked via `/skill-name` (or `/c3:skill-name` when installed as plugin).
+Skills provide focused guidance for specific technologies and workflows.
 
 ### Plugin & MCP Development (2)
 
 | Skill | Description |
 |-------|-------------|
-| `/mcp-server` | Guide for designing and building MCP (Model Context Protocol) servers. Covers FastMCP patterns, security, testing, deployment options. |
-| `/plugin-development` | Guide for creating Claude Code plugins. Covers structure, manifest, components, marketplace distribution. |
+| `/mcp-server` | Guide for designing and building MCP servers (FastMCP, security, deployment). |
+| `/plugin-development` | Guide for creating Claude Code plugins (structure, manifest, distribution). |
 
 ### Project Management (4)
 
 | Skill | Description |
 |-------|-------------|
-| `/project` | Dispatcher for project management skills. Routes to appropriate project-* skill based on intent. |
-| `/project-feature` | Capture and scope new features for a project. Handles minimal or detailed descriptions. |
-| `/project-manage` | Manage the entire project workflow, orchestrating specialized agents for analysis, design, implementation, and review. |
-| `/project-status` | Show current project status snapshot. Reads TODO.md, analysis/, and reporting/. |
+| `/project` | Dispatcher for project management skills. |
+| `/project-feature` | Capture and scope new features. |
+| `/project-manage` | Full implementation workflow with specialized agents. |
+| `/project-status` | Show current project status snapshot. |
 
 ### Personal Assistant (4)
 
 | Skill | Description |
 |-------|-------------|
-| `/pa` | Main dispatcher for personal assistant workflow. Processes unstructured input into actionable TODOs. |
-| `/pa-inbox` | Process inbox files and categorize items into actionable TODOs or clarification requests. |
-| `/pa-session` | Manage session state for personal assistant workflow continuity across iterations. |
-| `/pa-outbox` | Generate formatted outbox replies and manage archive workflow. |
+| `/pa` | Main dispatcher for personal assistant workflow. |
+| `/pa-inbox` | Process inbox files into actionable TODOs. |
+| `/pa-session` | Manage session state for workflow continuity. |
+| `/pa-outbox` | Generate formatted replies and manage archive. |
 
 ### Domain Expertise (6)
 
 | Skill | Description |
 |-------|-------------|
 | `/python` | Python coding standards and testing patterns. |
-| `/pymongo` | MongoDB/PyMongo access patterns and security. |
+| `/pymongo` | MongoDB/PyMongo patterns and security. |
 | `/baseweb` | Baseweb/Vue/Vuetify best practices. |
 | `/fire` | Python Fire CLI patterns. |
-| `/textual` | Textual TUI framework for building terminal user interfaces with CSS styling and reactive state. |
-| `/rich` | Rich console output with styled text, tables, progress bars, and logging. |
+| `/textual` | Textual TUI framework. |
+| `/rich` | Rich console output. |
 
 ### Development (2)
 
 | Skill | Description |
 |-------|-------------|
-| `/develop-skill` | Guide creation and refinement of Claude Code skills. Use when creating, developing, reviewing, improving, or working on skills. |
-| `/develop-agent` | Develop new Claude Code agents. Use when creating, developing, reviewing, improving, or working on agents. |
+| `/develop-skill` | Create and refine Claude Code skills. |
+| `/develop-agent` | Develop Claude Code agents. |
 
 ### Utility (20)
 
-#### Git & Workflow
-
 | Skill | Description |
 |-------|-------------|
-| `/commit` | Guide git commit operations with atomic commits and conventional format. |
-| `/bug-fixing` | Systematic bug fixing with TDD approach. Coordinates analyst/reviewer agents. |
-| `/git-activity-report` | Generate human-readable git activity summaries focused on accomplishments. |
-| `/git-scripting` | Guide safe git command usage in scripts, Makefiles, and automation. |
-| `/naming` | Guides choosing a name for a project, product, agent, or entity. |
-
-#### Analysis & Review
-
-| Skill | Description |
-|-------|-------------|
-| `/analysis-integration` | Integrate findings from multiple domain agents and update backlog coherently. |
-| `/lessons-learned` | Review session to improve existing skills/agents or create new ones. |
-
-#### Documentation
-
-| Skill | Description |
-|-------|-------------|
-| `/documentation` | Set up or update project documentation for Sphinx/readthedocs.org. |
-| `/markdown-to-pdf` | Convert folders of Markdown files to a single PDF with table of contents. |
-| `/readme` | Create and maintain README.md files for agentic projects. Detects project type, generates appropriate structure, selects badges. |
-| `/transcribe-session` | Create curated transcript of the current or recent session. |
-
-#### API & Code Generation
-
-| Skill | Description |
-|-------|-------------|
-| `/api2mod` | Convert API documentation into Python modules. Orchestrates doc2spec and spec2mod. |
-| `/spec2mod` | Generate Python module from OpenAPI/Swagger/Postman spec. |
-
-#### Project Setup
-
-| Skill | Description |
-|-------|-------------|
-| `/start-baseweb-project` | Start a new Baseweb-based project. |
-| `/vue-form-generator` | Create complex, schema-based forms in Vue.js applications. |
-| `/vuetify-v1` | Create or modify Vuetify 1.5 UI components in legacy Baseweb projects. |
-| `/vuetify-v2` | Create or modify Vuetify V2 UI components in Baseweb projects. |
-
-#### Other
-
-| Skill | Description |
-|-------|-------------|
-| `/ollama` | Guide Python ollama library for LLM integration including chat, tool calling, streaming, embeddings. |
-| `/pyenv` | Manage Python versions and virtual environments with PyEnv. |
-| `/pypi-publish` | Publish Python packages to PyPI with proper checks and workflow. Use when publishing to PyPI, releasing a package, or before running twine upload. |
+| `/commit` | Git commits with atomic commits and conventional format. |
+| `/bug-fixing` | Systematic bug fixing with TDD. |
+| `/git-activity-report` | Human-readable git activity summaries. |
+| `/git-scripting` | Safe git command usage in scripts. |
+| `/naming` | Choose names for projects, products, agents. |
+| `/analysis-integration` | Integrate findings from multiple agents. |
+| `/lessons-learned` | Review session to improve skills/agents. |
+| `/documentation` | Sphinx/readthedocs setup. |
+| `/markdown-to-pdf` | Convert Markdown to PDF with TOC. |
+| `/readme` | Create and maintain README files. |
+| `/transcribe-session` | Curated session transcripts. |
+| `/api2mod` | Convert API docs to Python modules. |
+| `/spec2mod` | Generate Python from OpenAPI specs. |
+| `/start-baseweb-project` | Start new Baseweb projects. |
+| `/vue-form-generator` | Schema-based Vue.js forms. |
+| `/vuetify-v1` | Vuetify 1.5 components. |
+| `/vuetify-v2` | Vuetify V2 components. |
+| `/ollama` | Python ollama library for LLM integration. |
+| `/pyenv` | Manage Python versions. |
+| `/pypi-publish` | Publish packages to PyPI. |
 
 ---
 
-## Agents (10)
-
-Specialized agents for structured project development.
-
-### Personal Assistant
+## Agents (11)
 
 | Agent | Description |
 |-------|-------------|
-| `assistant` | Orchestrate personal assistant workflow with memory. Processes unstructured input, categorizes items, maintains session state. |
-
-### Analysis
-
-| Agent | Description |
-|-------|-------------|
-| `functional-analyst` | Reviews features & tasks, extracts requirements, clarifies requirements and creates ordered actions. |
-| `researcher` | Researches topics comprehensively with full provenance tracking. Use for web research, literature reviews, technology investigations, and gathering information with source citations. |
-| `api-architect` | Specialist in designing clean, efficient, and well-structured APIs. |
-
-### Design
-
-| Agent | Description |
-|-------|-------------|
-| `ui-ux-designer` | Focuses on user experience, creating intuitive, accessible, and aesthetically pleasing interfaces. |
-
-### Implementation
-
-| Agent | Description |
-|-------|-------------|
-| `python-developer` | Implements Python code following project conventions, best practices, and instructions. |
-
-### Review
-
-| Agent | Description |
-|-------|-------------|
-| `code-reviewer` | Reviews code for quality and best practices. Provides structured review documents. |
-| `testing-engineer` | Independent test planning and functionality coverage analysis. |
-| `security-engineer` | Security specialist for vulnerability assessment and architecture recommendations. |
-
-### Documentation
-
-| Agent | Description |
-|-------|-------------|
-| `end-user-documenter` | Produces comprehensive end-user documentation as static HTML site and PDF. |
+| `assistant` | Personal assistant for inbox processing. |
+| `functional-analyst` | Requirements extraction and task planning. |
+| `researcher` | Comprehensive research with provenance. |
+| `api-architect` | API design and architecture. |
+| `ui-ux-designer` | User experience and interface design. |
+| `python-developer` | Python implementation. |
+| `code-reviewer` | Code quality review. |
+| `testing-engineer` | Test planning and coverage. |
+| `security-engineer` | Security vulnerability assessment. |
+| `end-user-documenter` | Documentation generation. |
+| `knowledge-agent` | Knowledge base querying and evolution. |
 
 ---
 
 ## Project Management Workflow
-
-The `/project` dispatcher orchestrates a structured development workflow:
 
 ```mermaid
 flowchart TB
@@ -288,26 +234,9 @@ flowchart TB
 
 ---
 
-## File Structure
-
-```
-c3/
-├── .claude-plugin/
-│   └── plugin.json   # Plugin manifest
-├── agents/           # Specialized agent definitions
-├── skills/           # Reusable skill definitions
-├── bin/              # Utility scripts (statusline)
-├── settings.json     # Plugin settings (permissions)
-├── CLAUDE.md         # Project guidance for Claude
-├── README.md         # This file
-└── Makefile          # Installation commands
-```
-
----
-
 ## Contributing
 
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
