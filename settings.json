@@ -24,5 +24,8 @@
       }
     }
   },
-  "awaySummaryEnabled": false
+  "awaySummaryEnabled": false,
+  "enabledPlugins": {
+    "c3@christophe.vg": true
+  }
 }
