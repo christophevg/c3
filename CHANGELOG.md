@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 *Nothing yet*
 
+## [1.1.1] - 2026-04-20
+
+### Fixed
+
+- Removed invalid `mcpServers` section from `plugin.json` that caused validation errors during plugin installation (MCP configuration belongs in `.mcp.json`)
+
 ## [1.1.0] - 2026-04-20
 
 ### Added
