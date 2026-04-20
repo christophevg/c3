@@ -18,6 +18,8 @@ if __name__ == "__main__":
     mcp.run()  # stdio transport (default)
 ```
 
+**Note:** FastMCP 3.x constructor accepts only the server name. The `description` parameter is not supported.
+
 ---
 
 ## Tool Definitions
