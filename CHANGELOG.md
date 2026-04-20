@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+*Nothing yet*
+
+## [1.0.0] - 2026-04-20
+
+### Added
+
 - MIT License for public release
 - CONTRIBUTING.md with contribution guidelines
 - CHANGELOG.md generated from git history
@@ -25,13 +31,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `.claude/skills/release/` - Project-level skill for version management (not part of plugin)
 - Plugin installation method via marketplace (`claude plugin install c3@christophe.vg`)
 - Makefile targets for version management (`version-current`, `version-bump-*`, `release-*`, `tag`)
+- `make local` target for testing with `--plugin-dir ./`
 
 ### Changed
 
 - Transformed C3 from symlink installation to Claude Code plugin
 - Removed symlink-based installation from Makefile (use `--plugin-dir` for local testing)
 - Updated README.md to focus on plugin installation with local development workflow
-- Added agentic workflow evolution diagram to README
+- Added skill evolution cycle diagram to README
 - Added plugin security disclaimer to README
 - Updated `settings.json` to use narrower permissions (removed `Bash(python:*)`)
 - Plugin is distributed via GitHub through the christophe.vg marketplace
