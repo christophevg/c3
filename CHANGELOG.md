@@ -11,6 +11,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 *Nothing yet*
 
+## [1.1.0] - 2026-04-20
+
+### Added
+
+- **Email MCP Server** - MCP server for email exchange via IMAP/SMTP
+  - 9 MCP tools: `list_accounts`, `list_folders`, `search_emails`, `get_email`, `download_attachment`, `send_email`, `reply_email`, `move_email`, `delete_email`
+  - IMAP client with `aioimaplib` for async email operations
+  - SMTP client with `aiosmtplib` for async email sending
+  - Recipient whitelist support for restricting email recipients
+  - Security features: rate limiting, audit logging, TLS 1.2 minimum, path traversal protection
+  - Configuration via environment variables (supports single account, multiple accounts via JSON, OAuth2)
+  - Foundational test suite for configuration, rate limiting, path traversal, and whitelist
+
+### Changed
+
+- Updated plugin.json with MCP server metadata
+- Added `.mcp.json` for MCP server configuration
+
 ## [1.0.1] - 2026-04-20
 
 ### Added

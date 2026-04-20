@@ -167,6 +167,33 @@ Skills provide focused guidance for specific technologies and workflows.
 
 ---
 
+## MCP Servers (1)
+
+The plugin includes MCP servers that provide tools for Claude Code.
+
+| Server | Tools | Description |
+|--------|-------|-------------|
+| `email` | 9 tools | Email exchange via IMAP/SMTP with security hardening |
+
+### Email MCP Server
+
+Tools: `list_accounts`, `list_folders`, `search_emails`, `get_email`, `download_attachment`, `send_email`, `reply_email`, `move_email`, `delete_email`
+
+Configuration via environment variables:
+```bash
+export EMAIL_IMAP_HOST=imap.gmail.com
+export EMAIL_SMTP_HOST=smtp.gmail.com
+export EMAIL_USERNAME=your-email@gmail.com
+export EMAIL_PASSWORD=your-app-password
+```
+
+Optional recipient whitelist:
+```bash
+export EMAIL_RECIPIENT_DOMAINS=example.com,company.org
+```
+
+---
+
 ## Project Management Workflow
 
 ```mermaid
