@@ -2,6 +2,7 @@
 
 # Deployment: symlink individual files to ~/.claude
 # This allows multiple sources to contribute skills/agents
+# Alternative: install as plugin via marketplace
 
 SRC = $(PWD)
 TRG = $(HOME)/.claude
@@ -11,6 +12,50 @@ install: install-agents install-skills install-bin install-files
 # Validate skills and agents structure
 validate:
 	@python bin/validate.py
+
+# Validate plugin structure
+validate-plugin:
+	@claude plugin validate .
+
+# Test plugin locally
+test-plugin:
+	@claude --plugin-dir $(SRC)
+
+# Build plugin for distribution
+build-plugin:
+	@echo "Plugin ready for distribution via marketplace"
+	@echo "Install with: claude plugin install c3@christophe.vg"
+
+# Version management
+version-current:
+	@python bin/version.py current
+
+version-bump-major:
+	@python bin/version.py bump --part major
+
+version-bump-minor:
+	@python bin/version.py bump --part minor
+
+version-bump-patch:
+	@python bin/version.py bump --part patch
+
+# Prepare release (bump version and update changelog)
+release-major:
+	@python bin/version.py release --part major
+
+release-minor:
+	@python bin/version.py release --part minor
+
+release-patch:
+	@python bin/version.py release --part patch
+
+# Create git tag for current version
+tag:
+	@plugin_version=$$(python bin/version.py current | grep -oE '[0-9]+\.[0-9]+\.[0-9]+'); \
+	echo "Creating tag v$$plugin_version"; \
+	git tag -a "v$$plugin_version" -m "Release $$plugin_version"; \
+	echo "Tag created: v$$plugin_version"; \
+	echo "Push with: git push origin v$$plugin_version"
 
 # Create target directories if they don't exist
 $(TRG)/agents $(TRG)/skills $(TRG)/bin:
