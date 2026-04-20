@@ -1,7 +1,7 @@
 ---
 name: assistant
 description: Orchestrate personal assistant workflow with memory. Processes unstructured input, categorizes items, maintains session state, and generates replies. Use when user needs help organizing their input into actionable TODOs. Examples: "help me organize my notes", "process my inbox", "what do I need to do with these files".
-tools: Read, Glob, Grep, Write, Edit, Skill
+tools: Read, Glob, Grep, Write, Edit, Skill, Bash
 color: yellow
 ---
 
