@@ -13,17 +13,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CONTRIBUTING.md with contribution guidelines
 - CHANGELOG.md generated from git history
 - `bin/validate.py` - Validation script for skills and agents structure
+- `bin/version.py` - Version management script for bumping versions and preparing releases
 - `PERSONAL.md.template` - Template for user personal configuration
 - Badges in README.md (platform, license)
 - Prerequisites section in README.md
+- `mcp-server` skill - Guide for designing and building MCP servers (FastMCP, security, deployment)
+- `plugin-development` skill - Guide for creating Claude Code plugins (structure, manifest, distribution)
+- Personal Assistant skills: `pa`, `pa-inbox`, `pa-outbox`, `pa-session` - Workflow for processing unstructured input
+- `assistant` agent - Personal assistant agent for inbox processing
+- `.claude-plugin/plugin.json` - Plugin manifest for Claude Code plugin distribution
+- `.claude/skills/release/` - Project-level skill for version management (not part of plugin)
+- Plugin installation method via marketplace (`claude plugin install c3@christophe.vg`)
+- Makefile targets for version management (`version-current`, `version-bump-*`, `release-*`, `tag`)
 
 ### Changed
 
-- Separated personal configuration from `CLAUDE.global.md` into `~/.claude/PERSONAL.md`
-- `CLAUDE.global.md` now uses `@~/.claude/PERSONAL.md` import for personal preferences
-- Added `make validate` target to Makefile
-- Fixed `pyenv` skill missing frontmatter
-- Updated `.gitignore` to exclude `PERSONAL.md`
+- Transformed C3 from symlink installation to Claude Code plugin
+- Removed symlink-based installation from Makefile (use `--plugin-dir` for local testing)
+- Updated README.md to focus on plugin installation with local development workflow
+- Added agentic workflow evolution diagram to README
+- Added plugin security disclaimer to README
+- Updated `settings.json` to use narrower permissions (removed `Bash(python:*)`)
+- Plugin is distributed via GitHub through the christophe.vg marketplace
 
 ## [0.1.0] - 2026-04-17
 
