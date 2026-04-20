@@ -27,5 +27,9 @@
   "awaySummaryEnabled": false,
   "enabledPlugins": {
     "c3@christophe.vg": true
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/bin/statusline.py"
   }
 }
