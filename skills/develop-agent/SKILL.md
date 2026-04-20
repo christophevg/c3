@@ -323,6 +323,36 @@ ln -sf ideas/{agent-name}/artifacts/agent/{agent-name}.md .claude/agents/{agent-
 - [ ] Does not exceed scope constraints
 - [ ] Error handling works as specified
 
+## Personalization
+
+Agent definitions should be **generic and reusable**, not hardcoded for specific users. Personalization comes from:
+
+| Source | Content |
+|--------|---------|
+| `PERSONAL.md` | User name, identity, preferences |
+| `MEMORY.md` | Project-specific context |
+| Session context | Current conversation state |
+
+**What NOT to hardcode in agents:**
+- Personal names (use "the user" or reference PERSONAL.md)
+- Personal pronouns for the agent (let the user name their agent)
+- User-specific prefixes or formats (make them configurable)
+- Project-specific paths (use parameters)
+
+**Agent identity vs. user identity:**
+- Agent content describes capabilities and behavior
+- PERSONAL.md provides user context and preferences
+- The combination creates a personalized experience
+
+**Example:**
+```markdown
+# Good: Generic agent
+"This agent helps process unstructured input..."
+
+# Bad: Hardcoded personalization
+"Hello Christophe, I'm Eira, your personal assistant..."
+```
+
 ## Proven Agent Patterns
 
 See `references/patterns.md` for the complete pattern catalog including:

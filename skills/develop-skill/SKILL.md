@@ -48,6 +48,27 @@ Before starting, detect the development context:
 - Line count validation
 - Immediate symlink testing
 
+## Skill Naming Conventions
+
+Follow these naming patterns for consistency across the skill ecosystem:
+
+| Pattern | Format | Example |
+|---------|-------|---------|
+| **Standalone** | `skill-name` | `commit`, `naming` |
+| **Family prefix** | `{prefix}-{subskill}` | `pa-inbox`, `pa-session`, `pa-outbox` |
+| **Domain** | `{domain}` | `python`, `pymongo`, `baseweb` |
+
+**Family Naming:**
+- Use a short prefix for related skills (e.g., `pa` for personal assistant)
+- Main dispatcher skill gets just the prefix (`pa`)
+- Sub-skills get the prefix + descriptor (`pa-inbox`, `pa-outbox`)
+- This keeps skills grouped alphabetically in listings
+
+**Avoid:**
+- `-agent` suffix (redundant — agents are in agents/ folder)
+- Personal names in skill content (use placeholders or reference PERSONAL.md)
+- Overly long names (keep under 20 characters)
+
 ## Common Skill Patterns
 
 | Pattern | Example | When to Use |
