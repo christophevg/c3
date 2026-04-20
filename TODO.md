@@ -1,25 +1,81 @@
 # TODO
 
-## Inbox Input (2026-04-20)
+## Inbox Input
 
-*Unstructured input from inbox processing session. To be refined and integrated.*
-
-- ~~c3: convert symlink installation to plugin(s)~~ ✅ 2026-04-20
-- c3: brainstorming agent (compare to functional analyst) — ref: https://mcpmarket.com/tools/skills/brainstorming-design-specifier
-- c3: AI Overview skill (browser + google + AI Overview extraction)
-- ~~c3: develop "develop-plugin" skill~~ ✅ 2026-04-20 (created `plugin-development` skill)
-- c3: Personal Assistant Agent design (requirements from NOTES.md)
-- python style: limit function length (part of Python style guidelines revision)
-- python style: avoid comments that rephrase next function call (e.g., "# start a session" before `start_session()`)
-- python style: create skill + check workflow (tooling? cfr ruff) — see also analysis/python-coding-guidelines-reference.md
-- Invest time in PlayWright (UI Mode) — for AI Overview skill
-- Research: https://agentskills.io
-- Research: https://github.com/Piebald-AI/claude-code-system-prompts
-- Research: https://github.com/microsoft/markitdown
-- Reference: analysis/python-coding-guidelines-reference.md (from inbox)
+*Empty — all items from 2026-04-20 session have been processed.*
 
 ## Backlog (Prioritized)
 
-### P3 - Low
+### P1 - Critical
 
-- [ ] Set up MkDocs Material documentation site for C3
+*No critical items at this time. Plugin is operational.*
+
+### P2 - High
+
+- [ ] **AI Overview skill**
+  - Create skill for browser-based Google search with AI Overview extraction
+  - Enables research workflows with synthesized answers
+  - Acceptance: Skill triggers on "AI Overview", "search with AI summary"
+  - Depends on: PlayWright research (below)
+
+- [ ] **PlayWright (UI Mode) research**
+  - Investigate PlayWright UI Mode capabilities
+  - Document patterns for browser automation
+  - Acceptance: Research report in research/ with examples
+  - Blocks: AI Overview skill
+
+- [ ] **Email GW MCP server**
+  - Develop MCP server for email exchange
+  - Use mcp-server skill guidance
+  - Acceptance: Working MCP server with send/receive tools
+
+### P3 - Medium
+
+- [ ] **Python style guidelines enhancement**
+  - Add function length limits to python skill
+  - Add guidance: avoid comments that rephrase next function call (e.g., "# start a session" before `start_session()`)
+  - Create automated check workflow (integrate with ruff?)
+  - Acceptance: Updated python/SKILL.md with new patterns
+  - Reference: analysis/python-coding-guidelines-reference.md
+
+- [ ] **Brainstorming agent research**
+  - Research https://mcpmarket.com/tools/skills/brainstorming-design-specifier
+  - Compare with existing functional-analyst agent
+  - Determine if unique value or should extend existing agent
+  - Acceptance: Research report with recommendation
+
+- [ ] **Personal Assistant Agent design**
+  - Review requirements from NOTES.md
+  - Design dedicated PA agent (or enhance existing assistant agent)
+  - Acceptance: Design document or updated agent definition
+
+### P4 - Low
+
+- [ ] **Research: agentskills.io**
+  - Investigate skill design patterns and best practices
+  - May inform future skill development
+  - Acceptance: Research report in research/
+
+- [ ] **Research: Claude Code ecosystem**
+  - Investigate claude-code-system-prompts (understanding internals)
+  - Investigate claude-toolshed and claude-marketplace (MCP ecosystem)
+  - Batch these related research items together
+  - Acceptance: Research report comparing approaches
+
+- [ ] **Research: markitdown**
+  - Evaluate Microsoft's markitdown tool
+  - Potential utility for markdown processing workflows
+  - Acceptance: Research report with recommendation
+
+- [ ] **Curate python-coding-guidelines-reference.md**
+  - Review and filter reference document
+  - Extract actionable patterns for python skill
+  - Acceptance: Updated reference or removed if not needed
+
+- [ ] **Set up MkDocs Material documentation site for C3**
+  - Already in backlog, valuable but not urgent
+
+## Done
+
+- [x] **c3: convert symlink installation to plugin(s)** — 2026-04-20
+- [x] **c3: develop "develop-plugin" skill** — 2026-04-20 (created `plugin-development` skill)
