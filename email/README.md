@@ -22,11 +22,9 @@ This server provides Claude Code with email capabilities through the Model Conte
 
 ### Prerequisites
 
-Install the required dependencies:
+- [uv](https://docs.astral.sh/uv/) must be installed (used for automatic dependency management)
 
-```bash
-pip install fastmcp aioimaplib aiosmtplib pydantic pydantic-settings
-```
+The MCP server uses `uv run` to automatically install and manage dependencies from `pyproject.toml`.
 
 ### As a Plugin
 
@@ -121,9 +119,8 @@ Add to your `.mcp.json`:
 {
   "mcpServers": {
     "email": {
-      "command": "python",
-      "args": ["-m", "email_mcp"],
-      "cwd": "/path/to/c3/email/src",
+      "command": "bash",
+      "args": ["-c", "cd \"${CLAUDE_PLUGIN_ROOT}/email\" && exec uv run python -m email_mcp"],
       "env": {
         "EMAIL_IMAP_HOST": "${EMAIL_IMAP_HOST}",
         "EMAIL_SMTP_HOST": "${EMAIL_SMTP_HOST}",
@@ -135,7 +132,7 @@ Add to your `.mcp.json`:
 }
 ```
 
-> **Note**: The `cwd` must point to the `src` directory containing the `email_mcp` package.
+> **Note**: The `cwd` field in MCP config is currently ignored by Claude Code. The workaround uses `bash -c` with `cd` to set the working directory. Dependencies are automatically installed by `uv run`.
 
 ## Available Tools
 
@@ -186,8 +183,8 @@ Default limits protect against abuse:
 ### Run Locally
 
 ```bash
-cd email/src
-python -m email_mcp
+cd email
+uv run python -m email_mcp
 ```
 
 ### Test with MCP Inspector

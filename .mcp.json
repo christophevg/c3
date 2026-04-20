@@ -1,23 +1,18 @@
 {
   "mcpServers": {
     "email": {
-      "command": "python",
-      "args": ["-m", "email_mcp"],
-      "cwd": "${CLAUDE_PLUGIN_ROOT}/email/src",
+      "command": "bash",
+      "args": [
+        "-c",
+        "cd \"${CLAUDE_PLUGIN_ROOT}/email\" && exec uv run python -m email_mcp"
+      ],
       "env": {
         "EMAIL_IMAP_HOST": "${EMAIL_IMAP_HOST}",
         "EMAIL_IMAP_PORT": "${EMAIL_IMAP_PORT}",
         "EMAIL_SMTP_HOST": "${EMAIL_SMTP_HOST}",
         "EMAIL_SMTP_PORT": "${EMAIL_SMTP_PORT}",
         "EMAIL_USERNAME": "${EMAIL_USERNAME}",
-        "EMAIL_PASSWORD": "${EMAIL_PASSWORD}",
-        "EMAIL_AUTH_METHOD": "${EMAIL_AUTH_METHOD}",
-        "EMAIL_OAUTH2_TOKEN": "${EMAIL_OAUTH2_TOKEN}",
-        "EMAIL_ACCOUNTS_JSON": "${EMAIL_ACCOUNTS_JSON}",
-        "EMAIL_RECIPIENT_DOMAINS": "${EMAIL_RECIPIENT_DOMAINS}",
-        "EMAIL_RECIPIENT_ADDRESSES": "${EMAIL_RECIPIENT_ADDRESSES}",
-        "EMAIL_RECIPIENT_WHITELIST_JSON": "${EMAIL_RECIPIENT_WHITELIST_JSON}",
-        "EMAIL_WORKSPACE": "${EMAIL_WORKSPACE}"
+        "EMAIL_PASSWORD": "${EMAIL_PASSWORD}"
       }
     }
   }
