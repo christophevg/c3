@@ -4,9 +4,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-This is a **Claude Code configuration harness** that provides reusable skills, agents, and settings for Python/Baseweb development projects. The configuration is designed to be symlinked into `~/.claude/` for use across multiple projects.
+This is a **Claude Code plugin** that provides reusable skills, agents, and settings for Python/Baseweb development projects. It can be installed as a plugin via the marketplace or used directly via symlink.
 
 ## Installation
+
+### As a Plugin (Recommended)
+
+```bash
+# Add the marketplace (if not already added)
+claude plugin marketplace add christophevg/marketplace
+
+# Install the plugin
+claude plugin install c3@christophe.vg
+```
+
+### Via Symlink (Development)
+
+For development or local use, symlink into `~/.claude/`:
 
 ```bash
 make install
@@ -18,10 +32,12 @@ This symlinks the `agents/`, `skills/`, `bin/`, and `settings.json` into `~/.cla
 
 ```
 c3/
+├── .claude-plugin/
+│   └── plugin.json   # Plugin manifest
 ├── agents/           # Specialized agent definitions
 ├── skills/           # Reusable skill definitions
 ├── bin/              # Utility scripts (statusline)
-├── settings.json     # Claude Code configuration
+├── settings.json     # Plugin settings (permissions)
 └── Makefile          # Installation commands
 ```
 

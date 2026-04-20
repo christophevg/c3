@@ -17,13 +17,29 @@ Well, names tend to stick.
 
 ## Requirements
 
-- **Agentic Coding Tool** — A tool that supports skills/agents (Claude Code, etc.)
-- **Python 3.10+** — For statusline script
-- **Make** — For installation targets
+- **Claude Code** — The agentic coding tool
+- **Python 3.10+** — For statusline script (optional)
+- **Make** — For symlink installation (optional)
 
 ## Quick Start
 
-C3 is designed to be installed in `~/.claude/` for use across multiple projects. I personally use symlinks so keep the folder clean. The Makefile provides a target to install everything that way:
+### As a Plugin (Recommended)
+
+C3 is distributed as a Claude Code plugin via the christophe.vg marketplace:
+
+```bash
+# Add the marketplace
+claude plugin marketplace add christophevg/marketplace
+
+# Install C3
+claude plugin install c3@christophe.vg
+```
+
+This makes all skills and agents available with namespacing (e.g., `/c3:python`, `/c3:commit`).
+
+### Via Symlink (Development)
+
+For development or advanced customization, symlink into `~/.claude/`:
 
 ```bash
 # Clone and install
@@ -56,9 +72,16 @@ The `CLAUDE.global.md` file imports this via `@~/.claude/PERSONAL.md`. If the fi
 
 ---
 
-## Skills (31)
+## Skills (38)
 
-Skills provide focused guidance for specific technologies and workflows. Invoked via `/skill-name`.
+Skills provide focused guidance for specific technologies and workflows. Invoked via `/skill-name` (or `/c3:skill-name` when installed as plugin).
+
+### Plugin & MCP Development (2)
+
+| Skill | Description |
+|-------|-------------|
+| `/mcp-server` | Guide for designing and building MCP (Model Context Protocol) servers. Covers FastMCP patterns, security, testing, deployment options. |
+| `/plugin-development` | Guide for creating Claude Code plugins. Covers structure, manifest, components, marketplace distribution. |
 
 ### Project Management (4)
 
@@ -68,6 +91,15 @@ Skills provide focused guidance for specific technologies and workflows. Invoked
 | `/project-feature` | Capture and scope new features for a project. Handles minimal or detailed descriptions. |
 | `/project-manage` | Manage the entire project workflow, orchestrating specialized agents for analysis, design, implementation, and review. |
 | `/project-status` | Show current project status snapshot. Reads TODO.md, analysis/, and reporting/. |
+
+### Personal Assistant (4)
+
+| Skill | Description |
+|-------|-------------|
+| `/pa` | Main dispatcher for personal assistant workflow. Processes unstructured input into actionable TODOs. |
+| `/pa-inbox` | Process inbox files and categorize items into actionable TODOs or clarification requests. |
+| `/pa-session` | Manage session state for personal assistant workflow continuity across iterations. |
+| `/pa-outbox` | Generate formatted outbox replies and manage archive workflow. |
 
 ### Domain Expertise (6)
 
@@ -87,7 +119,7 @@ Skills provide focused guidance for specific technologies and workflows. Invoked
 | `/develop-skill` | Guide creation and refinement of Claude Code skills. Use when creating, developing, reviewing, improving, or working on skills. |
 | `/develop-agent` | Develop new Claude Code agents. Use when creating, developing, reviewing, improving, or working on agents. |
 
-### Utility (18)
+### Utility (20)
 
 #### Git & Workflow
 
@@ -141,9 +173,15 @@ Skills provide focused guidance for specific technologies and workflows. Invoked
 
 ---
 
-## Agents (9)
+## Agents (10)
 
 Specialized agents for structured project development.
+
+### Personal Assistant
+
+| Agent | Description |
+|-------|-------------|
+| `assistant` | Orchestrate personal assistant workflow with memory. Processes unstructured input, categorizes items, maintains session state. |
 
 ### Analysis
 
@@ -254,10 +292,12 @@ flowchart TB
 
 ```
 c3/
+├── .claude-plugin/
+│   └── plugin.json   # Plugin manifest
 ├── agents/           # Specialized agent definitions
 ├── skills/           # Reusable skill definitions
 ├── bin/              # Utility scripts (statusline)
-├── settings.json     # Claude Code configuration
+├── settings.json     # Plugin settings (permissions)
 ├── CLAUDE.md         # Project guidance for Claude
 ├── README.md         # This file
 └── Makefile          # Installation commands

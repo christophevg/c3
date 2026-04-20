@@ -1,11 +1,10 @@
 {
   "attribution": {
-    "commit": "🤖 Implemented together with a coding agent.",
+    "commit": "Implemented together with a coding agent.",
     "pr": ""
   },
   "permissions": {
     "allow": [
-      "Bash(python:*)",
       "Bash(pip show:*)",
       "Bash(pip list:*)",
       "Bash(make envs:*)",
@@ -17,9 +16,13 @@
       "Bash(git add:*)"
     ]
   },
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/bin/statusline.py"
+  "extraKnownMarketplaces": {
+    "christophe.vg": {
+      "source": {
+        "source": "github",
+        "repo": "christophevg/marketplace"
+      }
+    }
   },
   "awaySummaryEnabled": false
 }

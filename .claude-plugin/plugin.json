@@ -1,0 +1,22 @@
+{
+  "name": "c3",
+  "version": "1.0.0",
+  "description": "Christophe's Coding Crew - my personal collection of agents and skills for agentic coding and other stuff",
+  "author": {
+    "name": "Christophe VG",
+    "email": "contact@christophe.vg",
+    "url": "https://christophe.vg"
+  },
+  "homepage": "https://github.com/christophevg/c3",
+  "repository": "https://github.com/christophevg/c3",
+  "license": "MIT",
+  "keywords": [
+    "python",
+    "baseweb",
+    "development",
+    "skills",
+    "agents",
+    "mcp",
+    "plugin"
+  ]
+}
