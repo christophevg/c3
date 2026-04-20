@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 *Nothing yet*
 
+## [1.1.3] - 2026-04-20
+
+### Fixed
+
+- Email MCP server now uses `uv run` for automatic dependency management
+  - Workaround for Claude Code bug where `cwd` field in `.mcp.json` is ignored
+  - Dependencies are automatically installed from `pyproject.toml`
+  - Updated documentation to require `uv` as a prerequisite
+
 ## [1.1.2] - 2026-04-20
 
 ### Fixed
