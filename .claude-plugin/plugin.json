@@ -18,21 +18,5 @@
     "agents",
     "mcp",
     "plugin"
-  ],
-  "mcpServers": {
-    "email": {
-      "description": "MCP server for email exchange via IMAP/SMTP",
-      "tools": [
-        "list_accounts",
-        "list_folders",
-        "search_emails",
-        "get_email",
-        "download_attachment",
-        "send_email",
-        "reply_email",
-        "move_email",
-        "delete_email"
-      ]
-    }
-  }
+  ]
 }
