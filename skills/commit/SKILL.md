@@ -11,6 +11,7 @@ Guide git commit operations with atomic commits, functionality-based grouping, a
 
 | Capability | Description |
 |------------|-------------|
+| Git safety protocol | Enforce safe git operations, prevent destructive actions |
 | Atomic commits | Group changes by logical functionality |
 | Conventional format | Apply type/scope/description format |
 | Sensitive file detection | Block .env, *.key, credentials files |
@@ -24,6 +25,27 @@ Use this skill when:
 - User says "commit these changes" or "create a commit"
 - Multiple changes need grouping analysis
 
+## Git Safety Protocol
+
+**CRITICAL:** Follow these rules without exception unless user explicitly requests otherwise.
+
+| Rule | Reason |
+|------|--------|
+| NEVER update git config | Preserves user's configuration |
+| NEVER skip hooks (`--no-verify`, `--no-gpg-sign`) | Hooks exist for safety |
+| NEVER amend commits | Amending modifies history, can lose work |
+| NEVER force push to main/master | Protects shared branches |
+| NEVER use `-i` flag (interactive) | Not supported in non-interactive context |
+| Prefer specific files over `git add -A` or `git add .` | Avoids sensitive files, large binaries |
+
+**Destructive Operations:**
+
+Avoid these unless user explicitly requests:
+- `git push --force`, `git reset --hard`, `git checkout .`
+- `git restore .`, `git clean -f`, `git branch -D`
+
+**When hooks fail:** Fix the underlying issue, don't bypass. Create a NEW commit after fixing.
+
 ## Pre-Commit Checklist
 
 Before any commit, verify:
@@ -32,6 +54,7 @@ Before any commit, verify:
 2. **Sensitive files** - Block if .env, *.key, *.pem, secrets.*, credentials.* detected
 3. **Atomic grouping** - Verify changes represent one logical change
 4. **User approval** - Present analysis and wait for confirmation
+5. **Repository style** - Check recent commits for message style conventions
 
 ## Sensitive File Detection
 
@@ -131,10 +154,12 @@ type(scope): description
 
 ### 1. Analyze Changes
 
+Run these commands in parallel to gather context:
+
 ```bash
-git status
-git diff --cached --stat
-git diff --cached
+git status              # See untracked files (never use -uall flag)
+git diff HEAD           # See staged and unstaged changes
+git log --oneline -10   # Follow repository's commit message style
 ```
 
 Categorize changes:
@@ -171,18 +196,36 @@ AskUserQuestion with:
 
 ### 4. Create Commits
 
-For single logical change:
+**HEREDOC Syntax:** Always use HEREDOC for commit messages to ensure proper formatting:
+
 ```bash
-git commit -m "type(scope): description"
+git commit -m "$(cat <<'EOF'
+type(scope): description
+
+Optional body explaining why (not how).
+EOF
+)"
 ```
 
-For multiple logical changes:
+**Single logical change:**
+
+Stage specific files and commit in parallel:
+```bash
+git add path/to/file1 path/to/file2
+git commit -m "$(cat <<'EOF'
+type(scope): description
+EOF
+)"
+```
+
+**Multiple logical changes:**
 1. Propose grouping to user
 2. Let user confirm or adjust
 3. Create commits one by one after verification
 
 ### 5. Post-Commit
 
+Run `git status` to verify commit success, then:
 - Show commit hash
 - Remind about push (don't auto-push)
 
@@ -238,6 +281,17 @@ Per user memory (`commit_after_testing.md`):
 2. Suggest `git add` for specific files
 3. Don't create empty commits
 
+### Pre-Commit Hook Failure
+
+When a pre-commit hook fails:
+1. The commit did NOT happen
+2. Explain the failure to the user
+3. Fix the underlying issue
+4. Re-stage files if needed
+5. Create a NEW commit (never amend after hook failure)
+
+**Why not amend:** After hook failure, `--amend` would modify the PREVIOUS commit, potentially destroying work or losing changes.
+
 ## Related Patterns
 
 - `patterns/atomic-commits.md` - Detailed atomic commit patterns
@@ -249,6 +303,7 @@ Per user memory (`commit_after_testing.md`):
 |-------|----------|
 | Changes affect multiple concerns | Propose splitting into separate commits |
 | Sensitive file in commit | Block immediately, warn user, suggest .gitignore |
-| Pre-commit hooks failing | Explain failure, suggest fixes, don't skip without user approval |
+| Pre-commit hooks failing | Fix issue, create NEW commit (never amend after failure) |
 | Commit message too long | Keep subject under 50 chars, move details to body |
 | User didn't review changes | Present diff, wait for explicit approval |
+| Accidentally staged sensitive file | Use `git restore --staged <file>` to unstage |
