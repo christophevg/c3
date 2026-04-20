@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 *Nothing yet*
 
+## [1.1.2] - 2026-04-20
+
+### Fixed
+
+- Email MCP server failed to start due to incorrect module invocation
+  - Created `__main__.py` entry point for `python -m email_mcp`
+  - Fixed `cwd` path in `.mcp.json` (was `email`, should be `email/src`)
+  - Fixed module invocation (was `email_mcp.server`, should be `email_mcp`)
+  - Added dependency installation instructions to READMEs
+
 ## [1.1.1] - 2026-04-20
 
 ### Fixed
