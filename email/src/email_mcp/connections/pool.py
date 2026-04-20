@@ -1,0 +1,112 @@
+"""Connection pool manager for IMAP and SMTP."""
+
+from __future__ import annotations
+
+import asyncio
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+from email_mcp.config import EmailAccount, get_accounts
+from email_mcp.imap.client import IMAPClient
+from email_mcp.smtp.client import SMTPClient
+from email_mcp.safety.rate_limiter import imap_limiter, smtp_limiter
+from email_mcp.safety.audit import log_rate_limited
+
+if TYPE_CHECKING:
+  pass
+
+
+class ConnectionPool:
+  """Manages connections for multiple email accounts."""
+
+  _instance: ConnectionPool | None = None
+  _init_lock: asyncio.Lock = asyncio.Lock()
+
+  def __new__(cls) -> ConnectionPool:
+    """Create singleton instance with thread-safe initialization."""
+    if cls._instance is None:
+      cls._instance = super().__new__(cls)
+      cls._instance._imap_clients: dict[str, IMAPClient] = {}
+      cls._instance._smtp_clients: dict[str, SMTPClient] = {}
+      cls._instance._accounts: list[EmailAccount] | None = None
+      cls._instance._client_lock = asyncio.Lock()
+    return cls._instance
+
+  @classmethod
+  async def create(cls) -> ConnectionPool:
+    """Async factory for thread-safe singleton creation."""
+    async with cls._init_lock:
+      if cls._instance is None:
+        instance = cls()
+        cls._instance = instance
+      return cls._instance
+
+  async def get_accounts(self) -> list[EmailAccount]:
+    """Get list of configured accounts."""
+    if self._accounts is None:
+      self._accounts = get_accounts()
+    return self._accounts
+
+  async def get_imap_client(self, account_name: str) -> IMAPClient:
+    """Get or create IMAP client for account.
+
+    Raises:
+      ValueError: If account not found
+      RuntimeError: If rate limited
+    """
+    # Check rate limit first
+    if not await imap_limiter.acquire(account_name):
+      log_rate_limited(account_name, "imap", 60, 60)
+      raise RuntimeError("IMAP rate limit exceeded for account")
+
+    async with self._client_lock:
+      if account_name not in self._imap_clients:
+        accounts = await self.get_accounts()
+        account = next((a for a in accounts if a.name == account_name), None)
+        if not account:
+          raise ValueError(f"Account not found: {account_name}")
+        self._imap_clients[account_name] = IMAPClient(account)
+      return self._imap_clients[account_name]
+
+  async def get_smtp_client(self, account_name: str) -> SMTPClient:
+    """Get or create SMTP client for account.
+
+    Raises:
+      ValueError: If account not found
+      RuntimeError: If rate limited
+    """
+    # Check rate limit first
+    if not await smtp_limiter.acquire(account_name):
+      log_rate_limited(account_name, "smtp", 100, 3600)
+      raise RuntimeError("SMTP rate limit exceeded for account")
+
+    async with self._client_lock:
+      if account_name not in self._smtp_clients:
+        accounts = await self.get_accounts()
+        account = next((a for a in accounts if a.name == account_name), None)
+        if not account:
+          raise ValueError(f"Account not found: {account_name}")
+        self._smtp_clients[account_name] = SMTPClient(account)
+      return self._smtp_clients[account_name]
+
+  async def disconnect_all(self) -> None:
+    """Disconnect all clients."""
+    async with self._client_lock:
+      for client in self._imap_clients.values():
+        await client.disconnect()
+      self._imap_clients.clear()
+      self._smtp_clients.clear()
+
+
+# Module-level pool (created on first use)
+_pool: ConnectionPool | None = None
+_pool_lock: asyncio.Lock = asyncio.Lock()
+
+
+async def get_pool() -> ConnectionPool:
+  """Get the global connection pool (async)."""
+  global _pool
+  async with _pool_lock:
+    if _pool is None:
+      _pool = await ConnectionPool.create()
+    return _pool

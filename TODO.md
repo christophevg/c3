@@ -24,11 +24,6 @@
   - Acceptance: Research report in research/ with examples
   - Blocks: AI Overview skill
 
-- [ ] **Email GW MCP server**
-  - Develop MCP server for email exchange
-  - Use mcp-server skill guidance
-  - Acceptance: Working MCP server with send/receive tools
-
 ### P3 - Medium
 
 - [ ] **Python style guidelines enhancement**
@@ -79,3 +74,4 @@
 
 - [x] **c3: convert symlink installation to plugin(s)** — 2026-04-20
 - [x] **c3: develop "develop-plugin" skill** — 2026-04-20 (created `plugin-development` skill)
+- [x] **Email GW MCP server** — 2026-04-20 (created `email/` with 9 tools, security hardened)
