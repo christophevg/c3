@@ -20,9 +20,17 @@ This server provides Claude Code with email capabilities through the Model Conte
 
 ## Installation
 
+### Prerequisites
+
+Install the required dependencies:
+
+```bash
+pip install fastmcp aioimaplib aiosmtplib pydantic pydantic-settings
+```
+
 ### As a Plugin
 
-Add to your `.claude/plugins/` directory or install via marketplace.
+Add to your `.claude/plugins/` directory or install via marketplace. The plugin's `.mcp.json` will configure the MCP server automatically.
 
 ### Manual
 
@@ -114,7 +122,8 @@ Add to your `.mcp.json`:
   "mcpServers": {
     "email": {
       "command": "python",
-      "args": ["-m", "email_mcp.server"],
+      "args": ["-m", "email_mcp"],
+      "cwd": "/path/to/c3/email/src",
       "env": {
         "EMAIL_IMAP_HOST": "${EMAIL_IMAP_HOST}",
         "EMAIL_SMTP_HOST": "${EMAIL_SMTP_HOST}",
@@ -125,6 +134,8 @@ Add to your `.mcp.json`:
   }
 }
 ```
+
+> **Note**: The `cwd` must point to the `src` directory containing the `email_mcp` package.
 
 ## Available Tools
 
@@ -175,7 +186,8 @@ Default limits protect against abuse:
 ### Run Locally
 
 ```bash
-python -m email_mcp.server
+cd email/src
+python -m email_mcp
 ```
 
 ### Test with MCP Inspector
@@ -189,7 +201,9 @@ npx @anthropic/mcp-inspector
 ```
 email/
 ├── src/email_mcp/
-│   ├── server.py        # FastMCP entry point
+│   ├── __init__.py      # Package initialization
+│   ├── __main__.py      # Entry point for `python -m email_mcp`
+│   ├── server.py        # FastMCP server definition
 │   ├── config.py        # Pydantic configuration
 │   ├── connections/     # Connection pooling
 │   ├── imap/            # IMAP client

@@ -2,8 +2,8 @@
   "mcpServers": {
     "email": {
       "command": "python",
-      "args": ["-m", "email_mcp.server"],
-      "cwd": "${CLAUDE_PLUGIN_ROOT}/email",
+      "args": ["-m", "email_mcp"],
+      "cwd": "${CLAUDE_PLUGIN_ROOT}/email/src",
       "env": {
         "EMAIL_IMAP_HOST": "${EMAIL_IMAP_HOST}",
         "EMAIL_IMAP_PORT": "${EMAIL_IMAP_PORT}",

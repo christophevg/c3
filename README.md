@@ -179,6 +179,11 @@ The plugin includes MCP servers that provide tools for Claude Code.
 
 Tools: `list_accounts`, `list_folders`, `search_emails`, `get_email`, `download_attachment`, `send_email`, `reply_email`, `move_email`, `delete_email`
 
+**Dependencies required** (install before using):
+```bash
+pip install fastmcp aioimaplib aiosmtplib pydantic pydantic-settings
+```
+
 Configuration via environment variables:
 ```bash
 export EMAIL_IMAP_HOST=imap.gmail.com
