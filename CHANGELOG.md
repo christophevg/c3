@@ -11,6 +11,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 *Nothing yet*
 
+## [1.0.1] - 2026-04-20
+
+### Added
+
+- Git safety protocol in `commit` skill (no config changes, no hook skipping, no amending, no force push)
+- HEREDOC syntax for commit messages in `commit` skill
+- Repository style checking in `commit` skill
+- Pre-commit hook failure handling guidance in `commit` skill
+- Bash tool to `assistant` agent for shell command support
+
+### Fixed
+
+- Attribution footer in commits (now reads from `settings.json`)
+
+### Changed
+
+- Re-enabled statusline in settings
+- Updated plugin configuration for C3 activation
+
 ## [1.0.0] - 2026-04-20
 
 ### Added
