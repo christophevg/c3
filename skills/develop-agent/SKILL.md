@@ -205,7 +205,7 @@ See `references/system-prompt.md` for the complete framework. Every agent must i
 name: {agent-name}
 description: [One-line purpose]. Use when [trigger conditions]. Examples: "[Example request 1]", "[Example request 2]", "[Example request 3]".
 model: inherit
-color: [blue|cyan|green|yellow|magenta|red]
+color: [blue|cyan|green|yellow|magenta|red|orange|purple|indigo]
 tools: [list of tools]
 ---
 

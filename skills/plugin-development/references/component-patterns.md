@@ -109,7 +109,7 @@ You are a specialized code reviewer...
 | `name` | Yes | Agent identifier (kebab-case) |
 | `description` | Yes | Triggering conditions with `<example>` blocks |
 | `model` | Yes | `inherit`, `sonnet`, `opus`, `haiku` |
-| `color` | Yes | Visual identifier: `blue`, `cyan`, `green`, `yellow`, `magenta`, `red` |
+| `color` | Yes | Visual identifier: `blue`, `cyan`, `green`, `yellow`, `magenta`, `red`, `orange`, `purple`, `indigo` |
 | `effort` | No | `low`, `medium`, `high` |
 | `maxTurns` | No | Maximum turns |
 | `tools` | No | Array of allowed tools |
