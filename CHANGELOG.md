@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 *Nothing yet*
 
+## [1.1.5] - 2026-04-21
+
+### Added
+
+- MCP tools support for sub-agents (MCP tools don't auto-inherit, must be explicitly listed)
+- `mcp-tools` skill documenting how to configure MCP tools for sub-agents
+- Email MCP `uv.lock` for reproducible builds
+- Expanded tool access for assistant agent including MCP email tools
+
 ## [1.1.4] - 2026-04-21
 
 ### Fixed
