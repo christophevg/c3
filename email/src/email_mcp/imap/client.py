@@ -139,16 +139,28 @@ class IMAPClient:
     if not IMAP_CRITERIA_PATTERN.match(criteria):
       raise ValueError("Invalid search criteria")
 
-    status, data = await client.search(criteria)
+    result = await client.search(criteria)
 
-    if status != "OK":
+    if result.result != "OK":
       raise RuntimeError("Search failed")
 
-    # data is [b'1 2 3 4 ...']
-    if not data or not data[0]:
+    # Handle response - may be empty or contain message IDs
+    # iCloud returns: b'SEARCH completed (took X ms)' when no messages
+    # Standard IMAP returns: b'SEARCH 1 2 3' with message IDs
+    if not result.lines or not result.lines[0]:
       return []
 
-    ids = data[0].decode().split()
+    # Check if this is iCloud's "no messages" status response
+    line = result.lines[0].decode()
+    if line.startswith("SEARCH ") and "completed" in line.lower():
+      # No actual message IDs, just a status message
+      return []
+
+    # Parse message IDs from standard response
+    ids = line.split()
+    # Remove 'SEARCH' prefix if present (some servers include it)
+    if ids and ids[0].upper() == "SEARCH":
+      ids = ids[1:]
     return ids[-limit:] if limit else ids
 
   async def fetch_message(
