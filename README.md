@@ -75,7 +75,7 @@ The `make local` target runs Claude with `--plugin-dir ./` to test unreleased ch
 
 ---
 
-## Skills (38)
+## Skills (39)
 
 Skills provide focused guidance for specific technologies and workflows.
 
@@ -122,7 +122,7 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/develop-skill` | Create and refine Claude Code skills. |
 | `/develop-agent` | Develop Claude Code agents. |
 
-### Utility (20)
+### Utility (21)
 
 | Skill | Description |
 |-------|-------------|
@@ -146,6 +146,7 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/ollama` | Python ollama library for LLM integration. |
 | `/pyenv` | Manage Python versions. |
 | `/pypi-publish` | Publish packages to PyPI. |
+| `/mcp-tools` | Work with MCP tools: discovery, naming, sub-agent config. |
 
 ---
 
