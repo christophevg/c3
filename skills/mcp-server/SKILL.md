@@ -176,10 +176,77 @@ server.connect(transport);
 
 ```bash
 # MCP Inspector - official testing tool
-npx @modelcontextprotocol/inspector python server.py
+npx @modelcontextprotocol/inspector uv run python -m my_mcp
 ```
 
 **Critical:** Log to stderr, NOT stdout (stdout is the protocol).
+
+**Testing Before Release:**
+1. Test ALL tools with MCP Inspector before releasing
+2. Test with actual provider (e.g., real IMAP server) if wrapping external APIs
+3. Verify environment variables are passed correctly
+4. Check provider-specific quirks (see Provider Quirks section)
+
+### Claude Code Plugin Deployment
+
+When bundling MCP servers in Claude Code plugins:
+
+#### The `cwd` Bug (Issue #17565)
+
+**CRITICAL:** Claude Code ignores the `cwd` field in `.mcp.json`. Always use the `bash -c` workaround:
+
+```json
+{
+  "mcpServers": {
+    "my-server": {
+      "command": "bash",
+      "args": ["-c", "cd \"${CLAUDE_PLUGIN_ROOT}/my-server\" && exec uv run python -m my_mcp"]
+    }
+  }
+}
+```
+
+#### Dependency Management
+
+Use `uv run` for portable dependency management:
+
+```json
+"command": "bash",
+"args": ["-c", "cd \"${CLAUDE_PLUGIN_ROOT}/server\" && exec uv run python -m server"]
+```
+
+This ensures dependencies are automatically installed from `pyproject.toml`.
+
+#### Environment Variables
+
+Only include **required** environment variables in `.mcp.json`. Optional variables should use defaults in code:
+
+```python
+# Bad - will fail if EMAIL_OAUTH2_TOKEN is empty
+oauth2_token: str = Field(alias="OAUTH2_TOKEN")
+
+# Good - optional with default
+oauth2_token: str | None = Field(default=None, alias="OAUTH2_TOKEN")
+```
+
+For Pydantic settings, use `env_parse_none_str=""` to treat empty strings as None:
+
+```python
+model_config = SettingsConfigDict(
+    env_prefix="MY_",
+    env_parse_none_str="",  # Empty strings become None
+)
+```
+
+### Provider Quirks
+
+When wrapping external services, test with the actual provider:
+
+| Provider | Quirk | Solution |
+|----------|-------|----------|
+| iCloud IMAP | SEARCH returns status message instead of IDs | Check for "completed" in response |
+| iCloud IMAP | LIST requires specific quoting | Use `list('""', '"*"')` |
+| iCloud IMAP | FETCH returns bytearray | Handle both bytes and bytearray |
 
 ### Pre-submission Checklist
 
@@ -188,12 +255,15 @@ npx @modelcontextprotocol/inspector python server.py
 - Tool names under 128 characters
 - No prompt injection in tool output
 - Input validation on all parameters
+- Tested with MCP Inspector
+- Tested with actual provider (not just mocks)
 
 ### Distribution
 
 - Submit to Anthropic Directory
 - Create plugin wrapper for skills
 - Document installation clearly
+- Require `uv` for dependency management
 
 ---
 
