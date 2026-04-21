@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 *Nothing yet*
 
+## [1.1.4] - 2026-04-21
+
+### Fixed
+
+- Email MCP server config now treats empty environment variables as `None`
+  - Pydantic `env_parse_none_str=""` setting converts empty strings to None
+  - Fixes validation errors when optional env vars are set but empty
+- Email MCP SEARCH now handles iCloud's non-standard response format
+  - iCloud returns "SEARCH completed (took X ms)" instead of message IDs when empty
+  - Correctly returns empty list instead of parsing status message as IDs
+
 ## [1.1.3] - 2026-04-20
 
 ### Fixed
