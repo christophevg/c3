@@ -93,7 +93,7 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/project` | Dispatcher for project management skills. |
 | `/project-feature` | Capture and scope new features. |
 | `/project-manage` | Full implementation workflow with specialized agents. |
-| `/project-status` | Show current project status snapshot. |
+| `/project-status` | Generate STATUS.md with executive summary, metrics, dependencies, blockers, risks. |
 
 ### Personal Assistant (4)
 
@@ -149,11 +149,12 @@ Skills provide focused guidance for specific technologies and workflows.
 
 ---
 
-## Agents (11)
+## Agents (12)
 
 | Agent | Description |
 |-------|-------------|
 | `assistant` | Personal assistant for inbox processing. |
+| `project-manager` | Project workflow orchestration with multi-task execution. |
 | `functional-analyst` | Requirements extraction and task planning. |
 | `researcher` | Comprehensive research with provenance. |
 | `api-architect` | API design and architecture. |
@@ -197,6 +198,8 @@ export EMAIL_RECIPIENT_DOMAINS=example.com,company.org
 ---
 
 ## Project Management Workflow
+
+The `/project` skill dispatcher handles one-off operations, while the `project-manager` agent orchestrates multi-task sessions with progress tracking and memory persistence.
 
 ```mermaid
 flowchart TB

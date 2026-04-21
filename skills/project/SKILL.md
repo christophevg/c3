@@ -85,3 +85,7 @@ The project dispatcher works alongside these related skills:
 
 - **bug-fixing** — Used by project-manage for bug workflows
 - **start-baseweb-project** — Bootstrap new projects (separate from project-*)
+
+## Related Agents
+
+- **project-manager** — Orchestrates multi-task sessions with progress tracking. Use when you need to execute multiple tasks from TODO.md in sequence. Examples: "manage project", "work on top 5 priority tasks".
