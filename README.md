@@ -75,7 +75,7 @@ The `make local` target runs Claude with `--plugin-dir ./` to test unreleased ch
 
 ---
 
-## Skills (39)
+## Skills (40)
 
 Skills provide focused guidance for specific technologies and workflows.
 
@@ -86,7 +86,7 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/mcp-server` | Guide for designing and building MCP servers (FastMCP, security, deployment). |
 | `/plugin-development` | Guide for creating Claude Code plugins (structure, manifest, distribution). |
 
-### Project Management (4)
+### Project Management (5)
 
 | Skill | Description |
 |-------|-------------|
@@ -94,6 +94,7 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/project-feature` | Capture and scope new features. |
 | `/project-manage` | Full implementation workflow with specialized agents. |
 | `/project-status` | Generate STATUS.md with executive summary, metrics, dependencies, blockers, risks. |
+| `/project-todo-refine` | Iteratively refine TODO.md topics by reviewing state, scope, and priority. |
 
 ### Personal Assistant (4)
 

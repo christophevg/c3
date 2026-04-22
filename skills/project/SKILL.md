@@ -21,6 +21,7 @@ Parse user input and route to appropriate skill:
 |---------------|-----------|---------|
 | `feature`, `add`, `new feature` | project-feature | `/project feature user authentication` |
 | `status`, `backlog`, `what's next` | project-status | `/project status` |
+| `refine`, `update todo`, `review backlog` | project-todo-refine | `/project refine todo` |
 | `manage`, `workflow`, `next task` | project-manage | `/project manage` |
 | `bug`, `fix`, `issue` | project-manage (bug workflow) | `/project bug login fails` |
 | Any other input | project-manage | `/project start working` |
@@ -41,6 +42,9 @@ IF input contains "feature" OR "add" OR starts with "new":
 ELSE IF input contains "status" OR "backlog" OR "what's next":
   → invoke project-status (no args needed)
 
+ELSE IF input contains "refine" OR "update todo" OR "review backlog":
+  → invoke project-todo-refine with full input
+
 ELSE IF input contains "bug" OR "fix" OR "issue" OR "broken":
   → invoke project-manage (will detect bug and use bug-fixing workflow)
 
@@ -52,6 +56,7 @@ ELSE:
 
 - [project-feature](../project-feature/SKILL.md) — Capture and scope new features
 - [project-status](../project-status/SKILL.md) — Show project status snapshot
+- [project-todo-refine](../project-todo-refine/SKILL.md) — Iteratively refine TODO.md topics
 - [project-manage](../project-manage/SKILL.md) — Full project workflow (features and bugs)
 
 ## Examples
@@ -65,6 +70,10 @@ User: /project feature add user authentication
 User: /project status
 → Routes to project-status
 → Shows TODO.md summary and next tasks
+
+User: /project refine todo
+→ Routes to project-todo-refine
+→ Shows TODO overview, iterates through topics for refinement
 
 User: /project manage
 → Routes to project-manage
