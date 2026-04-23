@@ -198,7 +198,21 @@ Options:
 - **"Show next backlog task"**: Proceed to propose task selection (below)
 - **"Show all tasks"**: Display full TODO.md and ask again
 
-**Step 4: Propose Next Task (when no unsorted items or user chose to skip)**
+**Step 4: Verify Task Completion Status (CRITICAL)**
+
+Before proposing a task from the backlog, verify whether its acceptance criteria are already satisfied by existing code. This prevents proposing already-implemented work.
+
+**Verification checklist:**
+- Does the task require creating a file that already exists?
+- Are the task's acceptance criteria already met by current code?
+- Are there related "done" tasks that cover this functionality?
+
+If the task appears already implemented:
+- Mark it as done in TODO.md with today's date
+- Move to the next task
+- Report to the user: "Task {task-id} appears already implemented. Marked as done. Next task: {next-task-id}"
+
+**Step 5: Propose Next Task**
 
 **Use AskUserQuestion tool to propose next task:**
 
