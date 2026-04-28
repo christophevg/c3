@@ -8,10 +8,11 @@
   `_lock` only protects `connect()`, not individual operations. Concurrent tool calls interleave IMAP commands.
   Acceptance: Add operation-level `asyncio.Lock` or checkout/checkin connection pool
 
-- [ ] **C2: Fix RuntimeError misclassified as rate limits** — `server.py:62-63,97-98,129-131`
+- [x] **C2: Fix RuntimeError misclassified as rate limits** — `server.py:62-63,97-98,129-131`
   All `RuntimeError` exceptions are mapped to "Rate limit exceeded", including auth failures, protocol errors, and incorrect `message_id` in `get_email` / `download_attachment`.
   Affects: `list_folders`, `search_emails`, `get_email`, `download_attachment`, `send_email`, `reply_email`, `move_email`, `delete_email`, `mark_email_read`.
   Acceptance: Introduce custom `RateLimitError` or distinct error tuple from `ConnectionPool`; ensure non-rate-limit `RuntimeError`s surface as appropriate generic or specific errors.
+  **Fixed:** Added `RateLimitError` custom exception in `connections/pool.py`, raised from pool on rate limit exhaustion. Updated all tool handlers in `server.py` to catch `RateLimitError` specifically instead of generic `RuntimeError`. Regression tests in `tests/test_server.py`.
 
 - [ ] **C3: Fix `reply_email()` whitelist bypass** — `smtp/client.py:116-140`
   `reply_email()` bypasses recipient whitelist check - security vulnerability.

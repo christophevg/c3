@@ -16,6 +16,11 @@ if TYPE_CHECKING:
   pass
 
 
+class RateLimitError(RuntimeError):
+  """Raised when a rate limit is exceeded."""
+  pass
+
+
 class ConnectionPool:
   """Manages connections for multiple email accounts."""
 
@@ -52,12 +57,12 @@ class ConnectionPool:
 
     Raises:
       ValueError: If account not found
-      RuntimeError: If rate limited
+      RateLimitError: If rate limited
     """
     # Check rate limit first
     if not await imap_limiter.acquire(account_name):
       log_rate_limited(account_name, "imap", 60, 60)
-      raise RuntimeError("IMAP rate limit exceeded for account")
+      raise RateLimitError("IMAP rate limit exceeded for account")
 
     async with self._client_lock:
       if account_name not in self._imap_clients:
@@ -73,12 +78,12 @@ class ConnectionPool:
 
     Raises:
       ValueError: If account not found
-      RuntimeError: If rate limited
+      RateLimitError: If rate limited
     """
     # Check rate limit first
     if not await smtp_limiter.acquire(account_name):
       log_rate_limited(account_name, "smtp", 100, 3600)
-      raise RuntimeError("SMTP rate limit exceeded for account")
+      raise RateLimitError("SMTP rate limit exceeded for account")
 
     async with self._client_lock:
       if account_name not in self._smtp_clients:

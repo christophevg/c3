@@ -9,7 +9,7 @@ from fastmcp import Context, FastMCP
 from fastmcp.exceptions import ToolError
 from pydantic import Field
 
-from email_mcp.connections.pool import get_pool
+from email_mcp.connections.pool import RateLimitError, get_pool
 from email_mcp.smtp.client import WhitelistError
 
 # Create FastMCP server
@@ -59,7 +59,7 @@ async def list_folders(
     return folders
   except ValueError:
     raise ToolError(f"Account not found: {account}")
-  except RuntimeError:
+  except RateLimitError:
     raise ToolError("Rate limit exceeded. Please try again later.")
   except Exception:
     raise ToolError("Failed to list folders. Check server logs for details.")
@@ -94,7 +94,7 @@ async def search_emails(
     return {"message_ids": ids, "count": len(ids)}
   except ValueError:
     raise ToolError(f"Account not found: {account}")
-  except RuntimeError:
+  except RateLimitError:
     raise ToolError("Rate limit exceeded. Please try again later.")
   except Exception:
     raise ToolError("Failed to search emails. Check server logs for details.")
@@ -127,7 +127,7 @@ async def get_email(
     return msg
   except ValueError:
     raise ToolError(f"Account not found: {account}")
-  except RuntimeError:
+  except RateLimitError:
     raise ToolError("Rate limit exceeded. Please try again later.")
   except Exception:
     raise ToolError("Failed to fetch message. Check server logs for details.")
@@ -171,7 +171,7 @@ async def download_attachment(
     raise ToolError(str(e))
   except FileNotFoundError:
     raise ToolError(f"Attachment not found: {filename}")
-  except RuntimeError:
+  except RateLimitError:
     raise ToolError("Rate limit exceeded. Please try again later.")
   except Exception:
     raise ToolError("Failed to download attachment. Check server logs for details.")
@@ -226,7 +226,7 @@ async def send_email(
     raise ToolError(str(e))
   except FileNotFoundError as e:
     raise ToolError(str(e))
-  except RuntimeError:
+  except RateLimitError:
     raise ToolError("Rate limit exceeded. Please try again later.")
   except Exception:
     raise ToolError("Failed to send email. Check server logs for details.")
@@ -276,7 +276,7 @@ async def reply_email(
     raise ToolError(str(e))
   except WhitelistError as e:
     raise ToolError(str(e))
-  except RuntimeError:
+  except RateLimitError:
     raise ToolError("Rate limit exceeded. Please try again later.")
   except Exception:
     raise ToolError("Failed to send reply. Check server logs for details.")
@@ -311,7 +311,7 @@ async def move_email(
     return {"status": "moved", "message_id": message_id, "dest_folder": dest_folder}
   except ValueError:
     raise ToolError(f"Account not found: {account}")
-  except RuntimeError:
+  except RateLimitError:
     raise ToolError("Rate limit exceeded. Please try again later.")
   except Exception:
     raise ToolError("Failed to move message. Check server logs for details.")
@@ -346,7 +346,7 @@ async def delete_email(
     return {"status": "deleted", "message_id": message_id}
   except ValueError:
     raise ToolError(f"Account not found: {account}")
-  except RuntimeError:
+  except RateLimitError:
     raise ToolError("Rate limit exceeded. Please try again later.")
   except Exception:
     raise ToolError("Failed to delete message. Check server logs for details.")
@@ -379,7 +379,7 @@ async def mark_email_read(
     return {"status": "marked_read", "message_id": message_id}
   except ValueError:
     raise ToolError(f"Account not found: {account}")
-  except RuntimeError:
+  except RateLimitError:
     raise ToolError("Rate limit exceeded. Please try again later.")
   except Exception:
     raise ToolError("Failed to mark message as read. Check server logs for details.")
