@@ -123,6 +123,14 @@ class SMTPClient:
     html_body: str | None = None,
   ) -> dict[str, str]:
     """Send a reply preserving thread context."""
+    # Validate email address
+    validate_email(to)
+
+    # Check recipient whitelist
+    whitelist = get_recipient_whitelist()
+    if not whitelist.is_allowed(to):
+      raise WhitelistError(f"Recipients not in whitelist: {to}")
+
     msg = EmailMessage()
 
     msg["From"] = self.account.username
