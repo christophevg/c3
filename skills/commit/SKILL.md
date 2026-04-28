@@ -21,7 +21,7 @@ Guide git commit operations with atomic commits, functionality-based grouping, a
 
 Use this skill when:
 - User wants to commit changes
-- User invokes "/commit" command
+- User invokes "/c3:commit" command
 - User says "commit these changes" or "create a commit"
 - Multiple changes need grouping analysis
 
@@ -166,6 +166,22 @@ Categorize changes:
 - By file type (backend, frontend, tests, docs)
 - By directory (api, models, ui, tests)
 - By change type (feat, fix, refactor)
+
+### 1.5. Handle Auto-Generated Files
+
+Some files are regenerated during development (demo screenshots, build artifacts, compiled outputs).
+After committing implementation changes:
+
+1. Check if `make demos`, `make build`, or similar commands were run
+2. Identify auto-generated files in `git status`
+3. For each file, determine:
+   - Intentionally regenerated (commit in separate commit or with implementation)
+   - Temporary artifacts (add to `.gitignore`)
+   - Unrelated files (leave uncommitted)
+4. Ask user about unclear files before committing
+
+Example: After implementing a new tool, `make demos` regenerated screenshot files.
+These should be committed to reflect the current state of the project.
 
 ### 2. Present Analysis
 

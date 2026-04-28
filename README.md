@@ -151,12 +151,13 @@ Skills provide focused guidance for specific technologies and workflows.
 
 ---
 
-## Agents (12)
+## Agents (13)
 
 | Agent | Description |
 |-------|-------------|
 | `assistant` | Personal assistant for inbox processing. |
 | `project-manager` | Project workflow orchestration with multi-task execution. |
+| `git-manager` | Git operations via c3:commit skill. |
 | `functional-analyst` | Requirements extraction and task planning. |
 | `researcher` | Comprehensive research with provenance. |
 | `api-architect` | API design and architecture. |

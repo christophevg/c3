@@ -2,7 +2,7 @@
 
 ## User Input
 
-- [ ] Ensure that C3 skills and agents reference each other with the c3: plugin prefix, to avoid a redundant error detour and interpretation of the error to resolve it to a c3: prefixed Agent call.
+- [x] Ensure that C3 skills and agents reference each other with the c3: plugin prefix — 2026-04-28
 - [ ] add CronCreate, ScheduleWakeup tools to c3:assistant
 - [ ] improve the researcher agent to always ask the user where to store the new research (if the information is not explicitly provided in the initial start-up prompt). 
 - [ ] update pa-email, to use new email MCP server features to avoid deduplication logic: move message now actually (should) move the message, expunging it from the inbox, which make only unhandled messages available in the inbox, also before moving, mark messages as read, which should also be available now.

@@ -16,5 +16,5 @@ claude:
 update-claude:
 	claude --update
 
-resume: ARGS=--resume
+resume: ARGS+=--resume
 resume: claude
