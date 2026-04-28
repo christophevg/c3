@@ -685,3 +685,102 @@ class TestMoveMessageAtomic:
 
       await client.disconnect()
       assert client.has_capability("MOVE") is False
+
+
+class TestIMAPCriteriaValidation:
+  """Tests for IMAP search criteria validation (H3 bug fix)."""
+
+  async def test_valid_criteria_with_double_quotes(
+    self, mock_account, mock_imap_client
+  ):
+    """Valid criteria with double quotes should be accepted."""
+    client = IMAPClient(mock_account)
+
+    # Mock search response
+    search_response = AsyncMock()
+    search_response.result = "OK"
+    search_response.lines = [b"SEARCH 1 2 3"]
+    mock_imap_client.search = AsyncMock(return_value=search_response)
+
+    await client.search("INBOX", 'FROM "test@example.com"', 50)
+    mock_imap_client.search.assert_called_once()
+
+  async def test_valid_criteria_all(self, mock_account, mock_imap_client):
+    """Simple ALL criteria should be accepted."""
+    client = IMAPClient(mock_account)
+
+    search_response = AsyncMock()
+    search_response.result = "OK"
+    search_response.lines = [b"SEARCH 1 2 3"]
+    mock_imap_client.search = AsyncMock(return_value=search_response)
+
+    await client.search("INBOX", "ALL", 50)
+    mock_imap_client.search.assert_called_once_with("ALL")
+
+  async def test_valid_criteria_date_format(
+    self, mock_account, mock_imap_client
+  ):
+    """Date criteria with hyphens should be accepted."""
+    client = IMAPClient(mock_account)
+
+    search_response = AsyncMock()
+    search_response.result = "OK"
+    search_response.lines = [b"SEARCH 1 2 3"]
+    mock_imap_client.search = AsyncMock(return_value=search_response)
+
+    await client.search("INBOX", "SINCE 01-Jan-2024", 50)
+    mock_imap_client.search.assert_called_once()
+
+  async def test_single_quote_rejected(self, mock_account, mock_imap_client):
+    """Criteria containing single quotes should be rejected.
+
+    This test currently FAILS because the bug exists - single quotes
+    are allowed. After fix: single quotes should be rejected.
+    """
+    client = IMAPClient(mock_account)
+
+    # This should raise ValueError because single quotes are not allowed
+    with pytest.raises(ValueError, match="Invalid search criteria"):
+      await client.search("INBOX", "FROM 'test@example.com'", 50)
+
+    # Server should never receive the invalid criteria
+    mock_imap_client.search.assert_not_called()
+
+  async def test_injection_attempt_rejected(
+    self, mock_account, mock_imap_client
+  ):
+    """IMAP injection attempts using single quotes should be rejected."""
+    client = IMAPClient(mock_account)
+
+    with pytest.raises(ValueError, match="Invalid search criteria"):
+      await client.search("INBOX", "FROM ' OR FROM admin", 50)
+
+    mock_imap_client.search.assert_not_called()
+
+  async def test_special_characters_allowed(
+    self, mock_account, mock_imap_client
+  ):
+    """Required IMAP special characters should be accepted."""
+    client = IMAPClient(mock_account)
+
+    search_response = AsyncMock()
+    search_response.result = "OK"
+    search_response.lines = [b"SEARCH 1 2 3"]
+    mock_imap_client.search = AsyncMock(return_value=search_response)
+
+    # Test various valid IMAP syntax
+    valid_criteria = [
+      "ALL",
+      "UNSEEN",
+      "FROM test@example.com",
+      'SUBJECT "hello world"',
+      "OR FROM alice FROM bob",
+      "NOT DELETED",
+      "LARGER 1000",
+      "BEFORE 01-Jan-2024",
+    ]
+
+    for criteria in valid_criteria:
+      mock_imap_client.search.reset_mock()
+      await client.search("INBOX", criteria, 50)
+      mock_imap_client.search.assert_called_once()

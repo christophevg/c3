@@ -24,7 +24,9 @@ from email_mcp.safety.audit import log_auth_attempt, log_attachment_download
 DEFAULT_WORKSPACE = Path(os.environ.get("EMAIL_WORKSPACE", "/tmp/email_workspace"))
 
 # IMAP search criteria validation
-IMAP_CRITERIA_PATTERN = re.compile(r"^[\w\s\(\)\*\<\>\[\]=!\"'-]+$")
+# Single quotes removed - not part of IMAP string syntax (RFC 3501 uses double quotes only)
+# Added @ . : % \ for valid IMAP SEARCH syntax (email addresses, dates, flags)
+IMAP_CRITERIA_PATTERN = re.compile(r"^[\w\s\(\)\*\<\>\[\]=!\"@\.:%\\-]+$")
 
 
 class SecurityError(Exception):

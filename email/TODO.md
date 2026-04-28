@@ -44,9 +44,10 @@
   Acceptance: Catch specific exceptions (`aioimaplib.Abort`, `TimeoutError`) separately from auth errors
   **Fixed:** Split exception handling into specific catch blocks for different error types (ValueError, TimeoutError, ConnectionError, SSLError, aioimaplib.Abort, aioimaplib.Error, OSError). Each type now has a specific, actionable error message. Only `aioimaplib.Error` and `ValueError` are logged as auth failures. Tests in `tests/test_imap_client.py::TestAuthExceptionHandling`.
 
-- [ ] **H3: Tighten IMAP criteria regex** — `imap/client.py:24`
+- [x] **H3: Tighten IMAP criteria regex** — `imap/client.py:26-29`
   IMAP criteria regex allows single quotes which can break out of quoted strings in certain IMAP commands.
   Acceptance: Tighten regex or use proper IMAP command escaping
+  **Fixed:** Removed single quote from regex (not part of IMAP string syntax per RFC 3501). Added valid IMAP characters (@, ., :, %, \) for email addresses, flags, and wildcards. Tests in `tests/test_imap_client.py::TestIMAPCriteriaValidation`.
 
 - [ ] **H4: Add CRLF injection protection** — `smtp/client.py:159-197`
   `_send()` method doesn't validate `in_reply_to` or `references` headers for header injection.
