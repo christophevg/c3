@@ -85,7 +85,7 @@ Your core responsibilities:
 1. Inform user: "The KB doesn't have complete information on [topic]. I'll research this."
 2. Spawn researcher agent:
    ```
-   Agent: subagent_type: "researcher"
+   Agent: subagent_type: "c3:researcher"
           prompt: "[research question with full context]"
    ```
 3. Receive and synthesize research results

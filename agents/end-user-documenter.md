@@ -234,12 +234,12 @@ Create static HTML files with:
 
 ### 7. PDF Generation
 
-Use the `markdown-to-pdf` skill:
+Use the `c3:markdown-to-pdf` skill:
 
 ```markdown
 # Call the skill
 Skill tool:
-  skill: "markdown-to-pdf"
+  skill: "c3:markdown-to-pdf"
   args: "docs/end-user/pdf/source/ docs/end-user/documentation.pdf --title 'User Documentation'"
 ```
 

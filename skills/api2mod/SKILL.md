@@ -72,11 +72,11 @@ If the input is a structured API specification:
 | Postman | `"info"` with `"_postman_id"` |
 | Insomnia | `"_type": "export"` |
 
-**Action**: Call `spec2mod` skill with the spec file and output location.
+**Action**: Call `c3:spec2mod` skill with the spec file and output location.
 
 ```
 Use Skill tool:
-  skill: "spec2mod"
+  skill: "c3:spec2mod"
   args: "<spec_file> --output <output_dir>"
 ```
 
@@ -91,16 +91,16 @@ If the input is unstructured API documentation:
 | Wiki | Atlassian wiki, GitHub wiki |
 
 **Action**:
-1. Call `doc2spec` to convert docs to OpenAPI spec
-2. Then call `spec2mod` with the generated spec
+1. Call `c3:doc2spec` to convert docs to OpenAPI spec
+2. Then call `c3:spec2mod` with the generated spec
 
 ```
 Use Skill tool:
-  skill: "doc2spec"
+  skill: "c3:doc2spec"
   args: "<docs_url_or_file> --output <temp_spec.yaml>"
 
 Then:
-  skill: "spec2mod"
+  skill: "c3:spec2mod"
   args: "<temp_spec.yaml> --output <output_dir>"
 ```
 
