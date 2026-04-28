@@ -27,9 +27,10 @@
   - Unit tests for symlink escape detection
   - Integration tests for TOCTOU race conditions
 
-- [ ] **C5: Fix SMTP exception chain swallowing** — `smtp/client.py:196-197`
+- [x] **C5: Fix SMTP exception chain swallowing** — `smtp/client.py:204-205`
   SMTP exceptions lose all error details - original exception is swallowed.
   Acceptance: Use `raise RuntimeError(...) from e` to preserve exception chain
+  **Fixed:** Added `from e` to exception raise to preserve exception chain. Tests in `tests/test_smtp_client.py::TestSMTPExceptionChaining`.
 
 ### P2 - High
 

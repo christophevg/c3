@@ -6,6 +6,8 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
+import aiosmtplib
+
 from email_mcp.config import EmailAccount, RecipientWhitelist
 from email_mcp.smtp.client import SMTPClient, WhitelistError
 
@@ -127,3 +129,51 @@ class TestReplyEmailValidation:
       )
 
     assert "Invalid email address" in str(exc_info.value)
+
+
+class TestSMTPExceptionChaining:
+  """Tests that SMTP exceptions preserve exception chain (C5 bug fix)."""
+
+  async def test_smtp_exception_chain_preserved(self, mock_account):
+    """SMTPException should be chained to RuntimeError via 'from'.
+
+    Verifies that exception chain is preserved for debugging while keeping
+    user-facing message generic. The __cause__ attribute should contain the
+    original SMTPException.
+    """
+    client = SMTPClient(mock_account)
+
+    with patch("email_mcp.smtp.client.aiosmtplib.send") as mock_send:
+      mock_send.side_effect = aiosmtplib.SMTPException("Authentication failed")
+
+      with pytest.raises(RuntimeError) as exc_info:
+        await client.send_email(
+          to=["user@test.com"],
+          subject="Test",
+          body="Body",
+        )
+
+      # Verify exception chain is preserved via 'from e' syntax
+      assert exc_info.value.__cause__ is not None, (
+        "Exception chain not preserved - __cause__ is None. "
+        "Use 'raise RuntimeError(...) from e' to preserve chain."
+      )
+      assert isinstance(exc_info.value.__cause__, aiosmtplib.SMTPException)
+      assert "Authentication failed" in str(exc_info.value.__cause__)
+
+  async def test_smtp_exception_message_unchanged(self, mock_account):
+    """RuntimeError message should remain generic for user-facing output."""
+    client = SMTPClient(mock_account)
+
+    with patch("email_mcp.smtp.client.aiosmtplib.send") as mock_send:
+      mock_send.side_effect = aiosmtplib.SMTPException("Any error")
+
+      with pytest.raises(RuntimeError) as exc_info:
+        await client.send_email(
+          to=["user@test.com"],
+          subject="Test",
+          body="Body",
+        )
+
+      # The user-facing message should be generic
+      assert "Failed to send email" in str(exc_info.value)

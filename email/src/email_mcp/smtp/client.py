@@ -202,7 +202,7 @@ class SMTPClient:
           "message": str(result[1]) if result else "OK",
         }
       except aiosmtplib.SMTPException as e:
-        raise RuntimeError("Failed to send email. Check server logs for details.")
+        raise RuntimeError("Failed to send email. Check server logs for details.") from e
 
   async def _add_attachments(
     self,
