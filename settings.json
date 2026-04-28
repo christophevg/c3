@@ -16,6 +16,13 @@
       "Bash(git add:*)"
     ]
   },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/bin/statusline.py"
+  },
+  "enabledPlugins": {
+    "c3@christophe.vg": true
+  },
   "extraKnownMarketplaces": {
     "christophe.vg": {
       "source": {
@@ -25,11 +32,5 @@
     }
   },
   "awaySummaryEnabled": false,
-  "enabledPlugins": {
-    "c3@christophe.vg": true
-  },
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/bin/statusline.py"
-  }
+  "theme": "light"
 }

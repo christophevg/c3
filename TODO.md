@@ -4,6 +4,22 @@
 
 *Empty — all items from 2026-04-20 session have been processed.*
 
+## Email Input (2026-04-24)
+
+- [ ] **Update pa-email skill with better error handling**
+  - Fix deduplication: message IDs are folder-local, not global
+  - Use content-based deduplication (subject + from + date hash)
+  - Add graceful handling of MCP server errors
+  - Source: Email from Christophe
+
+- [ ] **Improve MCP server to allow marking messages as read and moving to archive (not just copy)**
+  - Current behavior may be copying instead of moving
+  - Need to verify move_email actually removes from source folder
+  - Consider adding mark-as-read capability to email MCP server
+  - Source: Email from Christophe
+
+- [ ] **Write access test** — *verified at 2026-04-24 session*
+
 ## Backlog (Prioritized)
 
 ### P1 - Critical
