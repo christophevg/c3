@@ -352,6 +352,39 @@ async def delete_email(
     raise ToolError("Failed to delete message. Check server logs for details.")
 
 
+@mcp.tool
+async def mark_email_read(
+  account: Annotated[str, Field(description="Account name")],
+  message_id: Annotated[str, Field(description="Message ID")],
+  folder: Annotated[str, Field(default="INBOX", description="Folder name")] = "INBOX",
+  ctx: Context = None,
+) -> dict[str, str]:
+  """Mark an email message as read.
+
+  Args:
+    account: The account name.
+    message_id: The message ID to mark as read.
+    folder: The folder containing the message (default: INBOX).
+
+  Returns:
+    Dictionary with status and message ID.
+  """
+  if ctx:
+    await ctx.info(f"Marking message {message_id} as read in {folder}")
+
+  try:
+    pool = await get_pool()
+    client = await pool.get_imap_client(account)
+    await client.mark_message(message_id, folder, "\\Seen", "add")
+    return {"status": "marked_read", "message_id": message_id}
+  except ValueError:
+    raise ToolError(f"Account not found: {account}")
+  except RuntimeError:
+    raise ToolError("Rate limit exceeded. Please try again later.")
+  except Exception:
+    raise ToolError("Failed to mark message as read. Check server logs for details.")
+
+
 # --- Resources ---
 
 

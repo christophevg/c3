@@ -179,6 +179,21 @@ class DeleteEmailOutput:
   message_id: Annotated[str, Field(description="Message ID")]
 
 
+class MarkEmailReadInput:
+  """Input schema for mark_email_read tool."""
+
+  account: Annotated[str, Field(description="Account name")]
+  message_id: Annotated[str, Field(description="Message ID")]
+  folder: Annotated[str, Field(default="INBOX", description="Folder name")]
+
+
+class MarkEmailReadOutput:
+  """Output schema for mark_email_read tool."""
+
+  status: Annotated[str, Field(description="Mark status")]
+  message_id: Annotated[str, Field(description="Message ID")]
+
+
 # Tool definitions as dictionaries for FastMCP registration
 
 TOOL_SCHEMAS: dict[str, dict[str, Any]] = {
@@ -290,6 +305,18 @@ TOOL_SCHEMAS: dict[str, dict[str, Any]] = {
         "message_id": {"type": "string", "description": "Message ID"},
         "folder": {"type": "string", "default": "INBOX", "description": "Folder name"},
         "expunge": {"type": "boolean", "default": True, "description": "Expunge after delete"},
+      },
+      "required": ["account", "message_id"],
+    },
+  },
+  "mark_email_read": {
+    "description": "Mark an email message as read.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "account": {"type": "string", "description": "Account name"},
+        "message_id": {"type": "string", "description": "Message ID"},
+        "folder": {"type": "string", "default": "INBOX", "description": "Folder name"},
       },
       "required": ["account", "message_id"],
     },

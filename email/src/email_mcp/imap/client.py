@@ -219,6 +219,9 @@ class IMAPClient:
     # Mark as deleted in source
     await client.store(message_id, "+FLAGS", "\\Deleted")
 
+    # Permanently remove from source so it no longer appears in searches
+    await client.expunge()
+
     return True
 
   async def delete_message(
