@@ -14,13 +14,18 @@
   Acceptance: Introduce custom `RateLimitError` or distinct error tuple from `ConnectionPool`; ensure non-rate-limit `RuntimeError`s surface as appropriate generic or specific errors.
   **Fixed:** Added `RateLimitError` custom exception in `connections/pool.py`, raised from pool on rate limit exhaustion. Updated all tool handlers in `server.py` to catch `RateLimitError` specifically instead of generic `RuntimeError`. Regression tests in `tests/test_server.py`.
 
-- [ ] **C3: Fix `reply_email()` whitelist bypass** — `smtp/client.py:116-140`
+- [x] **C3: Fix `reply_email()` whitelist bypass** — `smtp/client.py:116-140`
   `reply_email()` bypasses recipient whitelist check - security vulnerability.
   Acceptance: Add same whitelist check as `send_email()` before sending
+  **Fixed:** Added `validate_email(to)` and whitelist check using `get_recipient_whitelist().is_allowed(to)` in `reply_email()`, raising `WhitelistError` for blocked recipients. Tests in `tests/test_smtp_client.py`.
 
-- [ ] **C4: Fix attachment download symlink race** — `imap/client.py:288-313`
+- [x] **C4: Fix attachment download symlink race** — `imap/client.py:288-313`
   Workspace confinement can be bypassed via symlink between check and write.
   Acceptance: Use `os.path.realpath()` to resolve final path and verify within workspace
+  **Fixed:** Added post-write verification in `download_attachment()` using `os.path.realpath()` to detect symlink escapes. Added `SecurityError` exception in `imap/client.py`. Updated `server.py` to catch and handle `SecurityError`. Clean up escaped files before raising error. Tests in `tests/test_path_traversal.py`.
+  - Use `os.path.realpath()` to resolve final path and verify within workspace
+  - Unit tests for symlink escape detection
+  - Integration tests for TOCTOU race conditions
 
 - [ ] **C5: Fix SMTP exception chain swallowing** — `smtp/client.py:196-197`
   SMTP exceptions lose all error details - original exception is swallowed.
@@ -118,6 +123,7 @@
 
 - [ ] **M8: Add attachment size limits** — `smtp/client.py:205-218`
   `_add_attachments()` reads entire files into memory without size limits - OOM risk.
+  **Security Note**: Also needs symlink protection (same pattern as C4) for reading attachments.
   Acceptance: Add configurable max attachment size, reject oversized files
 
 - [ ] **M9: Add error sanitization for resources** — `server.py:391-405`

@@ -1,29 +1,24 @@
 # TODO
 
-## Inbox Input
-
-*Empty — all items from 2026-04-20 session have been processed.*
-
 ## User Input
 
 - [ ] Ensure that C3 skills and agents reference each other with the c3: plugin prefix, to avoid a redundant error detour and interpretation of the error to resolve it to a c3: prefixed Agent call.
 - [ ] add CronCreate, ScheduleWakeup tools to c3:assistant
-
-## Email Input (2026-04-24)
-
-- [ ] **Update pa-email skill with better error handling**
-  - Fix deduplication: message IDs are folder-local, not global
-  - Use content-based deduplication (subject + from + date hash)
-  - Add graceful handling of MCP server errors
-  - Source: Email from Christophe
-
-- [ ] **Improve MCP server to allow marking messages as read and moving to archive (not just copy)**
-  - Current behavior may be copying instead of moving
-  - Need to verify move_email actually removes from source folder
-  - Consider adding mark-as-read capability to email MCP server
-  - Source: Email from Christophe
-
-- [ ] **Write access test** — *verified at 2026-04-24 session*
+- [ ] improve the researcher agent to always ask the user where to store the new research (if the information is not explicitly provided in the initial start-up prompt). 
+- [ ] update pa-email, to use new email MCP server features to avoid deduplication logic: move message now actually (should) move the message, expunging it from the inbox, which make only unhandled messages available in the inbox, also before moving, mark messages as read, which should also be available now.
+- [ ] all C3 agents should be also able to communicate in an async way. e.g. allow for an assistant agent to capture questions and provide answers - in the meantime, the assistant will return these questions to the user e.g. via email, read the replies and provide the answers back to the agents awaiting user input, but now from the assistant.
+  so the interaction pattern becomes:
+    user <- email -> assistant <--> agents
+  a typical workflow would be:
+    - user sends an email to assistant, asking to add a feature request to the TODO backlog of a project, indicating it should be processed immediately. 
+    - the agent adds the feature to the TODO list of the project
+    - the agent then spawns a project-management agent to manage the project
+    - the project management agent sees the unsorted new feature request and spawns a functional analyst to investigate it
+    - the functional analyst has additional questions and provides them as feedback
+    - the feedback is returned to the assistant, who replies to the user with the functional assistant's questions
+    - the user replies with his answers
+    - the assistant provides the answers to the project manager who provides them to the functional analyst to continue.
+    - Note: this pattern should be generic for all agents that might require input during the project-management phase
 
 ## Backlog (Prioritized)
 
