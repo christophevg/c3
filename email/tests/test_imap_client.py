@@ -1,10 +1,14 @@
 """Tests for IMAPClient race condition fixes."""
 
 import asyncio
+import socket
+import ssl
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
 import pytest
+
+import aioimaplib
 
 from email_mcp.config import EmailAccount
 from email_mcp.imap.client import IMAPClient
@@ -193,12 +197,144 @@ class TestIMAPClientLocks:
     with patch("email_mcp.imap.client.IMAP4_SSL") as mock_imap_class:
       mock_client = AsyncMock()
       mock_client.wait_hello_from_server = AsyncMock()
-      mock_client.login = AsyncMock(side_effect=Exception("Invalid credentials"))
+      mock_client.login = AsyncMock(
+        side_effect=aioimaplib.Error("Invalid credentials")
+      )
       mock_imap_class.return_value = mock_client
 
       client = IMAPClient(mock_account)
 
       with pytest.raises(RuntimeError, match="Authentication failed"):
+        await client.connect()
+
+
+class TestAuthExceptionHandling:
+  """Tests for specific exception handling during authentication (H2 bug fix)."""
+
+  async def test_invalid_password_raises_auth_error(self, mock_account):
+    """Invalid credentials should raise 'Authentication failed'."""
+    with patch("email_mcp.imap.client.IMAP4_SSL") as mock_imap_class:
+      mock_client = AsyncMock()
+      mock_client.wait_hello_from_server = AsyncMock()
+      mock_client.login = AsyncMock(
+        side_effect=aioimaplib.Error("Invalid credentials")
+      )
+      mock_imap_class.return_value = mock_client
+
+      client = IMAPClient(mock_account)
+
+      with pytest.raises(RuntimeError, match="Authentication failed"):
+        await client.connect()
+
+  async def test_oauth2_invalid_token_raises_auth_error(self, mock_account):
+    """Invalid OAuth2 token should raise 'Authentication failed'."""
+    oauth_account = EmailAccount(
+      name="test",
+      imap_host="imap.test.com",
+      imap_port=993,
+      smtp_host="smtp.test.com",
+      smtp_port=587,
+      username="test@test.com",
+      auth_method="oauth2",
+      oauth2_token="invalid_token",
+    )
+
+    with patch("email_mcp.imap.client.IMAP4_SSL") as mock_imap_class:
+      mock_client = AsyncMock()
+      mock_client.wait_hello_from_server = AsyncMock()
+      mock_client.authenticate = AsyncMock(
+        side_effect=aioimaplib.Error("Invalid token")
+      )
+      mock_imap_class.return_value = mock_client
+
+      client = IMAPClient(oauth_account)
+
+      with pytest.raises(RuntimeError, match="Authentication failed"):
+        await client.connect()
+
+  async def test_connection_timeout_raises_timeout_error(self, mock_account):
+    """Connection timeout should raise specific timeout message."""
+    with patch("email_mcp.imap.client.IMAP4_SSL") as mock_imap_class:
+      mock_client = AsyncMock()
+      mock_client.wait_hello_from_server = AsyncMock()
+      mock_client.login = AsyncMock(side_effect=TimeoutError())
+      mock_imap_class.return_value = mock_client
+
+      client = IMAPClient(mock_account)
+
+      with pytest.raises(RuntimeError, match="Connection timed out"):
+        await client.connect()
+
+  async def test_network_disconnect_raises_connection_error(self, mock_account):
+    """Network disconnection should raise connection error."""
+    with patch("email_mcp.imap.client.IMAP4_SSL") as mock_imap_class:
+      mock_client = AsyncMock()
+      mock_client.wait_hello_from_server = AsyncMock()
+      mock_client.login = AsyncMock(
+        side_effect=ConnectionError("Network unreachable")
+      )
+      mock_imap_class.return_value = mock_client
+
+      client = IMAPClient(mock_account)
+
+      with pytest.raises(RuntimeError, match="Connection lost"):
+        await client.connect()
+
+  async def test_dns_failure_raises_dns_error(self, mock_account):
+    """DNS resolution failure should raise DNS-specific message."""
+    with patch("email_mcp.imap.client.IMAP4_SSL") as mock_imap_class:
+      mock_client = AsyncMock()
+      mock_client.wait_hello_from_server = AsyncMock(
+        side_effect=socket.gaierror("Name resolution failed")
+      )
+      mock_imap_class.return_value = mock_client
+
+      client = IMAPClient(mock_account)
+
+      with pytest.raises(RuntimeError, match="DNS resolution failed"):
+        await client.connect()
+
+  async def test_tls_error_raises_tls_message(self, mock_account):
+    """TLS certificate error should raise TLS-specific message."""
+    with patch("email_mcp.imap.client.IMAP4_SSL") as mock_imap_class:
+      mock_client = AsyncMock()
+      mock_client.wait_hello_from_server = AsyncMock(
+        side_effect=ssl.SSLError("Certificate verify failed")
+      )
+      mock_imap_class.return_value = mock_client
+
+      client = IMAPClient(mock_account)
+
+      with pytest.raises(RuntimeError, match="TLS error"):
+        await client.connect()
+
+  async def test_abort_raises_protocol_error(self, mock_account):
+    """Protocol abort should raise protocol-specific message."""
+    with patch("email_mcp.imap.client.IMAP4_SSL") as mock_imap_class:
+      mock_client = AsyncMock()
+      mock_client.wait_hello_from_server = AsyncMock()
+      mock_client.login = AsyncMock(
+        side_effect=aioimaplib.Abort("Server closed connection")
+      )
+      mock_imap_class.return_value = mock_client
+
+      client = IMAPClient(mock_account)
+
+      with pytest.raises(RuntimeError, match="Protocol error"):
+        await client.connect()
+
+  async def test_oserror_raises_network_error(self, mock_account):
+    """OSError should raise network error message."""
+    with patch("email_mcp.imap.client.IMAP4_SSL") as mock_imap_class:
+      mock_client = AsyncMock()
+      mock_client.wait_hello_from_server = AsyncMock(
+        side_effect=OSError("Connection refused")
+      )
+      mock_imap_class.return_value = mock_client
+
+      client = IMAPClient(mock_account)
+
+      with pytest.raises(RuntimeError, match="Network error"):
         await client.connect()
 
 

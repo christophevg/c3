@@ -7,11 +7,14 @@ import email
 import hashlib
 import os
 import re
+import socket
 import ssl
+import traceback
 from email.header import decode_header
 from pathlib import Path
 from typing import Any
 
+import aioimaplib
 from aioimaplib import IMAP4_SSL
 
 from email_mcp.config import EmailAccount
@@ -46,20 +49,20 @@ class IMAPClient:
       if self._client is not None:
         return self._client
 
-      # Create SSL context with certificate verification and TLS 1.2 minimum
-      context = ssl.create_default_context()
-      context.minimum_version = ssl.TLSVersion.TLSv1_2
-
-      self._client = IMAP4_SSL(
-        host=self.account.imap_host,
-        port=self.account.imap_port,
-        ssl_context=context,
-      )
-
-      await self._client.wait_hello_from_server()
-
-      # Authenticate
       try:
+        # Create SSL context with certificate verification and TLS 1.2 minimum
+        context = ssl.create_default_context()
+        context.minimum_version = ssl.TLSVersion.TLSv1_2
+
+        self._client = IMAP4_SSL(
+          host=self.account.imap_host,
+          port=self.account.imap_port,
+          ssl_context=context,
+        )
+
+        await self._client.wait_hello_from_server()
+
+        # Authenticate
         if self.account.auth_method == "oauth2" and self.account.oauth2_token:
           token = self.account.oauth2_token.get_secret_value()
           auth_string = f"user={self.account.username}\x01auth=Bearer {token}\x01\x01"
@@ -73,9 +76,37 @@ class IMAPClient:
           log_auth_attempt(self.account.name, True, "password")
         else:
           raise ValueError("No credentials available")
-      except Exception as e:
+
+      except ValueError as e:
+        # Configuration error - missing credentials
         log_auth_attempt(self.account.name, False, self.account.auth_method, str(e))
-        raise RuntimeError("Authentication failed. Check server logs for details.")
+        raise RuntimeError(f"Configuration error: {e}") from e
+      except (asyncio.TimeoutError, TimeoutError):
+        # Connection timeout (asyncio.TimeoutError is an alias for TimeoutError in 3.11+)
+        raise RuntimeError("Connection timed out. Check server availability.")
+      except ConnectionError as e:
+        # Network-level disconnection
+        raise RuntimeError(f"Connection lost: {e}") from e
+      except ssl.SSLError as e:
+        # TLS certificate/validation errors
+        raise RuntimeError(f"TLS error: {e}. Check server certificate.") from e
+      except aioimaplib.Abort as e:
+        # Protocol-level abort (server disconnected, protocol error)
+        raise RuntimeError(f"Protocol error: {e}") from e
+      except aioimaplib.Error as e:
+        # IMAP-specific errors (includes authentication failures)
+        log_auth_attempt(self.account.name, False, self.account.auth_method, str(e))
+        raise RuntimeError("Authentication failed. Check server logs for details.") from e
+      except OSError as e:
+        # DNS failures, connection refused, etc.
+        if isinstance(e, socket.gaierror):
+          raise RuntimeError(f"DNS resolution failed for {self.account.imap_host}") from e
+        raise RuntimeError(f"Network error: {e}") from e
+      except Exception as e:
+        # Unexpected errors - preserve for debugging
+        raise RuntimeError(
+          f"An unexpected error occurred: {type(e).__name__}: {e}"
+        ) from e
 
       # Query and cache server capabilities
       try:

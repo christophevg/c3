@@ -39,9 +39,10 @@
   Acceptance: Use IMAP `MOVE` extension if available, or document limitation clearly
   **Fixed:** Added capability detection to check for MOVE extension (RFC 6851). Uses atomic `move()` command when server supports it, falls back to COPY+STORE+EXPUNGE with documented limitation for legacy servers. Tests in `tests/test_imap_client.py::TestMoveMessageAtomic`.
 
-- [ ] **H2: Fix auth exception handling** — `imap/client.py:69-71`
+- [x] **H2: Fix auth exception handling** — `imap/client.py:64-111`
   `except Exception as e:` catches connection errors, DNS failures, protocol bugs, misreporting as auth failures.
   Acceptance: Catch specific exceptions (`aioimaplib.Abort`, `TimeoutError`) separately from auth errors
+  **Fixed:** Split exception handling into specific catch blocks for different error types (ValueError, TimeoutError, ConnectionError, SSLError, aioimaplib.Abort, aioimaplib.Error, OSError). Each type now has a specific, actionable error message. Only `aioimaplib.Error` and `ValueError` are logged as auth failures. Tests in `tests/test_imap_client.py::TestAuthExceptionHandling`.
 
 - [ ] **H3: Tighten IMAP criteria regex** — `imap/client.py:24`
   IMAP criteria regex allows single quotes which can break out of quoted strings in certain IMAP commands.
@@ -59,9 +60,10 @@
   Email validation only checks format, not encoding (international domains/addresses).
   Acceptance: Consider using `email.utils` or library handling internationalized addresses
 
-- [ ] **H7: Fix overly broad auth exception handling** — `imap/client.py:69`
+- [x] **H7: Fix overly broad auth exception handling** — `imap/client.py:69`
   `except Exception:` catches connection errors, DNS failures, protocol bugs.
   Acceptance: Catch specific exceptions separately from auth errors
+  **Fixed:** Duplicate of H2 - fixed with H2.
 
 - [ ] **H8: Replace `time.time()` with `time.monotonic()`** — `safety/rate_limiter.py:31`
   Non-monotonic clock vulnerable to system clock jumps - breaks expiry logic.
