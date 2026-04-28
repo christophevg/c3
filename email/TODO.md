@@ -1,22 +1,17 @@
 # TODO - Email MCP Server
 
-## Inbox Input
-
-*Unstructured ideas captured during development. To be refined and prioritized.*
-
-- get_email: RuntimeError is handled as a Rate limit problem, which is not in case an incorrect message_id is provided (RuntimeError handling is like that in more tools)
-
 ## Backlog (Prioritized)
 
 ### P1 - Critical
 
-- [ ] **C1: Fix IMAP connection race condition** — `imap/client.py:34-38`
+- [x] **C1: Fix IMAP connection race condition** — `imap/client.py:34-38`
   `_lock` only protects `connect()`, not individual operations. Concurrent tool calls interleave IMAP commands.
   Acceptance: Add operation-level `asyncio.Lock` or checkout/checkin connection pool
 
 - [ ] **C2: Fix RuntimeError misclassified as rate limits** — `server.py:62-63,97-98,129-131`
-  All `RuntimeError` exceptions are mapped to "Rate limit exceeded", including auth failures and protocol errors.
-  Acceptance: Introduce custom `RateLimitError` or distinct error tuple from `ConnectionPool`
+  All `RuntimeError` exceptions are mapped to "Rate limit exceeded", including auth failures, protocol errors, and incorrect `message_id` in `get_email` / `download_attachment`.
+  Affects: `list_folders`, `search_emails`, `get_email`, `download_attachment`, `send_email`, `reply_email`, `move_email`, `delete_email`, `mark_email_read`.
+  Acceptance: Introduce custom `RateLimitError` or distinct error tuple from `ConnectionPool`; ensure non-rate-limit `RuntimeError`s surface as appropriate generic or specific errors.
 
 - [ ] **C3: Fix `reply_email()` whitelist bypass** — `smtp/client.py:116-140`
   `reply_email()` bypasses recipient whitelist check - security vulnerability.
@@ -200,6 +195,13 @@
   - Environment variables for IMAP/SMTP limits
   - Per-account rate limit override
   - Acceptance: Limits configurable without code changes
+
+- [ ] **Add IMAP connection checkout/checkin pool (future enhancement)**
+  - Replace single `IMAPClient` per account with a pool of reusable connections
+  - Enables true concurrency for same-account operations without command interleaving
+  - Requires connection health monitoring, SELECT state tracking, and reconnection logic
+  - See `analysis/api-c1-race-condition.md` for architecture decision and tradeoffs
+  - Acceptance: Pool size configurable, connections checked out per operation, health validated on checkin
 
 - [ ] **Add email body parsing tests**
   - Test `_decode_header()` with various encodings

@@ -31,11 +31,12 @@ class IMAPClient:
     self.account = account
     self._client: IMAP4_SSL | None = None
     self._selected_folder: str | None = None
-    self._lock = asyncio.Lock()
+    self._connect_lock = asyncio.Lock()
+    self._operation_lock = asyncio.Lock()
 
   async def connect(self) -> IMAP4_SSL:
     """Establish IMAP connection with SSL verification."""
-    async with self._lock:
+    async with self._connect_lock:
       if self._client is not None:
         return self._client
 
@@ -74,56 +75,59 @@ class IMAPClient:
 
   async def disconnect(self) -> None:
     """Close IMAP connection."""
-    if self._client:
-      await self._client.logout()
-      self._client = None
-      self._selected_folder = None
+    async with self._operation_lock:
+      if self._client:
+        await self._client.logout()
+        self._client = None
+        self._selected_folder = None
 
   async def list_folders(self) -> list[dict[str, Any]]:
     """List all folders/mailboxes."""
-    client = await self.connect()
-    # iCloud requires specific quoting format
-    status, data = await client.list('""', '"*"')
+    async with self._operation_lock:
+      client = await self.connect()
+      # iCloud requires specific quoting format
+      status, data = await client.list('""', '"*"')
 
-    if status != "OK":
-      raise RuntimeError(f"Failed to list folders: {status}")
+      if status != "OK":
+        raise RuntimeError(f"Failed to list folders: {status}")
 
-    folders = []
-    for item in data:
-      if isinstance(item, bytes):
-        item = item.decode()
-      if not item:
-        continue
-      # Parse: (flags) "delimiter" "name"
-      parts = item.split('"')
-      if len(parts) >= 3:
-        folders.append({
-          "flags": parts[0].strip("() "),
-          "delimiter": parts[1],
-          "name": parts[3] if len(parts) > 3 else parts[1],
-        })
+      folders = []
+      for item in data:
+        if isinstance(item, bytes):
+          item = item.decode()
+        if not item:
+          continue
+        # Parse: (flags) "delimiter" "name"
+        parts = item.split('"')
+        if len(parts) >= 3:
+          folders.append({
+            "flags": parts[0].strip("() "),
+            "delimiter": parts[1],
+            "name": parts[3] if len(parts) > 3 else parts[1],
+          })
 
-    return folders
+      return folders
 
   async def select_folder(self, folder: str = "INBOX") -> dict[str, int]:
     """Select a folder and return message count."""
-    client = await self.connect()
-    status, data = await client.select(folder)
+    async with self._operation_lock:
+      client = await self.connect()
+      status, data = await client.select(folder)
 
-    if status != "OK":
-      raise RuntimeError(f"Failed to select folder {folder}: {status}")
+      if status != "OK":
+        raise RuntimeError(f"Failed to select folder {folder}: {status}")
 
-    self._selected_folder = folder
-    # Parse EXISTS from response - data contains lines like b'2 EXISTS'
-    count = 0
-    for item in data:
-      if isinstance(item, bytes) and b'EXISTS' in item:
-        try:
-          count = int(item.split()[0])
-        except (ValueError, IndexError):
-          pass
-        break
-    return {"folder": folder, "count": count}
+      self._selected_folder = folder
+      # Parse EXISTS from response - data contains lines like b'2 EXISTS'
+      count = 0
+      for item in data:
+        if isinstance(item, bytes) and b'EXISTS' in item:
+          try:
+            count = int(item.split()[0])
+          except (ValueError, IndexError):
+            pass
+          break
+      return {"folder": folder, "count": count}
 
   async def search(
     self,
@@ -132,36 +136,40 @@ class IMAPClient:
     limit: int = 50,
   ) -> list[str]:
     """Search for messages matching criteria."""
-    await self.select_folder(folder)
-    client = await self.connect()
+    async with self._operation_lock:
+      client = await self.connect()
+      status, data = await client.select(folder)
+      if status != "OK":
+        raise RuntimeError(f"Failed to select folder {folder}: {status}")
+      self._selected_folder = folder
 
-    # Validate criteria to prevent IMAP injection
-    if not IMAP_CRITERIA_PATTERN.match(criteria):
-      raise ValueError("Invalid search criteria")
+      # Validate criteria to prevent IMAP injection
+      if not IMAP_CRITERIA_PATTERN.match(criteria):
+        raise ValueError("Invalid search criteria")
 
-    result = await client.search(criteria)
+      result = await client.search(criteria)
 
-    if result.result != "OK":
-      raise RuntimeError("Search failed")
+      if result.result != "OK":
+        raise RuntimeError("Search failed")
 
-    # Handle response - may be empty or contain message IDs
-    # iCloud returns: b'SEARCH completed (took X ms)' when no messages
-    # Standard IMAP returns: b'SEARCH 1 2 3' with message IDs
-    if not result.lines or not result.lines[0]:
-      return []
+      # Handle response - may be empty or contain message IDs
+      # iCloud returns: b'SEARCH completed (took X ms)' when no messages
+      # Standard IMAP returns: b'SEARCH 1 2 3' with message IDs
+      if not result.lines or not result.lines[0]:
+        return []
 
-    # Check if this is iCloud's "no messages" status response
-    line = result.lines[0].decode()
-    if line.startswith("SEARCH ") and "completed" in line.lower():
-      # No actual message IDs, just a status message
-      return []
+      # Check if this is iCloud's "no messages" status response
+      line = result.lines[0].decode()
+      if line.startswith("SEARCH ") and "completed" in line.lower():
+        # No actual message IDs, just a status message
+        return []
 
-    # Parse message IDs from standard response
-    ids = line.split()
-    # Remove 'SEARCH' prefix if present (some servers include it)
-    if ids and ids[0].upper() == "SEARCH":
-      ids = ids[1:]
-    return ids[-limit:] if limit else ids
+      # Parse message IDs from standard response
+      ids = line.split()
+      # Remove 'SEARCH' prefix if present (some servers include it)
+      if ids and ids[0].upper() == "SEARCH":
+        ids = ids[1:]
+      return ids[-limit:] if limit else ids
 
   async def fetch_message(
     self,
@@ -169,37 +177,41 @@ class IMAPClient:
     folder: str = "INBOX",
   ) -> dict[str, Any]:
     """Fetch a single message by ID."""
-    await self.select_folder(folder)
-    client = await self.connect()
+    async with self._operation_lock:
+      client = await self.connect()
+      status, data = await client.select(folder)
+      if status != "OK":
+        raise RuntimeError(f"Failed to select folder {folder}: {status}")
+      self._selected_folder = folder
 
-    # Fetch headers and body
-    status, data = await client.fetch(message_id, "(BODY.PEEK[] FLAGS)")
+      # Fetch headers and body
+      status, data = await client.fetch(message_id, "(BODY.PEEK[] FLAGS)")
 
-    if status != "OK":
-      raise RuntimeError(f"Failed to fetch message {message_id}: {status}")
+      if status != "OK":
+        raise RuntimeError(f"Failed to fetch message {message_id}: {status}")
 
-    # Parse the response
-    # Format: [b'1 FETCH (BODY[] {size}', bytearray(content), b' FLAGS (...)', b'FETCH completed']
-    result = {"id": message_id, "folder": folder}
+      # Parse the response
+      # Format: [b'1 FETCH (BODY[] {size}', bytearray(content), b' FLAGS (...)', b'FETCH completed']
+      result = {"id": message_id, "folder": folder}
 
-    raw_message = None
-    for item in data:
-      if isinstance(item, bytearray):
-        raw_message = bytes(item)
-      elif isinstance(item, tuple) and len(item) == 2:
-        # Alternative format
-        raw_message = item[1] if isinstance(item[1], (bytes, bytearray)) else None
+      raw_message = None
+      for item in data:
+        if isinstance(item, bytearray):
+          raw_message = bytes(item)
+        elif isinstance(item, tuple) and len(item) == 2:
+          # Alternative format
+          raw_message = item[1] if isinstance(item[1], (bytes, bytearray)) else None
 
-    if raw_message:
-      msg = email.message_from_bytes(raw_message)
-      result["subject"] = self._decode_header(msg.get("Subject", ""))
-      result["from"] = self._decode_header(msg.get("From", ""))
-      result["to"] = self._decode_header(msg.get("To", ""))
-      result["date"] = msg.get("Date", "")
-      result["body"] = self._get_body(msg)
-      result["attachments"] = self._list_attachments(msg)
+      if raw_message:
+        msg = email.message_from_bytes(raw_message)
+        result["subject"] = self._decode_header(msg.get("Subject", ""))
+        result["from"] = self._decode_header(msg.get("From", ""))
+        result["to"] = self._decode_header(msg.get("To", ""))
+        result["date"] = msg.get("Date", "")
+        result["body"] = self._get_body(msg)
+        result["attachments"] = self._list_attachments(msg)
 
-    return result
+      return result
 
   async def move_message(
     self,
@@ -208,21 +220,25 @@ class IMAPClient:
     dest_folder: str,
   ) -> bool:
     """Move a message between folders."""
-    await self.select_folder(source_folder)
-    client = await self.connect()
+    async with self._operation_lock:
+      client = await self.connect()
+      status, data = await client.select(source_folder)
+      if status != "OK":
+        raise RuntimeError(f"Failed to select folder {source_folder}: {status}")
+      self._selected_folder = source_folder
 
-    # Copy to destination
-    status, _ = await client.copy(message_id, dest_folder)
-    if status != "OK":
-      raise RuntimeError(f"Failed to copy message: {status}")
+      # Copy to destination
+      status, _ = await client.copy(message_id, dest_folder)
+      if status != "OK":
+        raise RuntimeError(f"Failed to copy message: {status}")
 
-    # Mark as deleted in source
-    await client.store(message_id, "+FLAGS", "\\Deleted")
+      # Mark as deleted in source
+      await client.store(message_id, "+FLAGS", "\\Deleted")
 
-    # Permanently remove from source so it no longer appears in searches
-    await client.expunge()
+      # Permanently remove from source so it no longer appears in searches
+      await client.expunge()
 
-    return True
+      return True
 
   async def delete_message(
     self,
@@ -231,16 +247,20 @@ class IMAPClient:
     expunge: bool = True,
   ) -> bool:
     """Delete a message."""
-    await self.select_folder(folder)
-    client = await self.connect()
+    async with self._operation_lock:
+      client = await self.connect()
+      status, data = await client.select(folder)
+      if status != "OK":
+        raise RuntimeError(f"Failed to select folder {folder}: {status}")
+      self._selected_folder = folder
 
-    # Mark as deleted
-    await client.store(message_id, "+FLAGS", "\\Deleted")
+      # Mark as deleted
+      await client.store(message_id, "+FLAGS", "\\Deleted")
 
-    if expunge:
-      await client.expunge()
+      if expunge:
+        await client.expunge()
 
-    return True
+      return True
 
   async def mark_message(
     self,
@@ -250,13 +270,17 @@ class IMAPClient:
     action: str = "add",
   ) -> bool:
     """Add or remove flags from a message."""
-    await self.select_folder(folder)
-    client = await self.connect()
+    async with self._operation_lock:
+      client = await self.connect()
+      status, data = await client.select(folder)
+      if status != "OK":
+        raise RuntimeError(f"Failed to select folder {folder}: {status}")
+      self._selected_folder = folder
 
-    flag_action = "+FLAGS" if action == "add" else "-FLAGS"
-    status, _ = await client.store(message_id, flag_action, flag)
+      flag_action = "+FLAGS" if action == "add" else "-FLAGS"
+      status, _ = await client.store(message_id, flag_action, flag)
 
-    return status == "OK"
+      return status == "OK"
 
   async def download_attachment(
     self,
@@ -285,32 +309,36 @@ class IMAPClient:
     hashed_prefix = hashlib.sha256(filename.encode()).hexdigest()[:16]
     final_filename = f"{hashed_prefix}_{safe_filename}"
 
-    await self.select_folder(folder)
-    client = await self.connect()
+    async with self._operation_lock:
+      client = await self.connect()
+      status, data = await client.select(folder)
+      if status != "OK":
+        raise RuntimeError(f"Failed to select folder {folder}: {status}")
+      self._selected_folder = folder
 
-    status, data = await client.fetch(message_id, "(BODY.PEEK[])")
+      status, data = await client.fetch(message_id, "(BODY.PEEK[])")
 
-    if status != "OK":
-      raise RuntimeError("Failed to fetch message")
+      if status != "OK":
+        raise RuntimeError("Failed to fetch message")
 
-    for item in data:
-      if isinstance(item, tuple) and len(item) == 2:
-        raw_message = item[1]
-        if isinstance(raw_message, bytes):
-          msg = email.message_from_bytes(raw_message)
-          for part in msg.walk():
-            if part.get_filename() == filename:
-              payload = part.get_payload(decode=True)
-              if payload:
-                # Ensure output directory exists
-                output_path.mkdir(parents=True, exist_ok=True)
-                file_path = output_path / final_filename
-                with open(file_path, "wb") as f:
-                  f.write(payload)
-                log_attachment_download(self.account.name, filename, str(file_path))
-                return str(file_path)
+      for item in data:
+        if isinstance(item, tuple) and len(item) == 2:
+          raw_message = item[1]
+          if isinstance(raw_message, bytes):
+            msg = email.message_from_bytes(raw_message)
+            for part in msg.walk():
+              if part.get_filename() == filename:
+                payload = part.get_payload(decode=True)
+                if payload:
+                  # Ensure output directory exists
+                  output_path.mkdir(parents=True, exist_ok=True)
+                  file_path = output_path / final_filename
+                  with open(file_path, "wb") as f:
+                    f.write(payload)
+                  log_attachment_download(self.account.name, filename, str(file_path))
+                  return str(file_path)
 
-    raise FileNotFoundError(f"Attachment not found in message")
+      raise FileNotFoundError(f"Attachment not found in message")
 
   def _decode_header(self, header: str) -> str:
     """Decode MIME header."""
