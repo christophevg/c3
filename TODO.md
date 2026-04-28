@@ -4,6 +4,11 @@
 
 *Empty — all items from 2026-04-20 session have been processed.*
 
+## User Input
+
+- [ ] Ensure that C3 skills and agents reference each other with the c3: plugin prefix, to avoid a redundant error detour and interpretation of the error to resolve it to a c3: prefixed Agent call.
+- [ ] add CronCreate, ScheduleWakeup tools to c3:assistant
+
 ## Email Input (2026-04-24)
 
 - [ ] **Update pa-email skill with better error handling**
