@@ -10,6 +10,7 @@ from fastmcp.exceptions import ToolError
 from pydantic import Field
 
 from email_mcp.connections.pool import RateLimitError, get_pool
+from email_mcp.imap.client import SecurityError
 from email_mcp.smtp.client import WhitelistError
 
 # Create FastMCP server
@@ -171,6 +172,8 @@ async def download_attachment(
     raise ToolError(str(e))
   except FileNotFoundError:
     raise ToolError(f"Attachment not found: {filename}")
+  except SecurityError as e:
+    raise ToolError(str(e))
   except RateLimitError:
     raise ToolError("Rate limit exceeded. Please try again later.")
   except Exception:

@@ -24,6 +24,11 @@ DEFAULT_WORKSPACE = Path(os.environ.get("EMAIL_WORKSPACE", "/tmp/email_workspace
 IMAP_CRITERIA_PATTERN = re.compile(r"^[\w\s\(\)\*\<\>\[\]=!\"'-]+$")
 
 
+class SecurityError(Exception):
+  """Raised when a security constraint is violated (e.g., symlink escape)."""
+  pass
+
+
 class IMAPClient:
   """Async IMAP client with connection pooling."""
 
@@ -289,22 +294,15 @@ class IMAPClient:
     filename: str,
     output_dir: str,
   ) -> str:
-    """Download an attachment from a message with workspace confinement."""
-    # Validate and resolve output directory
-    output_path = Path(output_dir).resolve()
-    workspace = DEFAULT_WORKSPACE.resolve()
+    """Download an attachment from a message with workspace confinement.
 
-    # Ensure workspace exists
-    workspace.mkdir(parents=True, exist_ok=True)
-
-    # Workspace confinement check
-    try:
-      output_path.relative_to(workspace)
-    except ValueError:
-      raise ValueError(f"output_dir must be within workspace: {workspace}")
-
+    Uses post-write verification to detect symlink attacks (TOCTOU race).
+    """
     # Sanitize filename - remove path separators
     safe_filename = os.path.basename(filename)
+    if not safe_filename or safe_filename in ('.', '..'):
+      raise ValueError("Invalid filename")
+
     # Hash for uniqueness and additional safety
     hashed_prefix = hashlib.sha256(filename.encode()).hexdigest()[:16]
     final_filename = f"{hashed_prefix}_{safe_filename}"
@@ -330,13 +328,39 @@ class IMAPClient:
               if part.get_filename() == filename:
                 payload = part.get_payload(decode=True)
                 if payload:
-                  # Ensure output directory exists
+                  # Resolve workspace to real path once
+                  real_workspace = os.path.realpath(str(DEFAULT_WORKSPACE))
+
+                  # Ensure workspace exists
+                  workspace = Path(real_workspace)
+                  workspace.mkdir(parents=True, exist_ok=True)
+
+                  # Create output directory
+                  output_path = Path(output_dir)
                   output_path.mkdir(parents=True, exist_ok=True)
                   file_path = output_path / final_filename
+
+                  # Write file
                   with open(file_path, "wb") as f:
                     f.write(payload)
-                  log_attachment_download(self.account.name, filename, str(file_path))
-                  return str(file_path)
+
+                  # POST-WRITE VERIFICATION: Detect symlink escape
+                  real_path = os.path.realpath(file_path)
+
+                  try:
+                    Path(real_path).relative_to(real_workspace)
+                  except ValueError:
+                    # Security violation: clean up and raise
+                    try:
+                      file_path.unlink()
+                    except OSError:
+                      pass
+                    raise SecurityError(
+                      "Download escaped workspace confinement"
+                    )
+
+                  log_attachment_download(self.account.name, filename, real_path)
+                  return str(real_path)
 
       raise FileNotFoundError(f"Attachment not found in message")
 
