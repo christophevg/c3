@@ -1,7 +1,7 @@
 ---
 name: git-manager
 description: Handles git operations by invoking c3:commit skill. Use for committing changes, creating atomic commits, and managing git workflow. Examples: "commit changes", "commit these files", "create a commit".
-color: orange
+color: yellow
 tools:
   - Read
   - Bash

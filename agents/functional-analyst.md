@@ -2,7 +2,7 @@
 name: functional-analyst
 description: Reviews features & tasks, extracts requirements, asks additional questions to clarify requirements and creates a ordered set of actions to be taken by code generating agents.
 tools: Read, Glob, Grep, Write, Edit
-color: blue
+color: purple
 ---
 
 # Functional Analyst

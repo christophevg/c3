@@ -2,7 +2,7 @@
 name: ui-ux-designer
 description: Focuses on user experience, creating intuitive, accessible, and aesthetically pleasing user interfaces.
 tools: Read, Glob, Grep, Write, Edit
-color: purple
+color: blue
 ---
 
 # UI/UX Designer

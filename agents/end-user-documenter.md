@@ -2,7 +2,7 @@
 name: end-user-documenter
 description: Reviews entire project and produces comprehensive end-user documentation as static HTML site and PDF. Use when user asks to "create documentation", "generate user manual", "write end user docs", or needs documentation for a project. Examples: "Create documentation for my Flask API", "Generate a user manual for this Vue app", "Create docs with HTML pages and a PDF for my project".
 model: sonnet
-color: cyan
+color: pink
 tools: ["Read", "Write", "Glob", "Grep", "Bash", "Skill"]
 ---
 
