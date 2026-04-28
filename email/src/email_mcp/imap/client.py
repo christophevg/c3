@@ -38,6 +38,7 @@ class IMAPClient:
     self._selected_folder: str | None = None
     self._connect_lock = asyncio.Lock()
     self._operation_lock = asyncio.Lock()
+    self._capabilities: set[str] = set()
 
   async def connect(self) -> IMAP4_SSL:
     """Establish IMAP connection with SSL verification."""
@@ -76,6 +77,17 @@ class IMAPClient:
         log_auth_attempt(self.account.name, False, self.account.auth_method, str(e))
         raise RuntimeError("Authentication failed. Check server logs for details.")
 
+      # Query and cache server capabilities
+      try:
+        response = await self._client.capability()
+        if response.result == "OK" and response.lines:
+          # Parse capability list: "IMAP4REV1 MOVE UIDPLUS ..."
+          caps_str = response.lines[0].decode().upper()
+          self._capabilities = set(caps_str.split())
+      except Exception:
+        # Non-fatal: continue without cached capabilities
+        self._capabilities = set()
+
       return self._client
 
   async def disconnect(self) -> None:
@@ -85,6 +97,11 @@ class IMAPClient:
         await self._client.logout()
         self._client = None
         self._selected_folder = None
+        self._capabilities = set()
+
+  def has_capability(self, name: str) -> bool:
+    """Check if server supports a capability."""
+    return name.upper() in self._capabilities
 
   async def list_folders(self) -> list[dict[str, Any]]:
     """List all folders/mailboxes."""
@@ -224,7 +241,12 @@ class IMAPClient:
     source_folder: str,
     dest_folder: str,
   ) -> bool:
-    """Move a message between folders."""
+    """Move a message between folders atomically if server supports MOVE.
+
+    Uses RFC 6851 MOVE extension when available for atomic operation.
+    Falls back to COPY+STORE+EXPUNGE with documented non-atomic limitation
+    for legacy servers that don't support MOVE.
+    """
     async with self._operation_lock:
       client = await self.connect()
       status, data = await client.select(source_folder)
@@ -232,15 +254,20 @@ class IMAPClient:
         raise RuntimeError(f"Failed to select folder {source_folder}: {status}")
       self._selected_folder = source_folder
 
-      # Copy to destination
+      # Use atomic MOVE if server supports RFC 6851
+      if self.has_capability("MOVE"):
+        status, _ = await client.move(message_id, dest_folder)
+        if status != "OK":
+          raise RuntimeError(f"Failed to move message: {status}")
+        return True
+
+      # Fallback: non-atomic COPY+STORE+EXPUNGE
+      # WARNING: Not atomic - message may exist in both folders on failure
       status, _ = await client.copy(message_id, dest_folder)
       if status != "OK":
         raise RuntimeError(f"Failed to copy message: {status}")
 
-      # Mark as deleted in source
       await client.store(message_id, "+FLAGS", "\\Deleted")
-
-      # Permanently remove from source so it no longer appears in searches
       await client.expunge()
 
       return True

@@ -34,9 +34,10 @@
 
 ### P2 - High
 
-- [ ] **H1: Fix non-atomic `move_message`** — `imap/client.py:214-223`
+- [x] **H1: Fix non-atomic `move_message`** — `imap/client.py:221-246`
   COPY → STORE+Deleted → EXPUNGE is not atomic. If STORE/EXPUNGE fails after COPY, message exists in both folders.
   Acceptance: Use IMAP `MOVE` extension if available, or document limitation clearly
+  **Fixed:** Added capability detection to check for MOVE extension (RFC 6851). Uses atomic `move()` command when server supports it, falls back to COPY+STORE+EXPUNGE with documented limitation for legacy servers. Tests in `tests/test_imap_client.py::TestMoveMessageAtomic`.
 
 - [ ] **H2: Fix auth exception handling** — `imap/client.py:69-71`
   `except Exception as e:` catches connection errors, DNS failures, protocol bugs, misreporting as auth failures.

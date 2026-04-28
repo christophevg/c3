@@ -363,3 +363,189 @@ class TestIMAPClientOperations:
     assert result[0]["name"] == "INBOX"
     assert result[0]["flags"] == "\\HasNoChildren"
     assert result[0]["delimiter"] == "/"
+
+
+class TestMoveMessageAtomic:
+  """Tests for atomic move_message using MOVE extension (H1 bug fix)."""
+
+  async def test_uses_move_when_capability_present(self, mock_account):
+    """Should use atomic MOVE command when server advertises MOVE capability."""
+    with patch("email_mcp.imap.client.IMAP4_SSL") as mock_imap_class:
+      mock_client = AsyncMock()
+      mock_client.wait_hello_from_server = AsyncMock()
+      mock_client.login = AsyncMock(return_value=("OK", [b"Logged in"]))
+      mock_client.select = AsyncMock(return_value=("OK", [b"1 EXISTS"]))
+
+      # Server advertises MOVE capability
+      capability_response = AsyncMock()
+      capability_response.result = "OK"
+      capability_response.lines = [b"IMAP4REV1 MOVE UIDPLUS"]
+      mock_client.capability = AsyncMock(return_value=capability_response)
+
+      mock_client.move = AsyncMock(return_value=("OK", []))
+      mock_imap_class.return_value = mock_client
+
+      client = IMAPClient(mock_account)
+      await client.connect()  # Triggers capability query
+
+      result = await client.move_message("1", "INBOX", "Archive")
+
+      assert result is True
+      mock_client.move.assert_called_once_with("1", "Archive")
+      mock_client.copy.assert_not_called()  # COPY not used
+
+  async def test_fallback_when_move_not_supported(self, mock_account):
+    """Should fall back to COPY+STORE+EXPUNGE when MOVE not advertised."""
+    with patch("email_mcp.imap.client.IMAP4_SSL") as mock_imap_class:
+      mock_client = AsyncMock()
+      mock_client.wait_hello_from_server = AsyncMock()
+      mock_client.login = AsyncMock(return_value=("OK", [b"Logged in"]))
+      mock_client.select = AsyncMock(return_value=("OK", [b"1 EXISTS"]))
+
+      # Server does NOT advertise MOVE
+      capability_response = AsyncMock()
+      capability_response.result = "OK"
+      capability_response.lines = [b"IMAP4REV1 UIDPLUS"]
+      mock_client.capability = AsyncMock(return_value=capability_response)
+
+      mock_client.copy = AsyncMock(return_value=("OK", []))
+      mock_client.store = AsyncMock(return_value=("OK", []))
+      mock_client.expunge = AsyncMock(return_value=("OK", []))
+      mock_imap_class.return_value = mock_client
+
+      client = IMAPClient(mock_account)
+      await client.connect()
+
+      result = await client.move_message("1", "INBOX", "Archive")
+
+      assert result is True
+      mock_client.copy.assert_called_once_with("1", "Archive")
+      mock_client.store.assert_called_once_with("1", "+FLAGS", "\\Deleted")
+      mock_client.expunge.assert_called_once()
+
+  async def test_move_failure_raises_error(self, mock_account):
+    """MOVE command failure should raise RuntimeError."""
+    with patch("email_mcp.imap.client.IMAP4_SSL") as mock_imap_class:
+      mock_client = AsyncMock()
+      mock_client.wait_hello_from_server = AsyncMock()
+      mock_client.login = AsyncMock(return_value=("OK", [b"Logged in"]))
+      mock_client.select = AsyncMock(return_value=("OK", [b"1 EXISTS"]))
+
+      capability_response = AsyncMock()
+      capability_response.result = "OK"
+      capability_response.lines = [b"IMAP4REV1 MOVE"]
+      mock_client.capability = AsyncMock(return_value=capability_response)
+
+      mock_client.move = AsyncMock(return_value=("NO", [b"Permission denied"]))
+      mock_imap_class.return_value = mock_client
+
+      client = IMAPClient(mock_account)
+      await client.connect()
+
+      with pytest.raises(RuntimeError, match="Failed to move message"):
+        await client.move_message("1", "INBOX", "Archive")
+
+  async def test_capability_cached_on_connect(self, mock_account):
+    """Capabilities should be cached during connect, not queried per operation."""
+    with patch("email_mcp.imap.client.IMAP4_SSL") as mock_imap_class:
+      mock_client = AsyncMock()
+      mock_client.wait_hello_from_server = AsyncMock()
+      mock_client.login = AsyncMock(return_value=("OK", [b"Logged in"]))
+
+      capability_response = AsyncMock()
+      capability_response.result = "OK"
+      capability_response.lines = [b"IMAP4REV1 MOVE"]
+      mock_client.capability = AsyncMock(return_value=capability_response)
+
+      mock_client.select = AsyncMock(return_value=("OK", [b"1 EXISTS"]))
+      mock_client.move = AsyncMock(return_value=("OK", []))
+      mock_imap_class.return_value = mock_client
+
+      client = IMAPClient(mock_account)
+      await client.connect()
+
+      # Multiple moves should only query capability once
+      await client.move_message("1", "INBOX", "Archive")
+      await client.move_message("2", "INBOX", "Archive")
+
+      mock_client.capability.assert_called_once()  # Only during connect
+
+  async def test_has_capability_returns_true_when_present(self, mock_account):
+    """has_capability should return True for advertised capabilities."""
+    with patch("email_mcp.imap.client.IMAP4_SSL") as mock_imap_class:
+      mock_client = AsyncMock()
+      mock_client.wait_hello_from_server = AsyncMock()
+      mock_client.login = AsyncMock(return_value=("OK", [b"Logged in"]))
+
+      capability_response = AsyncMock()
+      capability_response.result = "OK"
+      capability_response.lines = [b"IMAP4REV1 MOVE UIDPLUS"]
+      mock_client.capability = AsyncMock(return_value=capability_response)
+      mock_imap_class.return_value = mock_client
+
+      client = IMAPClient(mock_account)
+      await client.connect()
+
+      assert client.has_capability("MOVE") is True
+      assert client.has_capability("UIDPLUS") is True
+      assert client.has_capability("CONDSTORE") is False
+
+  async def test_has_capability_is_case_insensitive(self, mock_account):
+    """has_capability should be case-insensitive."""
+    with patch("email_mcp.imap.client.IMAP4_SSL") as mock_imap_class:
+      mock_client = AsyncMock()
+      mock_client.wait_hello_from_server = AsyncMock()
+      mock_client.login = AsyncMock(return_value=("OK", [b"Logged in"]))
+      capability_response = AsyncMock()
+      capability_response.result = "OK"
+      capability_response.lines = [b"IMAP4REV1 MOVE UIDPLUS"]
+      mock_client.capability = AsyncMock(return_value=capability_response)
+      mock_imap_class.return_value = mock_client
+
+      client = IMAPClient(mock_account)
+      await client.connect()
+
+      assert client.has_capability("move") is True
+      assert client.has_capability("Move") is True
+      assert client.has_capability("MOVE") is True
+
+  async def test_capability_query_failure_falls_back_gracefully(self, mock_account):
+    """Should continue with empty capabilities if capability query fails."""
+    with patch("email_mcp.imap.client.IMAP4_SSL") as mock_imap_class:
+      mock_client = AsyncMock()
+      mock_client.wait_hello_from_server = AsyncMock()
+      mock_client.login = AsyncMock(return_value=("OK", [b"Logged in"]))
+      mock_client.capability = AsyncMock(side_effect=TimeoutError())
+      mock_client.select = AsyncMock(return_value=("OK", [b"1 EXISTS"]))
+      mock_client.copy = AsyncMock(return_value=("OK", []))
+      mock_client.store = AsyncMock(return_value=("OK", []))
+      mock_client.expunge = AsyncMock(return_value=("OK", []))
+      mock_imap_class.return_value = mock_client
+
+      client = IMAPClient(mock_account)
+      await client.connect()
+
+      assert client.has_capability("MOVE") is False
+      # Should fall back to COPY+STORE+EXPUNGE
+      result = await client.move_message("1", "INBOX", "Archive")
+      mock_client.copy.assert_called_once()
+
+  async def test_capabilities_cleared_on_disconnect(self, mock_account):
+    """disconnect should clear cached capabilities."""
+    with patch("email_mcp.imap.client.IMAP4_SSL") as mock_imap_class:
+      mock_client = AsyncMock()
+      mock_client.wait_hello_from_server = AsyncMock()
+      mock_client.login = AsyncMock(return_value=("OK", [b"Logged in"]))
+      mock_client.logout = AsyncMock(return_value=("OK", [b"Logged out"]))
+      capability_response = AsyncMock()
+      capability_response.result = "OK"
+      capability_response.lines = [b"IMAP4REV1 MOVE"]
+      mock_client.capability = AsyncMock(return_value=capability_response)
+      mock_imap_class.return_value = mock_client
+
+      client = IMAPClient(mock_account)
+      await client.connect()
+      assert client.has_capability("MOVE") is True
+
+      await client.disconnect()
+      assert client.has_capability("MOVE") is False
