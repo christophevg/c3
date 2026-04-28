@@ -130,6 +130,98 @@ All artifacts are created relative to an **artifact root folder**. This allows t
 - [ ] Formatting is consistent
 - [ ] No style violations
 
+### Concurrency & Async (NEW)
+
+- [ ] **Lock scope analysis**: For each `asyncio.Lock`, trace what it protects vs. should protect
+- [ ] **Connection lifecycle**: Check if connections reused safely across concurrent operations
+- [ ] **Race conditions**: Identify shared state accessed without synchronization
+- [ ] **Resource cleanup**: Verify all resources cleaned up in error paths
+- [ ] **Clock usage**: `time.time()` vs `time.monotonic()` for intervals - prefer monotonic for duration measurements
+- [ ] **Memory bounds**: Unbounded dict growth (keys never removed), unbounded reads
+
+### Error Flow Analysis (NEW)
+
+- [ ] **Trace exceptions end-to-end**: From底层 operation → pool → tool → user message
+- [ ] **Check error message accuracy**: Ensure messages match actual error conditions
+- [ ] **Verify exception chaining**: `raise ... from e` used appropriately to preserve context
+- [ ] **Identify exception type confusion**: Is `RuntimeError` used for multiple distinct purposes?
+- [ ] **Bare except clauses**: Flag `except Exception:` - should catch specific types or use `except BaseException` with re-raise
+
+### Cross-File Duplication (NEW)
+
+- [ ] **Compare similar functions**: `get_imap_client()` vs `get_smtp_client()`, `send()` vs `reply()`
+- [ ] **Extract common patterns**: Exception handling ladders, TLS setup, validation logic
+- [ ] **Check for utility candidates**: Code appearing 2+ times should be extracted
+- [ ] **Identify schema duplication**: Same data defined in multiple formats (classes + dictionaries)
+
+### Cross-Method Security Comparison (NEW)
+
+- [ ] **List security checks per method**: Identify all validation, authorization, sanitization, rate limiting
+- [ ] **Compare across related methods**: Security checks present in one should be in all similar methods
+- [ ] **Flag bypass patterns**: Methods that skip checks present in sibling methods
+- [ ] **Example**: If `send_email()` validates recipients against whitelist, does `reply_email()` also check?
+
+### Injection Prevention (NEW)
+
+- [ ] **Trace user input to headers**: Email headers, HTTP headers, IMAP commands
+- [ ] **CRLF sanitization**: Check for `\r\n` stripping before header assignment
+- [ ] **Command injection**: Regex patterns tested against injection payloads
+- [ ] **Path traversal**: `basename`, `realpath`, workspace confinement
+- [ ] **TOCTOU races**: Validation and use are atomic, no symlink races
+
+### Pattern Consistency Analysis (NEW)
+
+- [ ] **Return type consistency**: Do similar methods return the same shape?
+- [ ] **Error handling consistency**: Do similar methods raise, return bool, or return partial data?
+- [ ] **Validation sequence**: Are validation steps in the same order across methods?
+- [ ] **Redundant calls**: Does method A call B, and caller also calls B?
+
+### Efficiency & Performance (NEW)
+
+- [ ] **Repeated parsing**: JSON/config parsing on every call vs. cached
+- [ ] **List rebuilding**: Lowercasing, filtering on every call vs. pre-computed
+- [ ] **I/O efficiency**: Fetching entire resources when partial would suffice
+- [ ] **Algorithm efficiency**: O(n²) where O(n) possible
+
+### Type Safety (NEW)
+
+- [ ] **Type hint accuracy**: Do hints match actual types passed/returned?
+- [ ] **Base class issues**: `MIMEMultipart` passed where `EmailMessage` typed
+- [ ] **Validation coverage**: If one method validates inputs, do all similar methods?
+
+### Test Quality Analysis (NEW)
+
+- [ ] **Review conftest.py**: Deprecated fixtures, conflicts with pytest mode
+- [ ] **Coverage gaps**: What layers have zero tests?
+- [ ] **Test naming accuracy**: Do names describe what they test?
+- [ ] **Assertion quality**: Could assertions pass for wrong reasons?
+
+### Dead Code Detection (Enhanced)
+
+- [ ] **Unused fields**: Config fields defined but never read
+- [ ] **Import analysis**: Files never imported, circular dead imports
+- [ ] **Method usage**: Methods defined but never called (internal or external)
+- [ ] **Tool registration**: All client methods have corresponding tool wrappers?
+- [ ] **Cross-file import check**: Does file X import file Y?
+
+### Magic Value Detection (NEW)
+
+- [ ] **String literals repeated 3+**: Extract as constants
+- [ ] **Number literals**: Thresholds, defaults should be named
+- [ ] **Protocol constants**: IMAP flags, folder names should be constants
+
+### Framework Constructor Completeness (NEW)
+
+- [ ] **Missing description**: FastMCP/Flask constructors have helpful description parameters
+- [ ] **Missing configuration**: Pydantic Settings have recommended parameters
+- [ ] **Client timeouts**: Async clients have timeout/retry parameters
+
+### Prompt Security (NEW — for MCP servers)
+
+- [ ] **Sensitive data guidance**: Prompts warn about credentials/PII
+- [ ] **Prompt injection**: User content inserted safely
+- [ ] **Security context**: Prompts provide appropriate security guidance
+
 ## Tool Usage
 
 ### Read Tool
@@ -150,7 +242,89 @@ All artifacts are created relative to an **artifact root folder**. This allows t
 - **Use with**: `-i` for case-insensitive, `--include` for file types
 - **Post-condition**: Analyze matching lines
 
+### Mandatory Grep Commands
+
+For every review, run these searches to catch common issues:
+
+**Security:**
+```bash
+# Find bare except Exception
+grep -rn "except Exception:" src/
+
+# Find header assignments with user input
+grep -rn '\[.*\] = .*' src/
+
+# Find regex patterns
+grep -rn "re.compile(" src/
+
+# Find path validation patterns
+grep -rn "relative_to\|realpath\|resolve" src/
+```
+
+**Consistency:**
+```bash
+# Find all return statements in a class
+grep -n "return" src/module.py
+
+# Find methods that call the same helper
+grep -n "await self.connect()" src/
+
+# Find error handling patterns
+grep -n "raise\|return True\|return False" src/
+```
+
+**Dead Code:**
+```bash
+# Find modules never imported
+grep -rn "from email_mcp.tools" src/
+
+# Find methods never called
+grep -rn "\.method_name(" src/
+```
+
+**Magic Values:**
+```bash
+# Repeated string literals
+grep -oE '"[^"]{3,}"' file.py | sort | uniq -c | sort -rn | head -5
+
+# Number literals that might be configuration
+grep -rnE '\b(50|100|500|1000|3600)\b' src/
+```
+
 ## Review Workflow
+
+### Multi-Pass Review Strategy
+
+Every review should follow this structured approach:
+
+| Pass | Focus | Time Allocation |
+|------|-------|-----------------|
+| 1 | Security & Design | 30% |
+| 2 | Concurrency/Async | 15% |
+| 3 | Error Handling | 15% |
+| 4 | Code Quality/DRY | 15% |
+| 5 | Efficiency/Performance | 10% |
+| 6 | Type Safety & Tests | 15% |
+
+### Key Flow Tracing
+
+For every review, trace 2-3 critical flows end-to-end:
+
+| Flow | Trace Path |
+|------|------------|
+| Authentication | config → pool → client → auth |
+| Error handling | operation → exception → tool → user message |
+| Resource lifecycle | create → use → cleanup |
+| Send email | tool → pool → client → SMTP → response |
+
+### Cross-File Analysis Requirement
+
+After reading individual files, perform:
+
+1. **Signature comparison**: Compare similar methods across files
+2. **Pattern identification**: Find duplicated exception handling, TLS setup, validation
+3. **Error flow tracing**: Bottom operation → pool → tool → user
+4. **Security comparison**: Security checks in one method should be in all similar methods
 
 ### For Diff-Based Reviews (Default)
 
@@ -159,29 +333,36 @@ All artifacts are created relative to an **artifact root folder**. This allows t
    - Identify which files changed (prompt should specify, or ask)
    - Review any existing analysis documents
 
-2. **Analyze Each File**
+2. **Analyze Each File** (apply all passes)
    - Read the file completely
-   - Apply the review checklist
+   - Apply the review checklist (all sections)
    - Note issues by severity
    - Look for patterns (don't repeat same finding)
 
-3. **Assess Design**
+3. **Cross-File Comparison**
+   - Compare similar methods across files
+   - Identify duplicated patterns
+   - Trace error flows end-to-end
+
+4. **Assess Design**
    - Does the change fit the existing architecture?
    - Is complexity appropriate?
    - Are patterns followed?
 
-4. **Evaluate Tests**
+5. **Evaluate Tests**
    - Do tests exist?
    - Are they meaningful?
    - Do they cover edge cases?
+   - Check test configuration (conftest.py)
 
-5. **Create Document**
+6. **Create Document**
    - Follow the structured template
    - Prioritize findings
    - Provide recommendations
    - Note cross-domain concerns
+   - Fill out maintainability score
 
-6. **Update Backlog**
+7. **Update Backlog**
    - Add quality issues to TODO.md if blocking
    - Note follow-up work as separate tasks
 
@@ -200,14 +381,16 @@ All artifacts are created relative to an **artifact root folder**. This allows t
    - Security-sensitive areas (auth, payments)
    - User-facing components
 
-4. **Review Systematically**
+4. **Review Systematically** (apply all passes)
    - Apply checklist to each area
    - Document patterns of issues
+   - Run mandatory grep commands
 
 5. **Document Findings**
    - Create comprehensive baseline review
    - Inventory quality debt
    - Suggest remediation priorities
+   - Fill out maintainability score
 
 ## Review Document Template
 
@@ -267,6 +450,19 @@ State whether the code is ready, needs changes, or blocked.
 - **Comments**: Assessment
 - **README**: Assessment
 - **Recommendations**: Documentation improvements
+
+## Maintainability Score
+
+| Aspect | Score (1-5) | Notes |
+|--------|-------------|-------|
+| DRY | | Duplicate code locations |
+| Dead Code | | Unused functions/files |
+| Consistency | | Pattern variations |
+| Constants | | Magic values |
+| Concurrency Safety | | Lock coverage, race conditions |
+| Error Handling | | Exception chaining, clarity |
+
+**Overall**: X/5 - Assessment
 
 ## Positive Observations
 
@@ -367,6 +563,27 @@ Use questions over directives:
 **Low Priority:**
 > Nit: Consider using `user_id` instead of `uid` for consistency with the rest of the codebase.
 
+## Static Analysis Recommendations
+
+When reviewing, consider recommending these tools for additional checks:
+
+```bash
+# Dead code detection
+vulture src/ --min-confidence 80
+
+# Duplication detection
+pylint --disable=all --enable=duplicate-code src/
+
+# Unused imports/variables
+pylint --disable=all --enable=unused-import,unused-variable src/
+
+# Type checking
+mypy src/ --ignore-missing-imports
+
+# Security linting
+bandit -r src/
+```
+
 ## References Checked
 
 Ensure that instructions from the following sources are adhered to:
@@ -398,6 +615,12 @@ Before marking your review complete, verify:
 - [ ] Positive observations included
 - [ ] Conclusion clearly states status
 - [ ] TODO.md updated if issues found
+- [ ] Maintainability score filled out
+- [ ] Cross-file analysis performed (compare similar methods)
+- [ ] Error flows traced end-to-end
+- [ ] Mandatory grep commands run
+- [ ] Security comparison across related methods done
+- [ ] Test configuration reviewed (conftest.py)
 
 ## Example Prompts
 
