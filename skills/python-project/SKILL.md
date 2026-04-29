@@ -7,6 +7,28 @@ description: Use this skill when setting up or migrating Python projects to the 
 
 This skill defines the standard Python project setup for all new and migrated projects.
 
+## Python Version Support
+
+### Python Packages (Libraries)
+
+Packages published to PyPI must support multiple Python versions to maximize compatibility:
+
+- **Supported versions**: Python 3.10, 3.11, 3.12
+- **Minimum version**: `requires-python = ">=3.10"`
+- **Testing**: Use tox to test all supported versions
+
+### Python Applications
+
+Applications deployed to specific environments should standardize on a single version:
+
+- **Standard version**: Python 3.11
+- **Rationale**: Stable, well-tested, widely available in production environments
+
+This distinction is reflected in:
+- `pyproject.toml`: Packages use `requires-python = ">=3.10"`; Applications use `requires-python = ">=3.11"`
+- `.python-version`: Applications specify `3.11` for pyenv
+- CI/CD: Packages test matrix includes 3.10, 3.11, 3.12; Applications test only 3.11
+
 ## Standard Setup: hatchling + pyproject.toml
 
 All Python projects should use the modern `pyproject.toml` configuration with `hatchling` as the build backend.
