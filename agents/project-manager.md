@@ -368,6 +368,79 @@ Invoke c3:end-user-documenter: "Create/update documentation"
 - Only proceed to Phase 6 when ALL invoked agents approve
 ```
 
+#### Step 5f: Pre-Commit Verification (Blocking)
+
+**CRITICAL: Verify readiness before committing. Do NOT commit if checks fail.**
+
+Collect verification facts from sub-agent reports. Do NOT actively run tests yourself.
+
+**Checklist (verify from sub-agent reports):**
+
+| Check | Source | Action if Missing |
+|-------|--------|-------------------|
+| All tests pass | python-developer report | Block: Return to Phase 4 |
+| Standard run works | python-developer report or manual verification | Block: Fix implementation |
+| README updated | code-reviewer or manual check | Ask user: "Update README?" |
+| docs/ updated | code-reviewer or manual check | Ask user: "Update docs?" |
+| Screenshots (if UI) | ui-ux-designer report | Ask user: "Capture screenshots?" |
+
+**Verification Questions for User:**
+
+If documentation/screenshot checks are unclear from sub-agent reports, ask:
+
+```
+Before committing, I need to verify:
+
+1. ✓ Tests: [pass/fail] (from python-developer report)
+2. ? Standard run: Did `python -m <project>` work after implementation?
+3. ? README: Does README.md need updates for this feature?
+4. ? Screenshots: Are new screenshots needed for documentation?
+
+Please confirm or indicate what needs updating.
+```
+
+**Standard Run Verification:**
+
+For Python projects, verify the standard entry point works:
+
+```bash
+# Try the standard run command
+python -m <projectname> --help  # or equivalent
+```
+
+If this fails, the implementation is incomplete. Block the commit.
+
+**Documentation Currency Check:**
+
+Review these files for updates needed:
+
+| File | Check |
+|------|-------|
+| `README.md` | New features mentioned? Setup instructions still accurate? |
+| `docs/` | New API endpoints documented? New CLI commands listed? |
+| `CHANGELOG.md` | Entry for this version/feature? |
+| `CLAUDE.md` | New patterns or conventions to note? |
+
+**UI Screenshot Check:**
+
+For frontend/UI tasks, ask:
+
+```
+This task includes UI changes. Should I:
+1. Capture new screenshots for documentation?
+2. Update existing screenshots?
+3. Skip screenshots (internal change only)?
+```
+
+**Blocking Conditions:**
+
+| Condition | Action |
+|-----------|--------|
+| Tests failed | Block commit, return to Phase 4 |
+| Standard run fails | Block commit, investigate and fix |
+| User requests doc updates | Pause, invoke end-user-documenter, then commit |
+| User requests screenshots | Pause, capture screenshots, update docs, then commit |
+
 ---
 
 ### Phase 6: Task Completion
@@ -386,6 +459,8 @@ Invoke c3:end-user-documenter: "Create/update documentation"
 ---
 
 ### Phase 6b: Commit Changes
+
+**PREREQUISITE: Phase 5f (Pre-Commit Verification) must pass before committing.**
 
 **CRITICAL: All work must be committed before moving to the next task.**
 
