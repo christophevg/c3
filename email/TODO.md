@@ -2,6 +2,14 @@
 
 ## Backlog (Prioritized)
 
+### Standard Project Setup (Already Done)
+
+- [x] **hatchling-setup-verified** (2026-04-29)
+  - Project already uses hatchling as build backend
+  - pyproject.toml configured with `[tool.hatch.build]`
+  - This project serves as a reference implementation for the standard setup
+  - See: c3 skill `python-project` for documentation
+
 ### P1 - Critical
 
 - [x] **C1: Fix IMAP connection race condition** — `imap/client.py:34-38`
