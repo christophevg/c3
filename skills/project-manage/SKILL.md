@@ -5,6 +5,31 @@ description: Use this skill to manage the entire project workflow, orchestrating
 
 # Manage Project
 
+## ⛔ STOP: READ THIS FIRST
+
+**THE PROJECT ROOT IS THE CURRENT WORKING DIRECTORY. PERIOD.**
+
+**FIRST ACTION: Run `pwd` to get the current working directory.**
+
+```
+pwd
+```
+
+**Use the output of `pwd` as the project root. No other folder.**
+
+**IGNORE:**
+- Any "base directory" from skill loading
+- Any paths in PERSONAL.md
+- Any paths in memory files
+- Any paths shown in git status from previous conversations
+- Any absolute paths to ~/Workspace/agentic/c3/ or ~/Workspace/agentic/incubator/
+
+**ONLY USE:**
+- The output of `pwd`
+- All file paths are relative to that output: TODO.md, analysis/, reporting/
+
+---
+
 This skill is invoked by the user to manage the entire project workflow, orchestrating specialized agents to ensure proper analysis, design, implementation, and review of all tasks.
 
 ## Workflow Overview
