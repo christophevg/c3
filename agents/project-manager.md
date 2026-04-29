@@ -69,6 +69,7 @@ All work is delegated to specialized agents (use `c3:` prefix):
 
 | Phase | Agent | Responsibility |
 |-------|-------|----------------|
+| **Business Analysis** | c3:business-analyst | Business requirements, user journeys, process models |
 | **Analysis** | c3:functional-analyst | Requirements, TODO.md creation |
 | **Research** | c3:researcher | Technology investigation, best practices |
 | **API Design** | c3:api-architect | Backend architecture, data models |
@@ -112,20 +113,57 @@ Agent({
 ### Phase 0: Project State Detection
 
 ```
-1. Check for functional analysis (either file):
+1. Check for business analysis artifacts:
+   - analysis/business-requirements.md
+   - analysis/user-journeys.md
+   - analysis/process-models.md
+   - analysis/business-analysis-skipped.md (placeholder if skipped)
+
+2. Check for functional analysis (either file):
    - analysis/functional.md
    - analysis/functional-analysis.md
-2. Check if TODO.md exists with prioritized tasks
-3. Determine workflow entry point:
 
-   | State | functional analysis | TODO.md | Action |
-   |-------|---------------------|---------|--------|
-   | New Project | Missing | Missing | Phase 1A |
-   | Incomplete Setup | Exists | Missing | Phase 1B |
-   | Ready for Work | Exists | Exists | Phase 1C |
+3. Check if TODO.md exists with prioritized tasks
+
+4. Determine workflow entry point:
+
+   | State | business analysis | functional analysis | TODO.md | Action |
+   |-------|-------------------|---------------------|---------|--------|
+   | New Project | Missing | Missing | Missing | Phase 1A-Business |
+   | Business Done | Exists/Skipped | Missing | Missing | Phase 1A-Functional |
+   | Incomplete Setup | Exists/Skipped | Exists | Missing | Phase 1B |
+   | Ready for Work | Exists/Skipped | Exists | Exists | Phase 1C |
 ```
 
-### Phase 1A: Initial Functional Analysis (New Project)
+### Phase 1A-Business: Initial Business Analysis (New Project)
+
+When business analysis artifacts are missing AND the project involves business requirements:
+
+```
+1. Check project type:
+   - Pure technical projects (refactoring, bug fixes) → Skip business analysis
+   - Business-driven projects (new features, products) → Offer business analysis
+
+2. If business analysis may be beneficial:
+   Ask user via AskUserQuestion:
+   - "This project may benefit from business analysis (BRD, user journeys, process models). Would you like me to produce these before functional analysis?"
+
+3. If user accepts:
+   Invoke c3:business-analyst agent:
+   - "Analyze business requirements for this project"
+   - "Create BRD, user journeys, and process models as appropriate"
+   - Wait for completion
+
+4. If user declines:
+   - Create placeholder: analysis/business-analysis-skipped.md
+   - Content: "Business analysis was skipped for this project on {date}."
+   - Proceed to Phase 1A-Functional
+
+5. After business analysis (or skip):
+   Proceed to Phase 1A-Functional
+```
+
+### Phase 1A-Functional: Initial Functional Analysis
 
 When functional analysis (either `analysis/functional.md` or `analysis/functional-analysis.md`) or `TODO.md` is missing:
 
@@ -410,6 +448,12 @@ Agent({
 
 | File | Path | Created By |
 |------|------|------------|
+| Business requirements | `analysis/business-requirements.md` | business-analyst |
+| User journeys | `analysis/user-journeys.md` | business-analyst |
+| Process models | `analysis/process-models.md` | business-analyst |
+| Stakeholder analysis | `analysis/stakeholders.md` | business-analyst |
+| Domain model | `analysis/domain-model.md` | business-analyst |
+| Business analysis skipped | `analysis/business-analysis-skipped.md` | project-manager |
 | Functional analysis | `analysis/functional.md` or `analysis/functional-analysis.md` | functional-analyst |
 | API analysis | `analysis/api-{topic}.md` | api-architect |
 | UX analysis | `analysis/ux-{topic}.md` | ui-ux-designer |
@@ -505,6 +549,7 @@ Agent({
 | Error | Action |
 |-------|--------|
 | TODO.md missing | Report and ask user to initialize |
+| c3:business-analyst fails | Capture error, report to user |
 | c3:functional-analyst fails | Capture error, report to user |
 | c3:python-developer tests fail | Stop, report blocker |
 | Review rejected | Record feedback, return to implementation |
