@@ -33,7 +33,7 @@ Use this skill when:
 |------|--------|
 | NEVER update git config | Preserves user's configuration |
 | NEVER skip hooks (`--no-verify`, `--no-gpg-sign`) | Hooks exist for safety |
-| NEVER amend commits | Amending modifies history, can lose work |
+| NEVER amend commits | Except to add missing attribution |
 | NEVER force push to main/master | Protects shared branches |
 | NEVER use `-i` flag (interactive) | Not supported in non-interactive context |
 | Prefer specific files over `git add -A` or `git add .` | Avoids sensitive files, large binaries |
@@ -55,6 +55,7 @@ Before any commit, verify:
 3. **Atomic grouping** - Verify changes represent one logical change
 4. **User approval** - Present analysis and wait for confirmation
 5. **Repository style** - Check recent commits for message style conventions
+6. **Attribution included** - Ensure message includes attribution line
 
 ## Sensitive File Detection
 
@@ -124,8 +125,15 @@ type(scope): description
 
 [optional body]
 
-[optional footer(s)]
+🤖 Implemented together with a coding agent.
 ```
+
+**CRITICAL:** Every commit MUST end with the attribution line:
+```
+🤖 Implemented together with a coding agent.
+```
+
+This attribution is mandatory. If a commit is created without it, use `git commit --amend` to add it.
 
 ### Core Types
 
@@ -219,6 +227,8 @@ git commit -m "$(cat <<'EOF'
 type(scope): description
 
 Optional body explaining why (not how).
+
+🤖 Implemented together with a coding agent.
 EOF
 )"
 ```
@@ -230,6 +240,8 @@ Stage specific files and commit in parallel:
 git add path/to/file1 path/to/file2
 git commit -m "$(cat <<'EOF'
 type(scope): description
+
+🤖 Implemented together with a coding agent.
 EOF
 )"
 ```
@@ -241,7 +253,9 @@ EOF
 
 ### 5. Post-Commit
 
-Run `git status` to verify commit success, then:
+Run `git status` and `git log -1 --format=%B` to verify commit success, then:
+- Verify attribution line is present: `🤖 Implemented together with a coding agent.`
+- If missing: use `git commit --amend` to add it
 - Show commit hash
 - Remind about push (don't auto-push)
 
@@ -308,6 +322,8 @@ When a pre-commit hook fails:
 
 **Why not amend:** After hook failure, `--amend` would modify the PREVIOUS commit, potentially destroying work or losing changes.
 
+**Exception:** Amending to add missing attribution is allowed for successful commits.
+
 ## Related Patterns
 
 - `patterns/atomic-commits.md` - Detailed atomic commit patterns
@@ -323,3 +339,4 @@ When a pre-commit hook fails:
 | Commit message too long | Keep subject under 50 chars, move details to body |
 | User didn't review changes | Present diff, wait for explicit approval |
 | Accidentally staged sensitive file | Use `git restore --staged <file>` to unstage |
+| Missing attribution in commit | Use `git commit --amend` to add attribution line |

@@ -48,10 +48,23 @@ Report results to the caller:
 | Pre-commit hook fails | Skill reports failure, do not bypass |
 | User cancels | Abort, report to caller |
 
+## Attribution Requirement
+
+**CRITICAL:** All commits MUST include the attribution line:
+```
+🤖 Implemented together with a coding agent.
+```
+
+The commit skill handles this automatically. After skill completes:
+1. Verify attribution is present in commit message
+2. If missing: use `git commit --amend` to add it
+3. Report attribution status to caller
+
 ## Guardrails
 
 1. **NEVER bypass pre-commit hooks** — Hooks exist for safety
 2. **NEVER commit sensitive files** — Skill blocks these automatically
 3. **NEVER force commit** — Always get user verification
-4. **NEVER amend commits** — Create new commits instead
+4. **NEVER amend commits** — Except to add missing attribution
 5. **NEVER describe what you will do** — Just invoke the skill immediately
+6. **NEVER confirm commit without verifying attribution** — Check commit message
