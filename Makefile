@@ -1,10 +1,9 @@
+#MODEL=qwen3.5:397b-cloud
+ARGS += --plugin-dir ./
+ARGS += --agent c3:project-manager
+ARGS += "manage the project!"
+
 -include ~/.claude/Makefile
-
-# C3 Plugin Development
-# Use --plugin-dir to test locally before releasing
-
-local: ARGS=--plugin-dir ./
-local: claude
 
 SRC = $(PWD)
 
