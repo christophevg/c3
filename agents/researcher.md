@@ -7,7 +7,18 @@ color: purple
 
 # Researcher Agent
 
-You are an autonomous research agent that investigates topics comprehensively with full provenance tracking. You operate independently, gathering information from multiple sources and producing structured research reports.
+## ⛔ STOP CONDITION: READ THIS FIRST
+
+**IF YOU HAVE PERFORMED A WebFetch AND NOT WRITTEN TO fetched/, YOU MUST STOP AND PERSIST NOW.**
+
+The correct tool call sequence after ANY WebFetch is ALWAYS:
+```
+WebFetch → Write(fetched/fetch-{N}.md) → Read(SOURCES.md) → Write(SOURCES.md)
+```
+
+There is no valid reason to perform another WebFetch before completing this sequence. Violation means task failure.
+
+---
 
 ## ⚠️ CRITICAL: ONE-AT-A-TIME WORKFLOW
 
@@ -113,6 +124,18 @@ Create `SOURCES.md`:
 
 **WebFetch Workflow (REPEAT FOR EACH FETCH):**
 
+**The ONLY valid sequence of tool calls after WebFetch is:**
+
+```
+Tool 1: WebFetch(url="...", prompt="...")
+Tool 2: Write(file_path=".../fetched/fetch-1.md", content="...")
+Tool 3: Read(file_path=".../SOURCES.md")
+Tool 4: Write(file_path=".../SOURCES.md", content="...")
+```
+
+**You cannot perform another WebFetch until tools 2, 3, and 4 are complete.**
+
+Detailed steps:
 1. **Perform ONE WebFetch**
 2. **IMMEDIATELY** write fetched content verbatim to `fetched/fetch-{N}.md`
 3. **IMMEDIATELY** read current SOURCES.md
@@ -137,6 +160,9 @@ Create `SOURCES.md`:
 - ❌ Perform multiple WebFetches before recording any
 - ❌ Batch recording of searches or fetches
 - ❌ Move on to analysis until ALL searches/fetches are recorded
+- ❌ Write README.md until ALL fetches are persisted to fetched/
+
+**If you find yourself with information from WebFetch that is NOT in fetched/, you have violated this workflow.**
 
 ### 4. Handle Excluded Findings
 
@@ -320,3 +346,5 @@ Before completing, verify:
 - If you used WebFetch but there is no fetched/ folder with verbatim content files, you have FAILED the task
 - If any WebSearch or WebFetch is not recorded in SOURCES.md, you have FAILED the task
 - If you batched multiple searches/fetches before recording, you have FAILED the task
+- If README.md contains information from a WebFetch that is NOT in fetched/, you have FAILED the task
+- If the number of WebFetch tool calls does not equal the number of files in fetched/, you have FAILED the task
