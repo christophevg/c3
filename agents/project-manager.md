@@ -97,14 +97,35 @@ Agent({
 ```
 
 **When to use SendMessage:**
-- Only use `SendMessage` to continue a multi-turn conversation with an agent
-- Most agents complete in one invocation — let them finish
-- If agent asks a question that requires YOUR input (not user input), use SendMessage to respond
+
+| Scenario | Action |
+|----------|--------|
+| Agent asks for YOUR input (not user) | Use SendMessage to respond |
+| Agent asks for confirmation | Use SendMessage with "Yes, proceed" |
+| Agent needs clarification | Use SendMessage with details |
+| Agent completes task | Don't use SendMessage — task is done |
+
+**CRITICAL: Multi-turn Agent Conversations**
+
+When an agent asks for input (confirmation, clarification, etc.):
+
+```
+// CORRECT: Continue with SendMessage
+result = Agent({ subagent_type: "c3:git-manager", prompt: "..." })
+
+if result contains question or asks for confirmation:
+  SendMessage({ to: result.agentId, message: "Yes, proceed" })
+
+// WRONG: Re-invoke with new Agent call
+// This loses all context and restarts from scratch
+Agent({ subagent_type: "c3:git-manager", prompt: "Yes, proceed" })  // ❌ WRONG
+```
 
 **Do NOT:**
 - Re-invoke an agent that is still running
 - Use SendMessage to "check on" an agent
 - Interrupt an agent's workflow
+- Start a new Agent call when you should use SendMessage
 
 ---
 
@@ -368,11 +389,63 @@ Invoke c3:end-user-documenter: "Create/update documentation"
 
 **CRITICAL: All work must be committed before moving to the next task.**
 
+**CRITICAL: Invoke git-manager ONCE, then use SendMessage for follow-up.**
+
 ```
-Invoke c3:git-manager agent:
-- Agent({ subagent_type: "c3:git-manager", description: "Commit task changes" })
-- The agent invokes c3:commit skill and handles the full commit workflow
-- User verification is handled within the agent context
+STEP 1: Invoke c3:git-manager ONCE:
+- Agent({ subagent_type: "c3:git-manager", description: "Commit task changes", prompt: "..." })
+- WAIT for git-manager to respond
+
+STEP 2: If git-manager asks for confirmation:
+- DO NOT invoke a new Agent
+- Use SendMessage with the agentId from step 1:
+  SendMessage({ to: "<agentId>", message: "Yes, proceed with the commit." })
+- WAIT for git-manager to complete
+
+STEP 3: If git-manager needs more information:
+- Use SendMessage with the agentId from step 1
+- NEVER restart with a new Agent call
+```
+
+**Common Mistakes to AVOID:**
+
+| Wrong | Right |
+|-------|-------|
+| Invoke Agent again after confirmation | Use SendMessage to continue |
+| Re-explain the commit in follow-up | Just say "Yes, proceed" |
+| Start fresh analysis from git-manager | Continue existing conversation |
+
+**Example Flow:**
+
+```
+// STEP 1: Single invocation with full context
+result = Agent({
+  subagent_type: "c3:git-manager",
+  description: "Commit Search Tool implementation",
+  prompt: `Commit the completed Search Tool implementation.
+
+Files to commit:
+- src/yoker/tools/search.py (new)
+- tests/test_tools/test_search.py (new)
+- src/yoker/tools/__init__.py (modified)
+- TODO.md (task moved to Done)
+
+Commit message:
+feat(tools): implement Search Tool
+
+- Add content and filename search
+- Include security guardrails
+- Update TODO.md: task complete`
+})
+
+// STEP 2: If git-manager asks for confirmation
+SendMessage({
+  to: result.agentId,
+  message: "Yes, proceed with the commit."
+})
+
+// STEP 3: Receive commit result
+// git-manager will report success or failure
 ```
 
 **Note:** Do NOT invoke c3:assistant for commits. Use c3:git-manager for all git operations.
