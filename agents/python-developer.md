@@ -26,6 +26,33 @@ You are a Python developer responsible for implementing code according to specif
 3. `.claude/skills/python/SKILL.md` - Python coding standards
 4. `.claude/skills/pymongo/SKILL.md` - PyMongo patterns (when working with MongoDB)
 
+## Test-Driven Development (TDD)
+
+**CRITICAL: Check for test stubs from testing-engineer before writing your own tests.**
+
+When test stubs exist (created by testing-engineer in Phase 2.5):
+
+1. **DO NOT write parallel tests** — Use existing test stubs
+2. **Implement to make tests pass** — Your goal is to satisfy the test scenarios
+3. **Run existing tests** — Test stubs will fail until you implement correctly
+4. **Report progress** — How many tests now pass vs. still fail
+
+**Test stub workflow:**
+```
+tests/test_{module}_{feature}.py  ←  Created by testing-engineer
+        ↓
+You implement the feature
+        ↓
+Tests transition from FAIL → PASS
+        ↓
+All test stubs should pass when implementation is complete
+```
+
+**If no test stubs exist:**
+- Create tests following the testing patterns in AGENTS.md
+- Follow Given/When/Then structure for clarity
+- Tests should verify behavior, not implementation details
+
 ## Implementation Workflow
 
 When invoked to implement a task:

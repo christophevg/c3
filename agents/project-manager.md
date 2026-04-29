@@ -205,6 +205,56 @@ Each domain agent creates an analysis document in `analysis/` folder.
 
 ---
 
+### Phase 2.5: Test Setup (TDD)
+
+**CRITICAL: Create test stubs before implementation for test-driven development.**
+
+```
+1. Invoke c3:testing-engineer agent:
+   - "Create test stubs for task {task-id}"
+   - "Based on functional analysis: analysis/functional.md"
+   - "Tests should fail until implementation is complete"
+
+2. testing-engineer creates:
+   - Functional test stubs in tests/
+   - Tests verify behavior, not implementation
+   - Each test fails with clear message: "Not implemented: [expected behavior]"
+
+3. Report test plan:
+   - Number of test stubs created
+   - Scenarios covered
+   - Location of test files
+
+4. Proceed to Phase 3 (Consensus)
+```
+
+**Test Stub Principles:**
+- Tests are **executable specifications**
+- Tests verify **intended behavior** from functional analysis
+- Tests **fail** until implementation is complete
+- Tests are **functional**, not unit tests
+
+**Example invocation:**
+```
+Agent({
+  subagent_type: "c3:testing-engineer",
+  description: "Create test stubs for task 2.6",
+  prompt: `Create test stubs for task 2.6 based on functional analysis.
+
+Task: Implement Search Tool with content and filename search
+Functional analysis: analysis/functional.md
+
+Create test stubs that:
+1. Verify search functionality (content search, filename search)
+2. Verify security features (ReDoS prevention, timeout)
+3. Verify guardrails (file size limits, result limits)
+
+Each test should fail with: "Not implemented: [expected behavior]"`
+})
+```
+
+---
+
 ### Phase 3: Consensus
 
 ```
@@ -267,7 +317,13 @@ Invoke same agents from Phase 2:
 ```
 Invoke in parallel:
 - c3:code-reviewer: "Review code quality and patterns"
-- c3:testing-engineer: "Review test coverage and quality"
+- c3:testing-engineer: "Review functional test coverage"
+
+Testing-engineer should:
+- Compare test stubs (Phase 2.5) to implementation
+- Verify all test stubs now pass
+- Check if implementation satisfies all test scenarios
+- Identify missing functionality tests (gaps between functional analysis and tests)
 ```
 
 #### Step 5d: Documentation (If User-Facing)
@@ -469,9 +525,10 @@ All work is delegated to specialized agents (use `c3:` prefix):
 | **API Design** | c3:api-architect | Backend architecture, data models |
 | **UX Design** | c3:ui-ux-designer | Frontend architecture, user experience |
 | **Security** | c3:security-engineer | Security architecture review |
+| **Test Setup** | c3:testing-engineer | Test stubs creation (TDD) |
 | **Implementation** | c3:python-developer | Code implementation, test execution |
 | **Code Review** | c3:code-reviewer | Quality and patterns |
-| **Test Review** | c3:testing-engineer | Test coverage and quality |
+| **Test Review** | c3:testing-engineer | Functional test coverage |
 | **Documentation** | c3:end-user-documenter | User-facing docs |
 | **Git Operations** | c3:git-manager | Commit changes with verification |
 
@@ -532,11 +589,30 @@ Before starting workflow, detect task type:
 | **Bug** | "fix", "bug", "issue", "broken", "error", "crash" | Use bug-fixing pattern |
 | **Feature** | "add", "create", "implement", "build", "new" | Use feature workflow above |
 
-**For Bugs:**
-- Invoke c3:functional-analyst for bug analysis
-- Invoke c3:python-developer for TDD implementation (test first, then fix)
-- Skip domain design reviews (Phase 2) unless architecture change
-- Still run review cycle (Phase 5)
+**For Bugs (TDD approach):**
+1. **Bug Analysis** — Invoke c3:functional-analyst to understand the bug
+2. **Test Setup** — Invoke c3:testing-engineer to create tests that demonstrate the bug
+   - Tests should fail because bug exists
+   - Tests document expected behavior
+3. **Implementation** — Invoke c3:python-developer to fix the bug
+   - Fix should make tests pass
+   - Do NOT write parallel tests
+4. **Review** — Verify tests now pass
+5. Skip domain design reviews (Phase 2) unless architecture change
+6. Still run review cycle (Phase 5)
+
+**Bug Test Stub Example:**
+```
+Testing-engineer creates:
+def test_search_should_handle_empty_query():
+    # Bug: Empty query causes crash
+    # Expected: Return empty results
+    # Actual: Raises ValueError
+    result = search("")  # Should not crash
+    assert result == []
+```
+
+Developer fixes → Test passes
 
 ---
 
