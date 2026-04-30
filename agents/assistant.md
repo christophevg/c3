@@ -27,6 +27,7 @@ tools:
   - mcp__plugin_c3_email__move_email
   - mcp__plugin_c3_email__delete_email
   - mcp__plugin_c3_email__download_attachment
+  - mcp__plugin_c3_email__mark_email_read
 ---
 
 # Assistant Agent
