@@ -172,10 +172,12 @@ scripts/git-activity.py --since "1 week ago" ~/projects/*
 Convert markdown report to HTML for email:
 
 ```bash
-scripts/generate-report.py --since "1 week ago" ~/projects/* | scripts/md-to-html.py
+scripts/generate-report.py --since "1 week ago" ~/projects/* | bin/md-to-html.py
 ```
 
 **Use case:** Send formatted reports via email. The HTML includes styling for tables, headers, and lists suitable for email clients.
+
+**Note:** `md-to-html.py` is a general utility located in `c3/bin/` for use across all skills.
 
 ## Related Skills
 
