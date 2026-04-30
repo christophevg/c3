@@ -167,7 +167,15 @@ Data collection only (outputs JSON):
 scripts/git-activity.py --since "1 week ago" ~/projects/*
 ```
 
-See `patterns/git-queries.md` for the underlying git commands.
+### md-to-html.py
+
+Convert markdown report to HTML for email:
+
+```bash
+scripts/generate-report.py --since "1 week ago" ~/projects/* | scripts/md-to-html.py
+```
+
+**Use case:** Send formatted reports via email. The HTML includes styling for tables, headers, and lists suitable for email clients.
 
 ## Related Skills
 
