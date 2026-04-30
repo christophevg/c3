@@ -25,10 +25,18 @@
 - {human_readable_commit_1}
 - ...
 
+## Totals
+
+| Metric | Value |
+|--------|-------|
+| **Total Commits** | {total_commits} |
+| **Total Files** | {total_files} |
+| **Lines Added** | +{total_added} |
+| **Lines Removed** | -{total_removed} |
+
 ## No Activity
 
 - {repo_path} - No commits in this period
 
 ---
-
 *Report generated on {date} for author: {author}*

@@ -49,16 +49,14 @@ Use this skill when:
 ## Workflow
 
 1. **Parse arguments** - Extract paths, `--file` reference, and time period
-2. **Resolve paths**:
-   - If `--file FILE`: read paths from file (one per line, `#` comments, blank lines ignored)
-   - If glob pattern (`*`): expand via shell
-   - Otherwise: use provided paths directly
-3. **Validate paths** - Check each is a git repository, skip non-git silently
-4. **Get current author** - Run `git config user.name` from first valid repo
-5. **Query git logs** - For each valid path, collect commits and stats
-6. **Aggregate data** - Combine commits, filter merge commits and noise
-7. **Generate narrative** - Write accomplishment-focused summary
-8. **Output** - Print formatted markdown to console
+2. **Collect data** - Run the `scripts/git-activity.py` script with the resolved arguments:
+   ```bash
+   scripts/git-activity.py --since "<period>" <paths...>
+   ```
+   The script handles path expansion, git repo validation, author detection, and statistics collection in a single invocation.
+3. **Parse JSON output** - The script returns structured data with commits, stats, and totals
+4. **Generate narrative** - Write accomplishment-focused summary using the template
+5. **Output** - Print formatted markdown to console
 
 ## Time Periods
 
@@ -93,6 +91,8 @@ Use this skill when:
 
 ## Output Structure
 
+See `templates/report.md` for the complete template structure:
+
 ```markdown
 # Activity Report: [Period]
 
@@ -115,6 +115,15 @@ Use this skill when:
 
 ...
 
+## Totals
+
+| Metric | Value |
+|--------|-------|
+| **Total Commits** | X |
+| **Total Files** | Y |
+| **Lines Added** | +A |
+| **Lines Removed** | -B |
+
 ## No Activity
 
 - [repo-path] - No commits in this period
@@ -131,9 +140,24 @@ When generating the narrative:
 5. **Avoid jargon** - No commit hashes, no branch names
 6. **Quantify when helpful** - "Fixed 3 bugs", "Updated 5 components"
 
-## Git Commands Reference
+## Script Reference
 
-See `patterns/git-queries.md` for the exact git commands used.
+The `scripts/git-activity.py` script handles all git operations:
+
+```bash
+# Basic usage
+scripts/git-activity.py --since "1 week ago" ~/projects/*
+
+# With explicit author
+scripts/git-activity.py --author "John Doe" --since "4 days ago" ~/work/*
+
+# Include repos with no activity
+scripts/git-activity.py --include-empty --since "midnight" ~/code/*
+```
+
+**Output:** JSON with `projects`, `commits`, `stats`, `totals`, and `empty_repos` fields.
+
+See `patterns/git-queries.md` for the underlying git commands.
 
 ## Related Skills
 
