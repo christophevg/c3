@@ -1,313 +1,210 @@
 ---
 name: python-project
-description: Use this skill when setting up or migrating Python projects to the standard hatchling-based setup
+description: Use this skill when setting up or managing Python projects with uv-based tooling. Examples: "uv init my-app", "migrate setup.py to uv", "add pytest to project".
 ---
 
-# Python Project Setup
+# Python Project Setup with uv
 
-This skill defines the standard Python project setup for all new and migrated projects.
+Standard Python project setup using `uv` as the unified tool for dependency management, virtual environments, and Python version management.
+
+## Prerequisites
+
+**Install uv globally before using this skill:**
+
+```bash
+# macOS (recommended)
+brew install uv
+
+# Or via official installer (macOS/Linux)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Verify installation
+uv --version
+```
+
+**Why global installation?** `uv` manages Python versions and virtual environments per-project. It should be available system-wide, not installed in a project's virtual environment.
+
+**Before using uv commands, verify it's available:** `which uv` or `uv --version`
+
+## Why uv?
+
+`uv` replaces multiple tools with a single fast solution (10-100x faster than pip):
+
+| Replaces | Benefit |
+|----------|---------|
+| pip, pip-tools | 10-100x faster package resolution |
+| virtualenv, venv | Built-in, automatic management |
+| pyenv, pyenv-virtualenv | Built-in Python version management |
+| poetry | Simpler configuration |
+| pipx | `uvx` command for one-off tools |
+
+## Virtual Environment Strategy
+
+**One `.venv` per project.** No manual activation — use `uv run`.
+
+| Context | Command |
+|---------|---------|
+| Running code | `uv run python main.py` |
+| Running tests | `uv run pytest` |
+| Running linters | `uv run ruff check src/` |
+| Multi-version testing | `uv run tox` |
+| One-off scripts | `uv run --with pandas script.py` |
+| System-wide tools | `uvx ruff check .` |
+
+**Never manually:**
+- ❌ Create virtual environments (`python -m venv`)
+- ❌ Activate environments (`source .venv/bin/activate`)
+- ❌ Create multiple environments per project
+- ❌ Use `requirements.txt` files
 
 ## Python Version Support
 
-### Python Packages (Libraries)
+| Project Type | Python Versions | `requires-python` |
+|--------------|-----------------|-------------------|
+| Libraries | 3.10, 3.11, 3.12 | `>=3.10` |
+| Applications | 3.11 | `>=3.11` |
 
-Packages published to PyPI must support multiple Python versions to maximize compatibility:
-
-- **Supported versions**: Python 3.10, 3.11, 3.12
-- **Minimum version**: `requires-python = ">=3.10"`
-- **Testing**: Use tox to test all supported versions
-
-### Python Applications
-
-Applications deployed to specific environments should standardize on a single version:
-
-- **Standard version**: Python 3.11
-- **Rationale**: Stable, well-tested, widely available in production environments
-
-This distinction is reflected in:
-- `pyproject.toml`: Packages use `requires-python = ">=3.10"`; Applications use `requires-python = ">=3.11"`
-- `.python-version`: Applications specify `3.11` for pyenv
-- CI/CD: Packages test matrix includes 3.10, 3.11, 3.12; Applications test only 3.11
-
-## Standard Setup: hatchling + pyproject.toml
-
-All Python projects should use the modern `pyproject.toml` configuration with `hatchling` as the build backend.
-
-### Why hatchling?
-
-- **Simpler configuration** - Fewer `[tool.*]` sections than setuptools
-- **Modern defaults** - PEP 639 support for license metadata
-- **Respects `.gitignore`** - Won't accidentally include test/tooling directories
-- **Lightweight** - 83kB vs setuptools' 894kB
-- **Active development** - Part of the Hatch ecosystem
-
-### Standard pyproject.toml Template
-
-```toml
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[project]
-name = "my-package"
-version = "0.1.0"
-description = "A brief description of the package"
-readme = "README.md"
-requires-python = ">=3.10"
-license = {text = "MIT"}
-authors = [
-  {name = "Your Name", email = "your@email.com"}
-]
-classifiers = [
-  "Development Status :: 3 - Alpha",
-  "Intended Audience :: Developers",
-  "License :: OSI Approved :: MIT License",
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
-  "Typing :: Typed",
-]
-keywords = ["relevant", "keywords"]
-dependencies = [
-  "dependency>=1.0.0",
-]
-
-[project.optional-dependencies]
-dev = [
-  "pytest>=7.0.0",
-  "pytest-cov>=4.0.0",
-  "pytest-asyncio>=0.21.0",
-  "mypy>=1.0.0",
-  "ruff>=0.1.0",
-  "build>=1.0.0",
-  "twine>=5.0.0",
-  "sphinx>=7.0.0",
-  "sphinx-rtd-theme>=2.0.0",
-  "myst-parser>=2.0.0",
-  "tox>=4.0.0",
-]
-
-[project.urls]
-Homepage = "https://github.com/username/my-package"
-Documentation = "https://my-package.readthedocs.io/"
-Repository = "https://github.com/username/my-package"
-Issues = "https://github.com/username/my-package/issues"
-
-[project.scripts]
-my-package = "mypackage.__main__:main"
-
-[tool.hatch.build]
-sources = ["src"]
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/mypackage"]
-
-# Testing configuration
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-asyncio_mode = "auto"
-addopts = "-v --cov=mypackage --cov-report=term-missing"
-
-# Type checking configuration
-[tool.mypy]
-python_version = "3.10"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_untyped_decorators = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_no_return = true
-strict_equality = true
-
-# Linting configuration
-[tool.ruff]
-line-length = 100
-target-version = "py310"
-indent-width = 2
-
-[tool.ruff.lint]
-select = [
-  "E",   # pycodestyle errors
-  "W",   # pycodestyle warnings
-  "F",   # pyflakes
-  "I",   # isort
-  "B",   # flake8-bugbear
-  "C4",  # flake8-comprehensions
-  "UP",  # pyupgrade
-]
-ignore = [
-  "E501",  # line too long (handled by formatter)
-]
-
-[tool.ruff.lint.isort]
-known-first-party = ["mypackage"]
-
-# Coverage configuration
-[tool.coverage.run]
-source = ["src"]
-branch = true
-
-[tool.coverage.report]
-exclude_lines = [
-  "pragma: no cover",
-  "def __repr__",
-  "raise NotImplementedError",
-  "if TYPE_CHECKING:",
-]
-
-# Multi-version testing
-[tool.tox]
-env_list = ["py310", "py311", "py312"]
-
-[tool.tox.env_run_base]
-extras = ["dev"]
-commands = [
-  ["pytest", "-v", "--cov=mypackage", "--cov-report=term-missing"],
-]
-```
-
-## Project Structure
-
-### Standard Layout (src-layout)
-
-```
-my-package/
-├── src/
-│   └── mypackage/
-│       ├── __init__.py      # Public API exports
-│       ├── py.typed         # PEP 561 marker
-│       └── ...              # Module files
-├── tests/
-│   ├── __init__.py
-│   ├── conftest.py          # Shared fixtures
-│   └── test_*.py           # Test files
-├── docs/
-│   ├── conf.py
-│   ├── index.md
-│   └── Makefile
-├── pyproject.toml
-├── README.md
-├── LICENSE
-├── .readthedocs.yaml
-├── .gitignore
-└── .python-version         # pyenv version name
-```
-
-### Key Files
-
-| File | Purpose |
-|------|---------|
-| `pyproject.toml` | All project configuration (build, tools, metadata) |
-| `src/mypackage/py.typed` | PEP 561 marker for type hints |
-| `.readthedocs.yaml` | ReadTheDocs configuration |
-| `.python-version` | pyenv virtual environment name |
-
-## Migration from setup.py
-
-When migrating a project from `setup.py` to the standard setup:
-
-### Step 1: Create pyproject.toml
-
-1. Copy the template above
-2. Replace package name, description, dependencies
-3. Add existing dependencies from `requirements.txt`
-4. Add existing dev dependencies from `requirements.dev.txt` or `requirements-test.txt`
-
-### Step 2: Update Project Structure
-
-1. Move package to `src/` layout if not already there
-2. Create `src/mypackage/py.typed` marker file
-3. Update imports if moving to src-layout
-
-### Step 3: Remove Old Files
-
-Delete after migration:
-- `setup.py`
-- `setup.cfg`
-- `tox.ini` (move config to pyproject.toml)
-- `.coveragerc` (move config to pyproject.toml)
-- `.pypi-template` (deprecated)
-
-### Step 4: Update Makefile
-
-Replace setuptools commands with modern equivalents:
-
-| Old | New |
-|-----|-----|
-| `python setup.py sdist bdist_wheel` | `python -m build` |
-| `coverage run -m pytest` | `pytest --cov` |
-
-### Step 5: Verify
-
-Run these commands to verify the migration:
+## Project Initialization
 
 ```bash
-# Install dependencies
-pip install -e ".[dev]"
+# Create new application
+uv init my-app && cd my-app
 
-# Run tests
-pytest
+# Create new library
+uv init --lib my-library && cd my-library
 
-# Run linting
-ruff check src tests
-
-# Run type checking
-mypy --strict src
-
-# Build package
-python -m build
-
-# Check distribution
-twine check dist/*
+# Initialize existing project
+cd existing-project && uv init
 ```
 
-## Makefile Template
+### Project Structure
 
-A minimal Makefile for development workflow:
-
-```makefile
-VENV_NAME := mypackage
-PYTHON_VERSION := 3.11
-
-.PHONY: setup install test lint typecheck build publish clean
-
-setup:
-  @if pyenv versions | grep -q "$(VENV_NAME)"; then \
-    echo "Virtualenv '$(VENV_NAME)' already exists."; \
-  else \
-    pyenv virtualenv $(PYTHON_VERSION) $(VENV_NAME); \
-  fi
-  pyenv local $(VENV_NAME)
-
-install: setup
-  pip install -e ".[dev]"
-
-test:
-  pytest
-
-lint:
-  ruff check src tests
-
-typecheck:
-  mypy --strict src
-
-check: lint typecheck
-
-build:
-  python -m build
-
-publish: build
-  twine upload dist/*
-
-clean:
-  rm -rf build/ dist/ *.egg-info
-  find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 ```
+my-project/
+├── pyproject.toml      # All configuration
+├── uv.lock              # Locked dependencies (commit this!)
+├── .python-version     # Pinned Python version
+├── .venv/               # Auto-managed (gitignore)
+├── src/my_package/
+│   ├── __init__.py
+│   └── py.typed        # PEP 561 marker
+└── tests/
+    ├── conftest.py
+    └── test_*.py
+```
+
+### Add Dependencies
+
+```bash
+uv add fastapi uvicorn      # Production
+uv add --dev pytest ruff    # Development
+uv add --optional docs sphinx  # Optional (libraries)
+```
+
+## Daily Commands
+
+### Running and Testing
+
+```bash
+uv run python main.py                    # Run application
+uv run pytest                            # Run all tests
+uv run pytest tests/test_module.py       # Run specific file
+uv run pytest -n auto                    # Run in parallel
+uv run pytest --cov=src --cov-report=term-missing  # With coverage
+```
+
+### Code Quality
+
+```bash
+uv run ruff check src/         # Lint
+uv run ruff check --fix src/   # Auto-fix
+uv run ruff format src/        # Format
+uv run mypy src/               # Type check
+```
+
+### Dependency Management
+
+```bash
+uv add package-name                 # Add dependency
+uv remove package-name              # Remove dependency
+uv sync                             # Sync to lock file
+uv sync --frozen                    # Verify lock is current
+uv lock --upgrade                   # Update all deps
+uv lock --upgrade-package pkg       # Update specific dep
+```
+
+### Python Version Management
+
+```bash
+uv python install 3.12     # Install Python version
+uv python pin 3.12         # Pin for project
+uv python list             # List available versions
+```
+
+### Multi-Version Testing with tox
+
+**One-time setup — install all required Python versions:**
+
+```bash
+uv python install 3.10 3.11 3.12
+# Or with Makefile:
+make install-pythons
+```
+
+**Run tests across all versions:**
+
+```bash
+uv run tox              # All configured environments
+uv run tox -e py310     # Specific version
+uv run tox -e py311
+uv run tox -e py312
+uv run tox parallel     # Parallel execution
+```
+
+**How it works:**
+
+| Tool | Role |
+|------|------|
+| `uv python install` | Installs Python versions (no pyenv needed) |
+| `tox` | Creates temporary isolated environments for each version |
+| `uv run tox` | Runs tox using the project's virtual environment |
+
+**Note:** tox creates and manages its own environments in `.tox/` — you don't create them manually. They're cleaned up automatically.
+
+### Project Management
+
+```bash
+uv build          # Build package
+uv publish        # Publish to PyPI
+uvx ruff check .  # Run one-off tools
+```
+
+## Template Files
+
+Complete templates for project configuration:
+
+| Template | Description |
+|----------|-------------|
+| `templates/pyproject-library.toml` | Full pyproject.toml for libraries |
+| `templates/makefile` | Development workflow Makefile |
+| `templates/github-actions-app.yml` | CI workflow for applications |
+| `templates/github-actions-lib.yml` | CI workflow for libraries |
+
+## GitHub Actions CI
+
+Run tests automatically on push. Create `.github/workflows/test.yml`:
+
+**Key settings:**
+
+| Setting | Purpose |
+|---------|---------|
+| `matrix.os` | Test on Linux, macOS, Windows |
+| `matrix.python-version` | Test multiple Python versions (libraries) |
+| `--frozen` | Fail if lock file is out of date |
+| `on: push` | Run on every push |
+| `on: [push, pull_request]` | Also run on PRs (libraries) |
+
+See `templates/github-actions-app.yml` and `templates/github-actions-lib.yml` for complete workflows.
 
 ## ReadTheDocs Configuration
 
@@ -315,41 +212,81 @@ clean:
 
 ```yaml
 version: 2
-
 build:
   os: ubuntu-22.04
   tools:
-    python: "3.11"
-
+    python: "3.12"
 sphinx:
   configuration: docs/conf.py
-
 python:
   install:
     - method: pip
       path: .
       extra_requirements:
-        - dev
+        - docs  # IMPORTANT: Use 'docs', not 'dev'
 ```
 
-## Comparison: hatchling vs setuptools.build_meta
+**Critical:** Always use `extra_requirements: - docs` (never `dev`):
 
-| Aspect | hatchling | setuptools.build_meta |
-|--------|-----------|----------------------|
-| **Size** | 83 kB | 894 kB |
-| **Dependencies** | 4 | 0 |
-| **PEP 639 (license)** | ✅ Supported | ❌ Pending |
-| **Package discovery** | Explicit config | Auto-discovery |
-| **Gitignore support** | ✅ Default | ❌ Needs MANIFEST.in |
-| **C/C++ extensions** | Via plugins | ✅ Native |
-| **Configuration** | Simpler | More verbose |
+| Wrong | Correct |
+|-------|---------|
+| `extra_requirements: - dev` | `extra_requirements: - docs` |
+| Installs all dev tools unnecessarily | Only installs Sphinx dependencies |
+| Slower builds, larger environment | Minimal, focused environment |
 
-## When to Keep setuptools
+## Building Documentation
 
-Keep `setuptools.build_meta` when:
-- Building C/C++ extension modules
-- Complex build customization that needs setuptools plugins
-- Legacy codebase where migration cost outweighs benefits
+Documentation uses Sphinx with the ReadTheDocs theme. Define docs dependencies in `pyproject.toml`:
+
+```toml
+[project.optional-dependencies]
+docs = [
+  "sphinx>=7.0.0",
+  "sphinx-rtd-theme>=2.0.0",
+  "myst-parser>=2.0.0",
+]
+```
+
+**Build documentation locally:**
+
+```bash
+# Sync docs dependencies
+uv sync --extra docs
+
+# Build HTML docs (use sphinx-build directly)
+cd docs; uv run sphinx-build -M html . _build
+```
+
+**Note:** Use `sphinx-build` directly instead of `make html` — it works without requiring a `docs/Makefile`.
+
+## Migration from Legacy Setup
+
+When migrating from `setup.py`, `requirements.txt`, or other legacy approaches:
+
+1. **Initialize:** `cd existing-project && uv init`
+2. **Add dependencies:** `uv add <packages>` from requirements.txt
+3. **Add dev dependencies:** `uv add --dev pytest ruff mypy`
+4. **Update structure:** Move to `src/` layout, add `py.typed`
+5. **Remove old files:** setup.py, setup.cfg, requirements*.txt, tox.ini, .coveragerc
+6. **Verify:** `uv sync && uv run pytest && uv run ruff check src`
+
+## Comparison: uv vs Legacy Tools
+
+| Aspect | uv | Legacy (pip + pyenv) |
+|--------|-----|---------------------|
+| Speed | 10-100x faster | Baseline |
+| Virtual envs | Automatic | Manual |
+| Python versions | Built-in | Requires pyenv |
+| Lock files | Built-in | Requires pip-tools |
+| Config files | One (pyproject.toml) | Multiple |
+
+## When to Use Alternatives
+
+| Scenario | Tool |
+|----------|------|
+| Data science with C/Fortran libs | Conda |
+| Legacy project maintenance | Keep existing setup |
+| Team using Poetry | Stay with Poetry |
 
 ## Related Skills
 
@@ -359,7 +296,7 @@ Keep `setuptools.build_meta` when:
 
 ## Sources
 
-- [Python Packaging Guide - Build Tools](https://pyopensci.org/python-package-guide/package-structure-code/python-package-build-tools.html)
+- [uv Documentation](https://docs.astral.sh/uv/)
+- [Python Packaging Guide](https://pyopensci.org/python-package-guide/package-structure-code/python-package-build-tools.html)
 - [Scientific Python - Simple Packaging](https://learn.scientific-python.org/development/guides/packaging-simple/)
-- [Packaging Rundown - Coady](https://coady.github.io/posts/packaging-rundown.html)
-- [Why Hatch?](https://hatch.pypa.io/latest/why/)
+- [tox Documentation](https://tox.wiki/)

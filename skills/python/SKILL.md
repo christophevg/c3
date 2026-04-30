@@ -229,3 +229,7 @@ class App(TextualApp):
 | Textual | `theme`, `title`, `styles` | Use `theme_name`, `app_title`, `custom_styles` |
 | FastAPI | `get`, `post`, `router` | Names are usually fine (decorator methods) |
 | Pydantic | `model_`, `schema_` | Avoid underscore prefixes in field names |
+
+## Related Skills
+
+- `python-project` - Project setup, dependency management, and virtual environments with uv

@@ -27,6 +27,34 @@ Use this skill when:
 - After significant project changes
 - Before releases/publishing
 
+## File Location
+
+**README.md belongs in the project root.**
+
+| Location | Use Case |
+|----------|----------|
+| `README.md` (root) | **Project README** — standard, required |
+| `.github/README.md` | GitHub profile/org README (not for projects) |
+
+**Why root:**
+
+1. **PyPI expects it** — `readme = "README.md"` in pyproject.toml
+2. **Convention** — GitHub, GitLab, Bitbucket all look there first
+3. **Tooling** — Most tools assume root location
+4. **Visibility** — Appears in file listings, clones, GitHub repo landing page
+
+**What goes in `.github/` instead:**
+
+| File | Purpose |
+|------|---------|
+| `FUNDING.yml` | Sponsorship configuration |
+| `ISSUE_TEMPLATE/` | Issue templates |
+| `PULL_REQUEST_TEMPLATE.md` | PR template |
+| `workflows/` | GitHub Actions |
+| `CODEOWNERS` | Code ownership rules |
+
+**Note:** `.github/README.md` is for user/org profile repos (e.g., `github.com/username/.github`), not for project repositories.
+
 ## Project Type Detection
 
 Detect project type by analyzing repository contents:
@@ -58,9 +86,15 @@ Check if Python package is published to PyPI:
 |------|--------|
 | 1 | Detect project type |
 | 2 | Check for existing README.md |
-| 3 | If exists, analyze current structure |
-| 4 | Identify missing sections |
-| 5 | Identify outdated badges/info |
+| 3 | **Check for `.github/README.md`** — if exists, move to root |
+| 4 | If exists, analyze current structure |
+| 5 | Identify missing sections |
+| 6 | Identify outdated badges/info |
+
+**Critical:** If `.github/README.md` exists but `README.md` does not, move it to root:
+```bash
+mv .github/README.md README.md
+```
 
 ### Phase 2: Generate/Update README
 
@@ -159,6 +193,7 @@ Check if Python package is published to PyPI:
 | Missing Quick Start | Create 3-step minimal setup |
 | No badges | Add based on project type |
 | Dead links | Validate all URLs |
+| README in `.github/` | Move to root: `mv .github/README.md README.md` |
 
 ## Related Skills
 
