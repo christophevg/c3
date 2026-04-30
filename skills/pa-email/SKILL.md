@@ -31,48 +31,48 @@ Process incoming emails via the MCP email server, turning them into actionable T
 - `Archive` — Processed messages moved here
 - `Deleted Messages` — Trash
 
+## MCP Tools Available
+
+| Tool | Purpose |
+|------|---------|
+| `list_accounts` | List configured email accounts |
+| `list_folders` | List folders for an account |
+| `search_emails` | Search for messages (supports `UNSEEN`, `ALL`, etc.) |
+| `get_email` | Fetch full message content |
+| `send_email` | Send new email |
+| `reply_email` | Reply to existing thread |
+| `move_email` | Move message between folders |
+| `mark_email_read` | Mark message as read (sets `\Seen` flag) |
+| `delete_email` | Delete message |
+
 ## Workflow
 
 ### Step 1: Check for New Emails
 
-```
-1. Search INBOX for ALL messages (not just UNSEEN)
-2. Retrieve list of message IDs
-3. If no messages, report "No new emails" and exit
+```bash
+search_emails(account="default", folder="INBOX", criteria="UNSEEN")
 ```
 
-> **Note:** Some email servers do not update UNSEEN flags immediately or may cache search results. Always search `ALL` and use the deduplication strategy below.
+Use `criteria="UNSEEN"` to get only unread/unprocessed messages. This eliminates the need for deduplication — unseen messages are by definition new.
 
-### Step 2: Deduplication (Critical)
+If no messages, report "No new emails" and exit.
 
-Before processing any message, check if it has already been handled:
+### Step 2: Read Each New Email
 
-```
-1. Fetch all messages in INBOX (get full content: subject, from, date, body)
-2. Fetch all messages in Archive (get full content)
-3. For each message, create a signature: subject + "|" + from + "|" + date
-4. Compare INBOX signatures against Archive signatures
-5. Skip any INBOX message whose signature matches an Archive message
+For each message ID returned by search:
+
+```bash
+get_email(account="default", message_id="<id>", folder="INBOX")
 ```
 
-> **Why:** Message IDs are folder-local, not globally unique. Message `2` in INBOX is a different message than message `2` in Archive. Additionally, some email servers cache search results, so a moved message may still appear in INBOX. Content-based deduplication (subject + sender + date) is reliable.
+Extract:
+- Sender name and email address
+- Subject
+- Date
+- Body content (plain text or HTML)
+- Attachments (if any)
 
-### Step 3: Read Each New Email
-
-For each unprocessed message in INBOX:
-
-```
-1. Fetch full email content (subject, from, to, date, body)
-2. Extract the sender's name and email address
-3. Parse the body as markdown/plain text
-4. Identify items:
-   - Lines starting with "- " or "* " (list items)
-   - Numbered items
-   - Paragraphs describing tasks or questions
-   - Inline replies or thread context
-```
-
-### Step 4: Categorize Content
+### Step 3: Categorize Content
 
 For each item extracted from the email body, categorize just like `pa-inbox`:
 
@@ -84,7 +84,7 @@ For each item extracted from the email body, categorize just like `pa-inbox`:
 | **Information** | General info to remember | Create/update memory file |
 | **Greeting/Context** | Social, no action needed | Acknowledge in reply |
 
-### Step 5: Execute Actions
+### Step 4: Execute Actions
 
 For actionable items:
 
@@ -101,7 +101,7 @@ For information items:
 2. Update memory/MEMORY.md index
 ```
 
-### Step 6: Generate and Send Reply
+### Step 5: Generate and Send Reply
 
 Compose a reply email to the sender:
 
@@ -162,21 +162,23 @@ Use `bin/md-to-html.py` to convert Markdown to styled HTML. Always provide both:
 
 **Send via:** `reply_email` MCP tool (preferred) or `send_email` with `In-Reply-To` header.
 
-### Step 7: Archive the Original Email
+### Step 6: Mark as Read and Archive
 
+After successful reply:
+
+```bash
+# Mark message as read
+mark_email_read(account="default", message_id="<id>", folder="INBOX")
+
+# Move to Archive
+move_email(account="default", message_id="<id>", source_folder="INBOX", dest_folder="Archive")
 ```
-1. Move the original message from INBOX to Archive folder
-2. Verify the message appears in Archive
-```
 
-Use `move_email` with:
-- `source_folder`: INBOX
-- `dest_folder`: Archive
-- `message_id`: <original message ID>
+**Order matters:** Mark as read first, then move. This ensures the message has the `\Seen` flag before archiving.
 
-> Do NOT delete the email — archiving preserves the record and enables deduplication.
+> **Why both?** Marking as read ensures the message won't appear in future UNSEEN searches. Moving to Archive keeps the INBOX clean.
 
-### Step 8: Report Summary
+### Step 7: Report Summary
 
 After processing all messages, report:
 
@@ -185,18 +187,21 @@ After processing all messages, report:
 
 | Metric | Count |
 |--------|-------|
-| Emails checked | N |
-| New emails processed | N |
+| Emails processed | N |
 | Actions taken | N |
 | Replies sent | N |
 | Pending questions | N |
 ```
 
-## Deduplication Rules
+## Error Handling
 
-1. **Primary method:** Content-based — compare `subject|from|date` signatures between INBOX and Archive
-2. **Secondary method:** If a message cannot be moved (error), do NOT retry processing it in the same session
-3. **Tertiary method:** Track processed signatures in session state or memory to guard against edge cases
+| Error | Action |
+|-------|--------|
+| Cannot connect to email server | Report error, do not retry immediately |
+| Message fetch fails | Log the message ID, skip it, continue with others |
+| Reply send fails | Do NOT mark as read or archive; retry in next iteration |
+| Move/archive fails | If reply was sent and marked read, note it; message won't reappear in UNSEEN search |
+| Unknown sender | Process normally, but be cautious about creating projects |
 
 ## Loop Integration
 
@@ -212,7 +217,7 @@ To run this skill in a recurring loop:
 - **Overnight/weekend:** 2-4 hours
 
 **Loop behavior:**
-- If no new emails, report silently or with minimal output
+- If no new emails (UNSEEN returns empty), report silently or with minimal output
 - If emails processed, send reply and report summary
 - Never error on empty inbox — this is normal
 
@@ -242,16 +247,6 @@ Treat the email body like an inbox file:
 - Signatures and quoted replies are ignored
 ```
 
-## Error Handling
-
-| Error | Action |
-|-------|--------|
-| Cannot connect to email server | Report error, do not retry immediately |
-| Message fetch fails | Log the message ID, skip it, continue with others |
-| Reply send fails | Do NOT archive the message; retry reply in next iteration |
-| Move/archive fails | If reply was sent, note it; do not reprocess unless confirmed duplicate |
-| Unknown sender | Process normally, but be cautious about creating projects |
-
 ## Example Session
 
 **User email:**
@@ -274,7 +269,7 @@ Thanks!
 3. Add to c3/TODO.md: "Add pa-email skill for email inbox processing"
 4. Create `sailing-tracker/` project with TODO.md
 5. Send reply with actions taken
-6. Archive original email
+6. Mark as read and archive original email
 
 ## Related Skills
 
