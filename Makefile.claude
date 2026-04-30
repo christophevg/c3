@@ -1,20 +1,23 @@
 -include .env
 -include .env.local
 
-MODEL ?= glm-5:cloud
-ARGS  ?=
-
-ifdef TREE
-ARGS := $(ARGS) -w $(TREE)
-endif
+MODEL  ?= glm-5:cloud   # our preferred model ;-)
+ARGS   ?=               # optional additional CLI arguments
+PROMPT ?=               # optional initial prompt
 
 all: claude
 
 claude:
-	ollama launch claude --model ${MODEL} -- $(ARGS)
+	ollama launch claude --model ${MODEL} -- $(ARGS) $(PROMPT)
 
-update-claude:
-	claude --update
-
-resume: ARGS+=--resume
+resume: ARGS += --resume
 resume: claude
+
+project: ARGS += --agent c3:project-manager
+project: claude
+
+manage: PROMPT = "manage the project!"
+manage: project
+
+image-generation:
+	ollama run x/z-image-turbo
