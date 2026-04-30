@@ -386,7 +386,7 @@ class TestIMAPClientOperations:
 
     assert result is True
     mock_imap_client.copy.assert_called_once_with("1", "Archive")
-    mock_imap_client.store.assert_called_once_with("1", "+FLAGS", "\\Deleted")
+    mock_imap_client.store.assert_called_once_with("1", "+FLAGS", "(\\Deleted)")
     mock_imap_client.expunge.assert_called_once()
 
   async def test_move_message_copy_failure_raises(self, mock_account, mock_imap_client):
@@ -404,7 +404,7 @@ class TestIMAPClientOperations:
     result = await client.delete_message("1", "INBOX")
 
     assert result is True
-    mock_imap_client.store.assert_called_once_with("1", "+FLAGS", "\\Deleted")
+    mock_imap_client.store.assert_called_once_with("1", "+FLAGS", "(\\Deleted)")
     mock_imap_client.expunge.assert_called_once()
 
   async def test_mark_message_add(self, mock_account, mock_imap_client):
@@ -414,7 +414,7 @@ class TestIMAPClientOperations:
     result = await client.mark_message("1", "INBOX", "\\Seen", "add")
 
     assert result is True
-    mock_imap_client.store.assert_called_once_with("1", "+FLAGS", "\\Seen")
+    mock_imap_client.store.assert_called_once_with("1", "+FLAGS", "(\\Seen)")
 
   async def test_mark_message_remove(self, mock_account, mock_imap_client):
     """mark_message with action=remove should use -FLAGS."""
@@ -423,7 +423,7 @@ class TestIMAPClientOperations:
     result = await client.mark_message("1", "INBOX", "\\Seen", "remove")
 
     assert result is True
-    mock_imap_client.store.assert_called_once_with("1", "-FLAGS", "\\Seen")
+    mock_imap_client.store.assert_called_once_with("1", "-FLAGS", "(\\Seen)")
 
   async def test_download_attachment(self, mock_account, mock_imap_client, tmp_path):
     """download_attachment should save attachment to workspace."""
@@ -556,7 +556,7 @@ class TestMoveMessageAtomic:
 
       assert result is True
       mock_client.copy.assert_called_once_with("1", "Archive")
-      mock_client.store.assert_called_once_with("1", "+FLAGS", "\\Deleted")
+      mock_client.store.assert_called_once_with("1", "+FLAGS", "(\\Deleted)")
       mock_client.expunge.assert_called_once()
 
   async def test_move_failure_raises_error(self, mock_account):

@@ -300,7 +300,8 @@ class IMAPClient:
       if status != "OK":
         raise RuntimeError(f"Failed to copy message: {status}")
 
-      await client.store(message_id, "+FLAGS", "\\Deleted")
+      # IMAP requires flags to be wrapped in parentheses
+      await client.store(message_id, "+FLAGS", "(\\Deleted)")
       await client.expunge()
 
       return True
@@ -319,8 +320,8 @@ class IMAPClient:
         raise RuntimeError(f"Failed to select folder {folder}: {status}")
       self._selected_folder = folder
 
-      # Mark as deleted
-      await client.store(message_id, "+FLAGS", "\\Deleted")
+      # Mark as deleted - IMAP requires flags in parentheses
+      await client.store(message_id, "+FLAGS", "(\\Deleted)")
 
       if expunge:
         await client.expunge()
@@ -343,7 +344,8 @@ class IMAPClient:
       self._selected_folder = folder
 
       flag_action = "+FLAGS" if action == "add" else "-FLAGS"
-      status, _ = await client.store(message_id, flag_action, flag)
+      # IMAP requires flags to be wrapped in parentheses
+      status, _ = await client.store(message_id, flag_action, f"({flag})")
 
       return status == "OK"
 
