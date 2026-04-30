@@ -49,18 +49,39 @@ Use this skill when:
 ## Workflow
 
 1. **Parse arguments** - Extract paths and time period
-2. **Generate report** - Run `scripts/generate-report.py` with the arguments:
+2. **Generate report** - Run `generate-report.py` with the arguments:
    ```bash
-   scripts/generate-report.py --since "<period>" [--include-empty] <paths...>
+   # Use path relative to skill base directory (shown in command header)
+   <skill-base>/scripts/generate-report.py --since "<period>" [--include-empty] <paths...>
    ```
+   
+   The skill base directory is shown in the command header, e.g.:
+   `Base directory for this skill: /Users/xtof/Workspace/agentic/c3/skills/git-activity-report`
+   
+   So the full path would be:
+   `<skill-base>/scripts/generate-report.py`
+
 3. **Output** - The script produces a complete markdown report
 
 The script handles everything: path expansion, git repo validation, author detection, statistics collection, and deterministic report generation.
 
 **For JSON output** (programmatic use):
 ```bash
-scripts/generate-report.py --json --since "<period>" <paths...>
+<skill-base>/scripts/generate-report.py --json --since "<period>" <paths...>
 ```
+
+**Efficiency tip:** When you need both markdown and HTML output (e.g., for email), capture the output once:
+```bash
+# Generate once, use for both formats
+REPORT_MD=$(<skill-base>/scripts/generate-report.py --since "<period>" <paths...>)
+REPORT_HTML=$(echo "$REPORT_MD" | <c3-base>/bin/md-to-html.py)
+# Now use $REPORT_MD as plain text and $REPORT_HTML as HTML
+```
+
+**Path resolution:**
+- `<skill-base>` is shown in the command header when the skill is invoked
+- `<c3-base>` is the parent of the skills directory, typically `<skill-base>/../..`
+- For c3 plugin: `<c3-base>/bin/md-to-html.py`
 
 ## Time Periods
 
@@ -147,14 +168,16 @@ Activity includes X new features, Y fixes, Z documentation updates.
 Primary script for generating complete markdown reports:
 
 ```bash
-# Basic usage
-scripts/generate-report.py --since "1 week ago" ~/projects/*
+# Basic usage - use path relative to skill base directory
+# The skill base is shown in command header, e.g.:
+# Base directory for this skill: /path/to/c3/skills/git-activity-report
+<skill-base>/scripts/generate-report.py --since "1 week ago" ~/projects/*
 
 # Include repos with no activity
-scripts/generate-report.py --include-empty --since "1 month ago" ~/work/*
+<skill-base>/scripts/generate-report.py --include-empty --since "1 month ago" ~/work/*
 
 # JSON output for programmatic use
-scripts/generate-report.py --json --since "4 days ago" ~/code/*
+<skill-base>/scripts/generate-report.py --json --since "4 days ago" ~/code/*
 ```
 
 **Output:** Deterministic markdown report (or JSON with `--json` flag).
@@ -164,20 +187,27 @@ scripts/generate-report.py --json --since "4 days ago" ~/code/*
 Data collection only (outputs JSON):
 
 ```bash
-scripts/git-activity.py --since "1 week ago" ~/projects/*
+<skill-base>/scripts/git-activity.py --since "1 week ago" ~/projects/*
 ```
 
 ### md-to-html.py
 
-Convert markdown report to HTML for email:
+Convert markdown report to HTML for email. Located in `c3/bin/` for use across all skills.
 
 ```bash
-scripts/generate-report.py --since "1 week ago" ~/projects/* | bin/md-to-html.py
+# The c3 base is the parent of skills directory
+# If skill-base is /path/to/c3/skills/git-activity-report
+# Then c3-base is /path/to/c3
+
+# Direct pipe for HTML output
+<skill-base>/scripts/generate-report.py --since "1 week ago" ~/projects/* | <c3-base>/bin/md-to-html.py
+
+# For both formats (avoid running twice):
+REPORT_MD=$(<skill-base>/scripts/generate-report.py --since "1 week ago" ~/projects/*)
+REPORT_HTML=$(echo "$REPORT_MD" | <c3-base>/bin/md-to-html.py)
 ```
 
 **Use case:** Send formatted reports via email. The HTML includes styling for tables, headers, and lists suitable for email clients.
-
-**Note:** `md-to-html.py` is a general utility located in `c3/bin/` for use across all skills.
 
 ## Related Skills
 

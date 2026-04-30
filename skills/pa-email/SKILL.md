@@ -189,12 +189,23 @@ Eira
 When the reply contains Markdown formatting (tables, lists, headers), convert to HTML for proper email rendering:
 
 ```bash
-echo "<markdown content>" | bin/md-to-html.py
+# Paths are relative to the skill base directory shown in command header
+# For c3 plugin:
+# - <c3-base> is the parent of skills directory (e.g., /Users/xtof/Workspace/agentic/c3)
+# - git-activity-report skill: <c3-base>/skills/git-activity-report/scripts/generate-report.py
+# - md-to-html: <c3-base>/bin/md-to-html.py
+
+# For git-activity-report (capture once, use twice)
+REPORT_MD=$(<c3-base>/skills/git-activity-report/scripts/generate-report.py --since "midnight" ~/Workspace/agentic/*)
+REPORT_HTML=$(echo "$REPORT_MD" | <c3-base>/bin/md-to-html.py)
+# Use REPORT_MD for body (plain text) and REPORT_HTML for html_body
 ```
 
-Use `bin/md-to-html.py` to convert Markdown to styled HTML. Always provide both:
-- `body` — Plain text fallback
+Use `<c3-base>/bin/md-to-html.py` to convert Markdown to styled HTML. Always provide both:
+- `body` — Plain text fallback (use original markdown)
 - `html_body` — Styled HTML for email clients
+
+**Efficiency tip:** When generating reports, capture the markdown output once and convert to HTML. Never run the report generator twice.
 
 **Send via:** Use `send_email` (reliable) or `reply_email` (requires actual Message-ID header).
 
