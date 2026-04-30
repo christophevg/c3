@@ -31,6 +31,26 @@ Process incoming emails via the MCP email server, turning them into actionable T
 - `Archive` — Processed messages moved here
 - `Deleted Messages` — Trash
 
+## Critical Guardrails
+
+### Use Skills, Not Manual Commands
+
+When a skill exists for a task, **use it immediately** — do not run manual commands:
+
+| Task | Use | NOT |
+|------|-----|-----|
+| Git activity report | `c3:git-activity-report` skill | `git log`, `git diff` |
+| Project status | `c3:project-status` skill | manual file reads |
+| Commit changes | `c3:commit` skill | `git commit` |
+
+**Why:** Skills encapsulate correct behavior, handle edge cases, and produce consistent output.
+
+### Email Operations: MCP Tools ONLY
+
+**NEVER** access email servers directly (no curl, no imap libraries, no direct API calls).
+
+**ALWAYS** use the MCP email tools listed below. They handle authentication, protocol details, and error handling correctly.
+
 ## MCP Tools Available
 
 | Tool | Purpose |
@@ -44,6 +64,22 @@ Process incoming emails via the MCP email server, turning them into actionable T
 | `move_email` | Move message between folders |
 | `mark_email_read` | Mark message as read (sets `\Seen` flag) |
 | `delete_email` | Delete message |
+
+### Message ID Warning
+
+The `id` field returned by `search_emails` and `get_email` is a **simplified internal ID** (e.g., `"1"`), NOT the RFC 2822 Message-ID header.
+
+**For `mark_email_read` and `move_email`:** Use the simplified `id` directly.
+
+**For `reply_email`:** Requires the actual Message-ID header (with angle brackets). The MCP `id` field is NOT this value. If you don't have the Message-ID header, use `send_email` instead:
+
+```python
+# SAFE: Use send_email with clear reply subject
+send_email(account="default", to=[sender], subject=f"Re: {subject}", body=...)
+
+# RISKY: reply_email requires actual Message-ID header, not the MCP id
+# If you get "Message-ID must be angle-bracketed" error, use send_email instead
+```
 
 ## Workflow
 
@@ -160,7 +196,9 @@ Use `bin/md-to-html.py` to convert Markdown to styled HTML. Always provide both:
 - `body` — Plain text fallback
 - `html_body` — Styled HTML for email clients
 
-**Send via:** `reply_email` MCP tool (preferred) or `send_email` with `In-Reply-To` header.
+**Send via:** Use `send_email` (reliable) or `reply_email` (requires actual Message-ID header).
+
+> **Warning:** `reply_email` requires the RFC Message-ID header value (e.g., `<ABC123@mail.example.com>`), NOT the simplified MCP `id` field. If you only have the MCP `id`, use `send_email` instead with subject `"Re: {original_subject}"`.
 
 ### Step 6: Mark as Read and Archive
 

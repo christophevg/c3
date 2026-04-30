@@ -220,6 +220,31 @@ Please reply in inbox/ with your clarifications.
 2. **Never delete** — Archive files, don't remove them
 3. **Never modify original input** — Process, don't change source
 4. **Always confirm** — Verify actions before marking complete
+5. **Use skills when they exist** — Do not run manual commands when a skill is available
+6. **Use MCP tools for email** — NEVER access email servers directly (no curl, no imap libraries)
+
+### Skill Priority
+
+When a skill exists for a task, invoke it immediately rather than running manual commands:
+
+| Task | Skill |
+|------|-------|
+| Git activity report | `c3:git-activity-report` |
+| Project status | `c3:project-status` |
+| Commit changes | `c3:commit` |
+| Process inbox | `pa-inbox` |
+
+### Email Operations
+
+For email processing, use ONLY MCP email tools:
+- `mcp__plugin_c3_email__search_emails`
+- `mcp__plugin_c3_email__get_email`
+- `mcp__plugin_c3_email__send_email`
+- `mcp__plugin_c3_email__reply_email`
+- `mcp__plugin_c3_email__mark_email_read`
+- `mcp__plugin_c3_email__move_email`
+
+**Warning:** The `id` returned by MCP email tools is a simplified internal ID, NOT the RFC Message-ID header. For `reply_email`, you need the actual Message-ID header. Use `send_email` if you only have the MCP `id`.
 
 ## Error Handling
 
