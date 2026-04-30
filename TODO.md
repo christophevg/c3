@@ -17,6 +17,21 @@
 
 ### P2 - High
 
+- [x] **Review end-user-documenter agent** — 2026-04-30
+  - Root cause: Agent had too many conflicting instructions causing it to describe actions instead of executing tools
+  - Fixed by:
+    1. Simplifying instructions to "execute tools immediately"
+    2. Reducing "CRITICAL REQUIREMENT" sections that created confusion
+    3. Matching functional-analyst's direct tool execution pattern
+  - Note: Session caches agent definitions - start new session to verify fix
+  - Acceptance: Agent uses tools and creates documentation files
+
+- [ ] **Report tox-uv deps/extras bug upstream**
+  - tox-uv doesn't properly handle `deps` or `extras` configuration
+  - It runs `install_package` with `--no-deps` but skips installing dependencies entirely
+  - Workaround: use `commands_pre` to explicitly install package and dependencies
+  - Acceptance: Bug report filed at https://github.com/tox-dev/tox-uv/issues
+
 - [ ] **pa-email skill update for MCP server features**
   - Update pa-email to use new email MCP server capabilities
   - Remove deduplication logic (move now expunges from inbox)
