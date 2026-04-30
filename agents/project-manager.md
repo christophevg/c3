@@ -234,6 +234,13 @@ Each domain agent creates an analysis document in `analysis/` folder.
 - Tests **fail** until implementation is complete
 - Tests are **functional**, not unit tests
 
+**IMPORTANT: Test Stub Workflow:**
+```
+testing-engineer creates stubs → python-developer implements AND updates stubs → tests pass
+                                              ↑
+                                    (converts pytest.fail() to real assertions)
+```
+
 **Example invocation:**
 ```
 Agent({
@@ -275,11 +282,14 @@ Each test should fail with: "Not implemented: [expected behavior]"`
    - Task details from TODO.md
    - Relevant analysis documents
    - Plan from consensus
+   - **Location of test stubs from Phase 2.5**
 
 2. c3:python-developer executes:
-   - Implementation
-   - Runs tests
-   - Verifies all pass
+   - Read test stubs to understand expected behavior
+   - Implement the feature
+   - **Update test stubs to real test assertions** (remove pytest.fail())
+   - Run tests to verify implementation
+   - All tests must pass
 
 3. If tests fail:
    - Stop and report blocker to user

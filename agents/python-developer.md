@@ -32,21 +32,43 @@ You are a Python developer responsible for implementing code according to specif
 
 When test stubs exist (created by testing-engineer in Phase 2.5):
 
-1. **DO NOT write parallel tests** — Use existing test stubs
-2. **Implement to make tests pass** — Your goal is to satisfy the test scenarios
-3. **Run existing tests** — Test stubs will fail until you implement correctly
-4. **Report progress** — How many tests now pass vs. still fail
+1. **Read the test stubs first** — Understand expected behavior from stub names and comments
+2. **Implement the feature** — Write code to satisfy the expected behavior
+3. **Update test stubs to real tests** — Convert `pytest.fail()` to actual assertions:
+   ```python
+   # Before (test stub from testing-engineer):
+   def test_search_returns_results():
+       """Not implemented: search should return matching results"""
+       pytest.fail("Not implemented: search should return matching results")
+
+   # After (real test after implementation):
+   def test_search_returns_results():
+       """Search should return matching results"""
+       result = search("query")
+       assert len(result) > 0
+       assert all("query" in item for item in result)
+   ```
+4. **Run tests** — Verify all tests pass
+5. **Report progress** — How many tests now pass
 
 **Test stub workflow:**
 ```
-tests/test_{module}_{feature}.py  ←  Created by testing-engineer
+tests/test_{module}_{feature}.py  ←  Created by testing-engineer (FAILING)
+        ↓
+You read stubs to understand expected behavior
         ↓
 You implement the feature
         ↓
-Tests transition from FAIL → PASS
+You UPDATE stubs to real test assertions
         ↓
-All test stubs should pass when implementation is complete
+All tests transition from FAIL → PASS
+        ↓
+All test stubs should pass when complete
 ```
+
+**Key principle:** Test stubs are executable specifications. Your job is to:
+1. Implement the behavior they specify
+2. Convert them from failing stubs to passing tests with real assertions
 
 **If no test stubs exist:**
 - Create tests following the testing patterns in AGENTS.md

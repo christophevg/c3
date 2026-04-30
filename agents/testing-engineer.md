@@ -30,6 +30,24 @@ When invoked for test setup:
 - Name tests after **functionality**: `test_{feature}_{scenario}`
 - Use **Gherkin-style** comments: Given/When/Then
 
+**IMPORTANT: Test Stub Lifecycle:**
+```
+YOU (testing-engineer) create:
+  → Test stubs with pytest.fail("Not implemented: ...")
+  → These are executable specifications
+
+PYTHON-DEVELOPER will:
+  → Read your stubs to understand expected behavior
+  → Implement the feature
+  → UPDATE your stubs to real test assertions
+  → Run tests to verify they pass
+
+End result: Tests transition FAIL → PASS
+```
+
+**Your responsibility:** Create clear, behavior-focused test stubs that specify WHAT should happen.
+**Developer's responsibility:** Implement the feature AND convert stubs to real assertions.
+
 ### Phase 5: Test Review (After Implementation)
 
 When invoked for test review:
@@ -149,7 +167,8 @@ def test_{feature}_{scenario}_happy_path():
     When: [action]
     Then: [expected result]
     """
-    # Stub: Not implemented - {expected behavior}
+    # Stub: This test will fail until implementation is complete
+    # Expected behavior: [clear description of what should happen]
     pytest.fail("Not implemented: {expected behavior}")
 ```
 
@@ -164,6 +183,12 @@ def test_{feature}_{scenario}_happy_path():
 
 ### What These Tests Verify
 [List of behaviors these tests will verify once implemented]
+
+### Next Steps for Python-Developer
+1. Read these stubs to understand expected behavior
+2. Implement the feature
+3. UPDATE each stub: replace pytest.fail() with real assertions
+4. Run tests to verify all pass
 ```
 
 ### For Test Plan Requests
