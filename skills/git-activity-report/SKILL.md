@@ -13,7 +13,7 @@ Generate human-readable activity summaries from git repositories. The skill prod
 |------------|-------------|
 | Multi-repo queries | Aggregate activity across multiple repositories |
 | Time-based filtering | Filter by today, yesterday, week, or month |
-| AI narrative | Generate accomplishment-focused summaries |
+| Deterministic output | Same input always produces same report format |
 | Path flexibility | Direct paths, file input, or glob patterns |
 
 ## When to Use This Skill
@@ -48,15 +48,19 @@ Use this skill when:
 
 ## Workflow
 
-1. **Parse arguments** - Extract paths, `--file` reference, and time period
-2. **Collect data** - Run the `scripts/git-activity.py` script with the resolved arguments:
+1. **Parse arguments** - Extract paths and time period
+2. **Generate report** - Run `scripts/generate-report.py` with the arguments:
    ```bash
-   scripts/git-activity.py --since "<period>" <paths...>
+   scripts/generate-report.py --since "<period>" [--include-empty] <paths...>
    ```
-   The script handles path expansion, git repo validation, author detection, and statistics collection in a single invocation.
-3. **Parse JSON output** - The script returns structured data with commits, stats, and totals
-4. **Generate narrative** - Write accomplishment-focused summary using the template
-5. **Output** - Print formatted markdown to console
+3. **Output** - The script produces a complete markdown report
+
+The script handles everything: path expansion, git repo validation, author detection, statistics collection, and deterministic report generation.
+
+**For JSON output** (programmatic use):
+```bash
+scripts/generate-report.py --json --since "<period>" <paths...>
+```
 
 ## Time Periods
 
@@ -91,25 +95,29 @@ Use this skill when:
 
 ## Output Structure
 
-See `templates/report.md` for the complete template structure:
+The script produces deterministic markdown following this structure:
 
 ```markdown
-# Activity Report: [Period]
+# Activity Report: [period]
+
+**Period:** [period]
+**Author:** [author]
 
 ## Summary
 
-[AI-generated narrative of accomplishments across all projects]
+Activity across N projects. Most active: [project], [project], [project].
 
 ## Projects
 
 ### [Project Name]
 
-[AI-generated narrative for this project]
+Activity includes X new features, Y fixes, Z documentation updates.
 
 **Commits:** X | **Files:** Y | **Lines:** +A/-B
 
-- [Human-readable commit description]
-- [Human-readable commit description]
+- [Accomplishment stripped of conventional prefix]
+- [Accomplishment stripped of conventional prefix]
+- ...
 
 ### [Project Name]
 
@@ -126,36 +134,38 @@ See `templates/report.md` for the complete template structure:
 
 ## No Activity
 
-- [repo-path] - No commits in this period
+- [repo] - No commits in this period
+
+---
+*Report generated on [date] for author: [author]*
 ```
-
-## Narrative Generation Guidelines
-
-When generating the narrative:
-
-1. **Focus on accomplishments** - What was achieved, not how
-2. **Use present tense** - "Add authentication system" not "Added"
-3. **Strip conventional prefixes** - Show "Add feature" not "feat: Add feature"
-4. **Group related commits** - Combine "Add login" + "Add logout" → "Implement authentication"
-5. **Avoid jargon** - No commit hashes, no branch names
-6. **Quantify when helpful** - "Fixed 3 bugs", "Updated 5 components"
 
 ## Script Reference
 
-The `scripts/git-activity.py` script handles all git operations:
+### generate-report.py
+
+Primary script for generating complete markdown reports:
 
 ```bash
 # Basic usage
-scripts/git-activity.py --since "1 week ago" ~/projects/*
-
-# With explicit author
-scripts/git-activity.py --author "John Doe" --since "4 days ago" ~/work/*
+scripts/generate-report.py --since "1 week ago" ~/projects/*
 
 # Include repos with no activity
-scripts/git-activity.py --include-empty --since "midnight" ~/code/*
+scripts/generate-report.py --include-empty --since "1 month ago" ~/work/*
+
+# JSON output for programmatic use
+scripts/generate-report.py --json --since "4 days ago" ~/code/*
 ```
 
-**Output:** JSON with `projects`, `commits`, `stats`, `totals`, and `empty_repos` fields.
+**Output:** Deterministic markdown report (or JSON with `--json` flag).
+
+### git-activity.py
+
+Data collection only (outputs JSON):
+
+```bash
+scripts/git-activity.py --since "1 week ago" ~/projects/*
+```
 
 See `patterns/git-queries.md` for the underlying git commands.
 
