@@ -57,9 +57,10 @@
   Acceptance: Tighten regex or use proper IMAP command escaping
   **Fixed:** Removed single quote from regex (not part of IMAP string syntax per RFC 3501). Added valid IMAP characters (@, ., :, %, \) for email addresses, flags, and wildcards. Tests in `tests/test_imap_client.py::TestIMAPCriteriaValidation`.
 
-- [ ] **H4: Add CRLF injection protection** — `smtp/client.py:159-197`
+- [x] **H4: Add CRLF injection protection** — `smtp/client.py:159-197`
   `_send()` method doesn't validate `in_reply_to` or `references` headers for header injection.
   Acceptance: Sanitize header values to prevent CRLF injection attacks
+  **Fixed:** Added `sanitize_message_id()`, `sanitize_references()`, `sanitize_subject()` functions in `src/email_mcp/safety/sanitize.py`. Updated `send_email()` and `reply_email()` to sanitize subject, `reply_email()` to sanitize `in_reply_to` and `references`. Added CRLF check to `validate_email()`. Tests in `tests/test_sanitize.py` and `tests/test_smtp_client.py`.
 
 - [ ] **H5: Sanitize download_attachment errors** — `server.py:170-171`
   `download_attachment` passes raw exception message to user - may leak internal details.
@@ -103,6 +104,18 @@
   - Test `log_auth_attempt` called for auth success/failure
   - Test `log_rate_limited` called when exceeded
   - Acceptance: All audit events verified
+
+- [ ] **H11: Add IMAP folder CRLF injection protection** — `imap/client.py:170,196,237`
+  IMAP folder names passed to `select()`, `search()` without sanitization. CRLF injection could execute arbitrary IMAP commands.
+  Acceptance: Add `sanitize_folder_name()` and apply to all IMAP operations
+
+- [ ] **H12: Add attachment filename CRLF injection protection** — `smtp/client.py:253-256`
+  `_add_attachments()` uses filename directly in Content-Disposition header without sanitization.
+  Acceptance: Add `sanitize_filename()` and apply before setting Content-Disposition
+
+- [ ] **H13: Add IMAP message ID validation** — `imap/client.py:243`
+  Message IDs passed to `fetch()` without validation. While typically numeric, should validate to prevent injection.
+  Acceptance: Add `sanitize_message_id_numeric()` for IMAP operations
 
 ### P3 - Medium
 

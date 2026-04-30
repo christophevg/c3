@@ -16,13 +16,34 @@ import aiosmtplib
 
 from email_mcp.config import EmailAccount, get_recipient_whitelist
 from email_mcp.safety.audit import log_email_sent
+from email_mcp.safety.sanitize import (
+  sanitize_message_id,
+  sanitize_references,
+  sanitize_subject,
+)
 
 # Email address validation pattern
 EMAIL_PATTERN = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
 
 
 def validate_email(address: str) -> str:
-  """Validate email address format."""
+  """Validate email address format with CRLF protection.
+
+  Validates email address format and rejects addresses containing
+  CR or LF characters to prevent header injection attacks.
+
+  Args:
+    address: Email address to validate
+
+  Returns:
+    The validated email address
+
+  Raises:
+    ValueError: If address is invalid or contains CRLF characters
+  """
+  # Reject CRLF sequences to prevent header injection
+  if "\r" in address or "\n" in address:
+    raise ValueError(f"Email address contains invalid characters: {address}")
   if not EMAIL_PATTERN.match(address):
     raise ValueError(f"Invalid email address: {address}")
   return address
@@ -50,7 +71,33 @@ class SMTPClient:
     html_body: str | None = None,
     attachments: list[str] | None = None,
   ) -> dict[str, str]:
-    """Send an email message."""
+    """Send an email message with optional HTML body and attachments.
+
+    Validates all recipient addresses, checks whitelist restrictions,
+    and sanitizes headers to prevent CRLF injection. The message is sent
+    via SMTP with TLS 1.2 minimum encryption.
+
+    Args:
+      to: List of primary recipient email addresses
+      subject: Email subject line (sanitized for CRLF)
+      body: Plain text email body
+      cc: Optional list of CC recipients
+      bcc: Optional list of BCC recipients
+      html_body: Optional HTML version of the body
+      attachments: Optional list of file paths to attach
+
+    Returns:
+      Dict with 'status', 'recipients', and 'message' keys
+
+    Raises:
+      ValueError: If any email address is invalid
+      WhitelistError: If any recipient is not in the whitelist
+      FileNotFoundError: If an attachment file is not found
+      RuntimeError: If SMTP send fails
+    """
+    # Sanitize subject to prevent CRLF injection
+    safe_subject = sanitize_subject(subject)
+
     # Validate email addresses
     for addr in to:
       validate_email(addr)
@@ -79,7 +126,7 @@ class SMTPClient:
 
     msg["From"] = self.account.username
     msg["To"] = ", ".join(to)
-    msg["Subject"] = subject
+    msg["Subject"] = safe_subject
 
     if cc:
       msg["Cc"] = ", ".join(cc)
@@ -107,7 +154,7 @@ class SMTPClient:
     log_email_sent(
       account=self.account.name,
       recipients=to,
-      subject=subject,
+      subject=safe_subject,
       has_attachments=has_attachments,
     )
 
@@ -122,9 +169,37 @@ class SMTPClient:
     references: list[str] | None = None,
     html_body: str | None = None,
   ) -> dict[str, str]:
-    """Send a reply preserving thread context."""
+    """Send a reply preserving thread context.
+
+    Creates a reply message with proper In-Reply-To and References headers
+    to maintain email threading. All headers are sanitized to prevent CRLF
+    injection. The message is sent via SMTP with TLS 1.2 minimum encryption.
+
+    Args:
+      to: Recipient email address (single recipient for reply)
+      subject: Email subject line (sanitized for CRLF)
+      body: Plain text email body
+      in_reply_to: Message-ID of the original message being replied to
+      references: Optional list of Message-IDs in the thread history
+      html_body: Optional HTML version of the body
+
+    Returns:
+      Dict with 'status', 'recipients', and 'message' keys
+
+    Raises:
+      ValueError: If email address or Message-IDs are invalid
+      WhitelistError: If the recipient is not in the whitelist
+      RuntimeError: If SMTP send fails
+    """
     # Validate email address
     validate_email(to)
+
+    # Sanitize subject to prevent CRLF injection
+    safe_subject = sanitize_subject(subject)
+
+    # Sanitize Message-ID headers to prevent CRLF injection
+    safe_in_reply_to = sanitize_message_id(in_reply_to)
+    safe_references = sanitize_references(references) if references else None
 
     # Check recipient whitelist
     whitelist = get_recipient_whitelist()
@@ -135,17 +210,27 @@ class SMTPClient:
 
     msg["From"] = self.account.username
     msg["To"] = to
-    msg["Subject"] = subject
-    msg["In-Reply-To"] = in_reply_to
+    msg["Subject"] = safe_subject
+    msg["In-Reply-To"] = safe_in_reply_to
 
-    if references:
-      msg["References"] = " ".join(references)
+    if safe_references:
+      msg["References"] = " ".join(safe_references)
 
     msg.set_content(body)
     if html_body:
       msg.add_alternative(html_body, subtype="html")
 
-    return await self._send(msg, [to])
+    result = await self._send(msg, [to])
+
+    # Audit log
+    log_email_sent(
+      account=self.account.name,
+      recipients=[to],
+      subject=safe_subject,
+      has_attachments=False,
+    )
+
+    return result
 
   async def forward_email(
     self,
