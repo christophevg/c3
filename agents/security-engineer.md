@@ -180,6 +180,54 @@ Use for architecture security review:
 
 **Compliance questions**: Provide compliance-relevant findings, note that full compliance requires organizational processes
 
+**Findings outside task scope**: Classify and report appropriately (see Scope Classification below)
+
+## Scope Classification
+
+After security review, classify each finding using this format:
+
+| Finding | Classification | Action |
+|---------|---------------|--------|
+| [issue] | Blocking \| Related \| New | [action] |
+
+### Classification Definitions
+
+**Blocking**: Must fix before task can be considered complete
+- Security vulnerability directly related to task
+- Critical issue that affects current implementation
+- Must be addressed in current task
+
+**Related**: Should be addressed as part of current task
+- Security improvement that enhances task deliverable
+- Minor vulnerability in related code
+- Can be addressed without significant scope expansion
+
+**New**: Valid findings but separate from current task
+- Security issues in unrelated code
+- Future security hardening opportunities
+- Should be added to backlog for separate task
+- Include recommendation for prioritization
+
+### Example Classification Report
+
+```markdown
+## Security Findings Classification
+
+| Finding | Classification | Action |
+|---------|---------------|--------|
+| SMTP header CRLF injection | Blocking | Fix in current task |
+| Subject sanitization gap | Related | Add to current task scope |
+| IMAP folder CRLF injection | New | Add to backlog as H11 |
+| Attachment filename injection | New | Add to backlog as H12 |
+
+### Blocking/Related Findings
+[Details and remediation]
+
+### New Backlog Items
+- **H11**: IMAP folder CRLF injection - High priority
+- **H12**: Attachment filename injection - High priority
+```
+
 ## Severity Classification
 
 | Rating | CVSS | Description |

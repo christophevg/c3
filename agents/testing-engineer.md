@@ -261,6 +261,38 @@ def test_{feature}_{scenario}_happy_path():
 [Prioritized improvement suggestions]
 ```
 
+## Protocol Verification Checklist
+
+When creating tests for network protocols (IMAP, SMTP, HTTP, etc.):
+
+### IMAP Protocol Specifics
+Before creating IMAP-related tests, verify against RFC 3501:
+
+1. **Flag Format**: IMAP flags MUST be wrapped in parentheses
+   - Correct: `(\Seen)`, `(\Deleted)`, `(\Answered)`
+   - Incorrect: `\Seen`, `\Deleted`
+   - Test expectation: `mock_client.store.assert_called_once_with("1", "+FLAGS", "(\\Seen)")`
+
+2. **Folder Names**: May need special quoting for spaces
+   - Use `list('""', '"*"')` format for folder listing
+
+3. **Message IDs**: Typically numeric, but validate for injection prevention
+
+4. **Before mocking protocol calls:**
+   - Document the expected format
+   - Reference the relevant RFC section
+   - Test against actual IMAP server behavior if uncertain
+
+### SMTP Protocol Specifics
+1. **Headers**: Must be properly encoded for non-ASCII
+2. **Envelope vs Headers**: Envelope (MAIL FROM/RCPT TO) separate from message headers
+3. **Authentication**: SASL mechanisms have specific formats
+
+### Common Protocol Gotchas
+- Always check RFC specification before creating mocks
+- Verify against real server when possible
+- Document format assumptions in test comments
+
 ## Guardrails and Error Handling
 
 **No tests exist**: Focus on test plan creation, recommend starting with critical functionality
@@ -272,6 +304,8 @@ def test_{feature}_{scenario}_happy_path():
 **Coverage reports unavailable**: Analyze test files directly for functionality coverage
 
 **Unable to determine functionality**: Ask user for clarification, don't guess at requirements
+
+**Protocol tests with incorrect expectations**: Always verify protocol syntax against RFCs before mocking
 
 ## Risk Prioritization Scale
 
