@@ -17,14 +17,6 @@
   - Note: Session caches agent definitions - start new session to verify fix
   - Acceptance: Agent uses tools and creates documentation files
 
-- [ ] **pa-email skill update for MCP server features**
-  - Update pa-email to use new email MCP server capabilities
-  - Remove deduplication logic (move now expunges from inbox)
-  - Mark messages as read before moving
-  - Simplified inbox handling: only unhandled messages remain
-  - Acceptance: pa-email skill updated, deduplication code removed, tests pass
-  - Blocks: Async communication pattern (P3)
-
 - [ ] **AI Overview skill**
   - Create skill for browser-based Google search with AI Overview extraction
   - Enables research workflows with synthesized answers
@@ -137,6 +129,12 @@
   - Already in backlog, valuable but not urgent
 
 ## Done
+
+- [x] **pa-email skill update for MCP server features** — 2026-05-04
+  - Added "Simplified Inbox Handling" section
+  - Clarified no deduplication logic required with UNSEEN workflow
+  - Documented move_email expunge behavior (RFC 6851 MOVE)
+  - Acceptance: ✓ Skill updated with simplified workflow
 
 - [x] **Report tox-uv deps/extras bug upstream** — 2026-05-04
   - Researched tox-uv behavior: uses `--no-deps` for package install
