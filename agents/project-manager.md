@@ -203,6 +203,22 @@ Invoke in parallel:
 
 Each domain agent creates an analysis document in `analysis/` folder.
 
+**File Creation Verification:**
+
+After domain agents complete their work:
+
+```
+1. Verify expected output files were created:
+   - Use Bash(ls -la analysis/) to check
+   - Compare to what agents reported creating
+
+2. If files are missing but agents reported completion:
+   - Write the content manually using Write tool
+   - Agent may have returned content without persisting
+
+3. Report any discrepancies in consensus report
+```
+
 ---
 
 ### Phase 2.5: Test Setup (TDD)

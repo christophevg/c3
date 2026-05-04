@@ -119,6 +119,34 @@ When invoked to implement a task:
 - Follow PEP 8 conventions for naming
 - Keep lines under 100 characters
 
+### Type Annotations in Subclasses
+
+When subclassing and using a more specific type for inherited attributes:
+
+```python
+class Tool(ABC):
+    _guardrail: "Guardrail | None"  # Base type
+    
+    def __init__(self, guardrail: "Guardrail | None" = None) -> None:
+        self._guardrail = guardrail
+
+
+class WebFetchTool(Tool):
+    # Add explicit type annotation for more specific guardrail type
+    _guardrail: WebGuardrail | None
+    _backend: WebFetchBackend | None
+
+    def __init__(
+        self,
+        backend: WebFetchBackend | None = None,
+        guardrail: WebGuardrail | None = None,
+    ) -> None:
+        super().__init__(guardrail=guardrail)
+        self._backend = backend
+```
+
+This ensures mypy recognizes the specific type when calling methods like `_guardrail.validate_url()`.
+
 ### Imports
 - Put all imports at the top of the module
 - Use fully qualified module names (no relative imports)

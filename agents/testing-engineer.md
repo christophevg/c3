@@ -147,6 +147,35 @@ def test_{bug_area}_should_{expected_behavior}():
 
 **Do NOT use Edit** - Once tests are created, maintain independence through read-only scope.
 
+## Test Assertion Best Practices
+
+When creating test stubs and assertions:
+
+### Flexible Error Message Assertions
+
+Error messages may vary slightly in implementation. Use flexible assertions:
+
+```python
+# PREFERRED: Check for key terms, not exact strings
+assert "ssrf" in result.error.lower() or "private" in result.error.lower()
+
+# AVOID: Exact string matching for error messages
+assert result.error == "SSRF blocked: private IP address detected"
+```
+
+### Common Assertion Patterns
+
+```python
+# For error type checking (flexible)
+assert "timeout" in str(exc_info.value).lower()
+
+# For category checking
+assert any(term in result.error.lower() for term in ["ssrf", "blocked", "denied"])
+
+# For presence of key identifiers
+assert "169.254.169.254" in result.reason or "metadata" in result.reason.lower()
+```
+
 ## Output Format
 
 ### For Test Stub Creation (TDD Setup)
