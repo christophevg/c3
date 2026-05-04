@@ -207,7 +207,7 @@ def main():
     author = args.author or Path.home().name
 
     # Determine CSS path - default to templates/default.css in script directory
-    script_dir = Path(__file__).parent.parent  # scripts/../
+    script_dir = Path(__file__).parent
     default_css = script_dir / "templates" / "default.css"
 
     if args.css:

@@ -1,5 +1,0 @@
-# Dependencies for markdown-to-pdf skill
-# Install with: pip install -r requirements.txt
-
-markdown-it-py>=3.0.0
-weasyprint>=68.0
