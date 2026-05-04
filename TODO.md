@@ -17,12 +17,6 @@
   - Note: Session caches agent definitions - start new session to verify fix
   - Acceptance: Agent uses tools and creates documentation files
 
-- [ ] **Report tox-uv deps/extras bug upstream**
-  - tox-uv doesn't properly handle `deps` or `extras` configuration
-  - It runs `install_package` with `--no-deps` but skips installing dependencies entirely
-  - Workaround: use `commands_pre` to explicitly install package and dependencies
-  - Acceptance: Bug report filed at https://github.com/tox-dev/tox-uv/issues
-
 - [ ] **pa-email skill update for MCP server features**
   - Update pa-email to use new email MCP server capabilities
   - Remove deduplication logic (move now expunges from inbox)
@@ -143,6 +137,12 @@
   - Already in backlog, valuable but not urgent
 
 ## Done
+
+- [x] **Report tox-uv deps/extras bug upstream** — 2026-05-04
+  - Researched tox-uv behavior: uses `--no-deps` for package install
+  - Created bug report draft at research/tox-uv-bug-report.md
+  - Filing skipped by user choice (report ready when needed)
+  - Acceptance: ✓ Research complete, report drafted
 
 - [x] **Review scripts centralization implementation** — 2026-05-04
   - Reviewed migration to scripts/markdown-to-pdf/
