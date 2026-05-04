@@ -81,6 +81,27 @@ send_email(account="default", to=[sender], subject=f"Re: {subject}", body=...)
 # If you get "Message-ID must be angle-bracketed" error, use send_email instead
 ```
 
+## Simplified Inbox Handling
+
+The MCP email server provides a clean workflow that eliminates the need for any deduplication tracking:
+
+| Step | Action | Result |
+|------|--------|--------|
+| 1. Search | `UNSEEN` criteria | Only new/unprocessed messages returned |
+| 2. Process | Read and act on each message | Actions taken, reply generated |
+| 3. Mark Read | `mark_email_read` | Message gets `\Seen` flag |
+| 4. Archive | `move_email` | Message removed from INBOX |
+
+**After processing:** The INBOX only contains unhandled messages. No state tracking, no seen-IDs list, no deduplication logic needed.
+
+**How it works:**
+- `UNSEEN` criteria filters out any message with the `\Seen` flag
+- `mark_email_read` sets the `\Seen` flag
+- `move_email` physically removes the message from INBOX (using RFC 6851 MOVE or COPY+EXPUNGE fallback)
+- Result: Next UNSEEN search returns only truly new messages
+
+This is simpler than file-based inbox processing because IMAP flags and folder moves provide built-in state management.
+
 ## Workflow
 
 ### Step 1: Check for New Emails
@@ -89,7 +110,7 @@ send_email(account="default", to=[sender], subject=f"Re: {subject}", body=...)
 search_emails(account="default", folder="INBOX", criteria="UNSEEN")
 ```
 
-Use `criteria="UNSEEN"` to get only unread/unprocessed messages. This eliminates the need for deduplication — unseen messages are by definition new.
+Use `criteria="UNSEEN"` to get only unread/unprocessed messages. **No deduplication logic is required** — the UNSEEN flag naturally filters out any messages you've already processed. This is the core principle of simplified inbox handling.
 
 If no messages, report "No new emails" and exit.
 
@@ -225,7 +246,7 @@ move_email(account="default", message_id="<id>", source_folder="INBOX", dest_fol
 
 **Order matters:** Mark as read first, then move. This ensures the message has the `\Seen` flag before archiving.
 
-> **Why both?** Marking as read ensures the message won't appear in future UNSEEN searches. Moving to Archive keeps the INBOX clean.
+> **Why both?** Marking as read ensures the message won't appear in future UNSEEN searches. Moving to Archive keeps the INBOX clean. The `move_email` operation removes the message from the source folder (using RFC 6851 MOVE extension if available, or COPY+EXPUNGE fallback), so the INBOX only contains unprocessed messages.
 
 ### Step 7: Report Summary
 
