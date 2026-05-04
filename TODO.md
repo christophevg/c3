@@ -17,13 +17,6 @@
   - Note: Session caches agent definitions - start new session to verify fix
   - Acceptance: Agent uses tools and creates documentation files
 
-- [ ] **Review scripts centralization implementation**
-  - User has migrated markdown-to-pdf to scripts/ with minimal pyproject.toml
-  - Review changes to skill (SKILL.md, README.md)
-  - Verify no regressions in functionality
-  - Propose alternative approaches if applicable
-  - Acceptance: Feedback provided, improvements identified or confirmed working
-
 - [ ] **Report tox-uv deps/extras bug upstream**
   - tox-uv doesn't properly handle `deps` or `extras` configuration
   - It runs `install_package` with `--no-deps` but skips installing dependencies entirely
@@ -150,6 +143,12 @@
   - Already in backlog, valuable but not urgent
 
 ## Done
+
+- [x] **Review scripts centralization implementation** — 2026-05-04
+  - Reviewed migration to scripts/markdown-to-pdf/
+  - Fixed documentation inconsistencies (H1, H2, M1, M2)
+  - All references updated to correct paths
+  - Acceptance: ✓ Feedback provided, documentation fixed
 
 - [x] Ensure that C3 skills and agents reference each other with the c3: plugin prefix — 2026-04-28
 - [x] **Business Analyst Agent** (processed 2026-04-29) — moved to P3 backlog
