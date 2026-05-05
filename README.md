@@ -75,7 +75,7 @@ The `make local` target runs Claude with `--plugin-dir ./` to test unreleased ch
 
 ---
 
-## Skills (40)
+## Skills (41)
 
 Skills provide focused guidance for specific technologies and workflows.
 
@@ -105,7 +105,7 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/pa-session` | Manage session state for workflow continuity. |
 | `/pa-outbox` | Generate formatted replies and manage archive. |
 
-### Domain Expertise (6)
+### Domain Expertise (9)
 
 | Skill | Description |
 |-------|-------------|
@@ -115,6 +115,9 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/fire` | Python Fire CLI patterns. |
 | `/textual` | Textual TUI framework. |
 | `/rich` | Rich console output. |
+| `/vuetify-v1` | Vuetify 1.5 components in legacy Baseweb projects. |
+| `/vuetify-v2` | Vuetify V2 components in Baseweb projects. |
+| `/vuetify-v3` | Vuetify V3 components with comprehensive patterns and migration guide from V2. |
 
 ### Development (2)
 
@@ -123,7 +126,7 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/develop-skill` | Create and refine Claude Code skills. |
 | `/develop-agent` | Develop Claude Code agents. |
 
-### Utility (21)
+### Utility (18)
 
 | Skill | Description |
 |-------|-------------|
@@ -142,8 +145,6 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/spec2mod` | Generate Python from OpenAPI specs. |
 | `/start-baseweb-project` | Start new Baseweb projects. |
 | `/vue-form-generator` | Schema-based Vue.js forms. |
-| `/vuetify-v1` | Vuetify 1.5 components. |
-| `/vuetify-v2` | Vuetify V2 components. |
 | `/ollama` | Python ollama library for LLM integration. |
 | `/pyenv` | Manage Python versions. |
 | `/pypi-publish` | Publish packages to PyPI. |
