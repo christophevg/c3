@@ -137,7 +137,93 @@ Step 8d: Documentation (IF user-facing)
 1. Invoke end-user-documenter
 2. Review created/updated documentation
 3. If rejected: return to Step 7 with feedback
-4. If approved: proceed to Step 9
+4. If approved: proceed to Step 8e
+
+## Step 8e: Functional Completeness Check
+
+**Purpose:** Ensure every commit is a functional whole.
+
+**Principle:** Every commit must be a functional whole with:
+1. Implemented functionality
+2. Documentation (end-user and/or developer)
+3. UI/demo (console, CLI, or web - depends on target)
+4. End-to-end experience from day one
+
+**Verification Checklist:**
+
+| Check | Command | Requirement |
+|-------|---------|-------------|
+| Tests pass | `make test` | MUST pass - no exceptions |
+| Type checks pass | `make typecheck` | MUST pass |
+| Lint passes | `make lint` | MUST pass |
+| Code style | `make format` or `make check` | MUST pass |
+| Documentation complete | Manual review | README, API docs, inline docs |
+| UI/demo available | Manual verification | Console, CLI, web, or test page |
+| End-to-end works | Manual verification | Feature works from start to finish |
+
+**CRITICAL:** Never authorize commit without successful `make test`.
+
+**Process:**
+1. Run `make test` - if fails, return to Step 7
+2. Run `make typecheck` - if fails, return to Step 7
+3. Run `make lint` - if fails, return to Step 7
+4. Verify documentation is complete:
+   - README updated with feature
+   - API docs updated (if applicable)
+   - Inline code comments added
+5. Verify UI/demo exists:
+   - Console/CLI: command works with `--help`
+   - Web: test page or demo available
+   - Library: example usage in docs
+6. Verify end-to-end experience:
+   - Feature works from user perspective
+   - All user flows tested
+   - Error handling verified
+
+**Example - Quart Webapp:**
+- ✓ Backend functionality: WebSocket endpoint, health check
+- ✓ Documentation: README, API docs
+- ✓ UI: Test page at `/` with WebSocket test interface
+- ✓ End-to-end: User can connect to WebSocket and see messages
+
+**If any check fails:**
+- Document what's missing
+- Return to Step 7 (implementation)
+- Provide specific feedback on what needs to be added
+
+**Proceed to Step 8f only when ALL checks pass.**
+
+## Step 8f: Pre-Commit Final Verification
+
+**Purpose:** Final check before committing to ensure quality.
+
+**Blocking Conditions:**
+
+| Condition | Action |
+|-----------|--------|
+| Tests failed | Block commit, return to Step 7 |
+| Type check failed | Block commit, return to Step 7 |
+| Lint failed | Block commit, return to Step 7 |
+| Documentation incomplete | Block commit, add documentation |
+| No UI/demo available | Block commit, add UI/demo |
+| End-to-end broken | Block commit, fix functionality |
+
+**Verification Questions for User:**
+
+If verification status is unclear from sub-agent reports, ask:
+
+```
+Before committing, I need to verify:
+
+1. ✓ Tests: [pass/fail] (from python-developer report)
+2. ? Standard run: Did the feature work when tested?
+3. ? README: Does README.md need updates for this feature?
+4. ? UI/demo: Is there a way to test/experience this feature?
+
+Please confirm or indicate what needs updating.
+```
+
+**Only proceed to Step 9 when ALL verification checks pass.**
 
 ## Rejection Handling
 
