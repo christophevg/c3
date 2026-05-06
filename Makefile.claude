@@ -5,6 +5,18 @@ MODEL  ?= glm-5:cloud   # our preferred model ;-)
 ARGS   ?=               # optional additional CLI arguments
 PROMPT ?=               # optional initial prompt
 
+ifdef QWEN
+MODEL = qwen3.5:397b-cloud   # sometimes qwen is better
+endif
+
+ifneq (,$(wildcard skills/))
+ARGS += --plugin-dir ./		   # if we expose our own skills
+endif
+
+ifneq (,$(wildcard ../c3/))
+ARGS += --plugin-dir ../c3   # use the local C3 plugin if available
+endif
+
 all: claude
 
 claude:
@@ -13,11 +25,14 @@ claude:
 resume: ARGS += --resume
 resume: claude
 
+assistant: ARGS += --agent "c3:assistant"
+assistant: all
+
 project: ARGS += --agent c3:project-manager
 project: claude
 
 manage: PROMPT = "manage the project!"
 manage: project
 
-image-generation:
-	ollama run x/z-image-turbo
+generated-image:
+	ollama run x/z-image-turbo ${PROMPT}
