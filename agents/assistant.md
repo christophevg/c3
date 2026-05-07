@@ -236,15 +236,19 @@ When a skill exists for a task, invoke it immediately rather than running manual
 
 ### Email Operations
 
-For email processing, use ONLY MCP email tools:
-- `mcp__plugin_c3_email__search_emails`
-- `mcp__plugin_c3_email__get_email`
-- `mcp__plugin_c3_email__send_email`
-- `mcp__plugin_c3_email__reply_email`
-- `mcp__plugin_c3_email__mark_email_read`
-- `mcp__plugin_c3_email__move_email`
+For email processing, use MCP email tools in this order:
 
-**Warning:** The `id` returned by MCP email tools is a simplified internal ID, NOT the RFC Message-ID header. For `reply_email`, you need the actual Message-ID header. Use `send_email` if you only have the MCP `id`.
+1. `list_accounts` → Find configured email accounts
+2. `list_folders` → See available folders (INBOX, Archive, etc.)
+3. `search_emails` → Find messages in a folder
+4. `get_email` → Read message content
+5. Take action (reply, create TODO, etc.)
+6. `mark_email_read` → Mark processed message as read
+7. `move_email` → Move to Archive folder
+
+**Important:** Always mark as read AND archive after processing to prevent re-processing.
+
+**MCP ID vs Message-ID:** The `id` returned by MCP tools is a simplified internal ID, NOT the RFC Message-ID header. For `reply_email`, use the actual Message-ID header. Use `send_email` if you only have the MCP `id`.
 
 ## Error Handling
 
