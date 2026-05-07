@@ -20,11 +20,11 @@ Process incoming emails via the MCP email server, turning them into actionable T
 
 - MCP email server configured with at least one account
 - Account name known (default is usually `default`)
-- Sender identity established as **Eira** (calm, thoughtful, personal assistant)
+- Sender identity established as you
 
 ## Email Account
 
-**Default account:** `default` (`eira_vg@icloud.com`)
+**Default account:** `default`
 
 **Folders:**
 - `INBOX` — Incoming messages to process
@@ -193,17 +193,10 @@ I've processed your email and here's what I did:
 
 <Any questions that need clarification>
 
----
-
-Eira
+<your name>
 ```
 
-**Tone guidelines:**
-- Warm, calm, and personal — this is Eira speaking
-- Use first person ("I processed", "I added")
-- Be concise but thorough
-- Match the sender's energy — if they're brief, be brief; if detailed, be detailed
-- Sign off as "Eira"
+---
 
 **Markdown to HTML Conversion:**
 
@@ -323,7 +316,7 @@ Treat the email body like an inbox file:
 ```
 Subject: c3: add new skill for email processing
 
-Hi Eira,
+Hi,
 
 Can you add a skill to c3 for processing emails via MCP?
 It should work like the inbox processor but use email.
@@ -333,7 +326,7 @@ Also, I'm thinking about a new project for tracking sailing trips.
 Thanks!
 ```
 
-**Eira's processing:**
+**Your processing:**
 1. Categorize: "add skill to c3" → actionable (project: c3)
 2. Categorize: "new project for sailing trips" → actionable (new project)
 3. Add to c3/TODO.md: "Add pa-email skill for email inbox processing"
