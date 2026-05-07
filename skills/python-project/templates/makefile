@@ -1,44 +1,85 @@
 # Makefile Template
 
 ```makefile
-.PHONY: install install-pythons sync test lint format typecheck check tox docs build publish clean
+.PHONY: run-env dev-env install-pythons sync test test-all test-cov lint format typecheck check docs build publish publish-test clean all help
 
-install:
+# Default target
+.DEFAULT_GOAL := help
+
+## run-env: Install production dependencies
+run-env:
+  uv sync
+
+## dev-env: Install with all dependencies (dev, docs, extras)
+dev-env:
   uv sync --all-extras
 
+## install-pythons: Install all supported Python versions for tox
 install-pythons:
   uv python install 3.10 3.11 3.12
 
+## sync: Sync dependencies from lock file (frozen)
 sync:
   uv sync --frozen --all-extras
 
-test:
+## test: Run tests with pytest
+test: dev-env
   uv run pytest
 
-lint:
-  uv run ruff check src tests
-
-format:
-  uv run ruff format src tests
-
-typecheck:
-  uv run mypy src
-
-check: lint typecheck test
-
-tox:
+## test-all: Run tests with tox (all Python versions)
+test-all: dev-env
   uv run tox
 
-docs:
-  cd docs; uv run sphinx-build -M html . _build
+## test-cov: Run tests with coverage report
+test-cov: dev-env
+  uv run pytest --cov=src --cov-report=term-missing
 
-build:
+## lint: Run ruff linting
+lint: dev-env
+  uv run ruff check src/ tests/
+
+## format: Format code with ruff
+format: dev-env
+  uv run ruff format src/ tests/
+
+## typecheck: Run mypy type checking
+typecheck: dev-env
+  uv run mypy src/
+
+## check: Run lint and typecheck
+check: lint typecheck
+
+## docs: Build documentation
+docs: dev-env
+  cd docs && uv run sphinx-build -b html . _build/html
+
+## build: Build distribution packages
+build: dev-env
   uv build
 
+## publish: Publish to PyPI (requires credentials)
 publish: build
-  uv publish
+  uv run twine upload dist/*
 
+## publish-test: Publish to TestPyPI (requires credentials)
+publish-test: build
+  uv run twine upload --repository testpypi dist/*
+
+## clean: Clean build artifacts
 clean:
-  rm -rf build/ dist/ *.egg-info .tox .pytest_cache .ruff_cache .mypy_cache
-  find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+  rm -rf dist/ build/ *.egg-info .pytest_cache .coverage .mypy_cache
+  rm -rf docs/_build
+  find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+
+## all: Run lint, test, and typecheck
+all: dev-env
+  uv run ruff check src/ tests/
+  uv run pytest
+  uv run mypy src/
+
+## help: Show this help message
+help:
+  @echo "Available targets:"
+  @echo ""
+  @sed -n 's/^## //p' $(MAKEFILE_LIST) | column -t -s ':'
 ```
