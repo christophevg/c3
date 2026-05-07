@@ -28,8 +28,29 @@
   - Document patterns for browser automation
   - Acceptance: Research report in research/ with examples
   - Blocks: AI Overview skill
+  - Research and compare to other solutions, e.g. Agent Browser (https://github.com/vercel-labs/agent-browser)
 
 ### P3 - Medium
+
+- [ ] **Extract email MCP into standalone package: simple-email-gw**
+  - Create new Python package for PyPI distribution
+  - Core modules: IMAP client, SMTP client, connection pool, safety features
+  - MCP server entry point for `uvx --from simple-email-gw mcp`
+  - Replace C3's local email/ after PyPI publication
+  - Workflow phases:
+    1. **Project Setup**: Create with uv, standard src/ layout, pyproject.toml
+    2. **Core Extraction**: Copy IMAP/SMTP clients, connection pool, safety modules
+    3. **MCP Entry Point**: Configure `uvx mcp` command via `[project.scripts]`
+    4. **PyPI Configuration**: Build settings, publish configuration
+    5. **Documentation**: End-user docs in docs/ folder
+    6. **Tests**: Migrate and extend tests from email/tests
+    7. **Quality Improvements**: Address email/TODO.md items (H5-H13, M1-M26)
+    8. **Publication**: Publish to PyPI
+    9. **C3 Integration**: Update C3 to use `uvx --from simple-email-gw mcp`
+    10. **Cleanup**: Remove email/ from C3
+  - Supersedes: "Migrate email MCP server to scripts/"
+  - Depends on: python-project skill for structure standards
+  - Acceptance: Package on PyPI, C3 uses uvx, email/ removed
 
 - [ ] **Document scripts centralization pattern in C3 documentation**
   - Explain distinction between:
@@ -38,12 +59,6 @@
     - Skill-specific scripts - scripts bundled within skills
   - Update CLAUDE.md and README.md
   - Acceptance: Documentation clearly explains when to use each approach
-
-- [ ] **Migrate email MCP server to scripts/**
-  - Move email/ MCP server to scripts/email-mcp/
-  - Update all references in skills and agents
-  - Ensure plugin paths still resolve correctly
-  - Acceptance: Email MCP server operational from new location
 
 - [ ] **Improve README skill**
   - Review all README files in skills/ and agents/
