@@ -51,79 +51,13 @@ Avoid these unless user explicitly requests:
 Before any commit, verify:
 
 1. **Changes staged** - Run `git status` to check staged files
-2. **Tests pass** - Run `make test` (CRITICAL: MUST pass)
-3. **Type checks pass** - Run `make typecheck` (MUST pass)
-4. **Lint passes** - Run `make lint` (MUST pass)
-5. **Code style** - Run `make format` or `make check` (MUST pass)
-6. **Sensitive files** - Block if .env, *.key, *.pem, secrets.*, credentials.* detected
-7. **Atomic grouping** - Verify changes represent one logical change
-8. **Documentation complete** - README, API docs, inline comments
-9. **UI/demo available** - Console/CLI/web interface exists
-10. **End-to-end works** - Feature works from start to finish
-11. **User approval** - Present analysis and wait for confirmation
-12. **Repository style** - Check recent commits for message style conventions
-13. **Attribution included** - Ensure message includes attribution line
+2. **Sensitive files** - Block if .env, *.key, *.pem, secrets.*, credentials.* detected
+3. **Atomic grouping** - Verify changes represent one logical change
+4. **User approval** - Present analysis and wait for confirmation
+5. **Repository style** - Check recent commits for message style conventions
+6. **Attribution included** - Ensure message includes attribution line
 
-**CRITICAL:** Never commit without successful `make test`.
-
-## Functional Completeness Verification
-
-**Principle:** Every commit must be a functional whole.
-
-**Required Components:**
-
-1. **Implemented Functionality**
-   - Core feature works as specified
-   - Edge cases handled
-   - Error handling implemented
-
-2. **Documentation**
-   - User-facing: README, user guides
-   - Developer-facing: API docs, inline comments
-   - Code: docstrings, type hints
-
-3. **UI/Demo**
-   - Console: `--help` works, command executes
-   - CLI: Arguments parsed, output readable
-   - Web: Test page or demo interface available
-   - Library: Example usage documented
-
-4. **End-to-End Experience**
-   - User can complete the full workflow
-   - No broken flows or dead ends
-   - Error messages are helpful
-
-**Verification Process:**
-
-```
-For each commit, ask:
-□ Can users access this feature?
-□ Is documentation available to use it?
-□ Can I demonstrate it works end-to-end?
-□ Are tests passing?
-
-If any answer is "No", the commit is incomplete.
-```
-
-**Example - Feature Commit:**
-
-```
-✓ Implemented: WebSocket endpoint for chat
-✓ Documentation: README updated, API docs added
-✓ UI: Test page at / with WebSocket test interface
-✓ End-to-end: User can connect, send message, see echo
-✓ Tests: make test passes
-```
-
-**Example - Bug Fix Commit:**
-
-```
-✓ Implemented: Fix null pointer on empty cart
-✓ Documentation: Changelog entry, inline comment
-✓ UI: Existing cart interface works
-✓ End-to-end: Cart checkout handles empty state
-✓ Tests: Regression test added
-```
+**Note:** Test/type/lint validation should be performed by the project-manager agent before invoking this skill.
 
 ## Sensitive File Detection
 
@@ -236,17 +170,12 @@ Run these commands in parallel to gather context:
 git status              # See untracked files (never use -uall flag)
 git diff HEAD           # See staged and unstaged changes
 git log --oneline -10   # Follow repository's commit message style
-make test               # CRITICAL: Verify tests pass
-make typecheck          # Verify type checks pass
-make lint               # Verify lint passes
 ```
 
 Categorize changes:
 - By file type (backend, frontend, tests, docs)
 - By directory (api, models, ui, tests)
 - By change type (feat, fix, refactor)
-
-**CRITICAL:** If `make test` fails, immediately block and report to user. Do not proceed with commit.
 
 ### 1.5. Handle Auto-Generated Files
 
@@ -267,19 +196,10 @@ These should be committed to reflect the current state of the project.
 ### 2. Present Analysis
 
 Show user:
-- Test/typecheck/lint results
 - Grouped changes with recommendations
-- Functional completeness status
 - Any sensitive files detected
 - Suggested commit boundaries
-
-**Functional Completeness Check:**
-- [ ] Tests pass (`make test`)
-- [ ] Type checks pass (`make typecheck`)
-- [ ] Lint passes (`make lint`)
-- [ ] Documentation complete
-- [ ] UI/demo available
-- [ ] End-to-end works
+- Proposed commit message(s)
 
 Then use AskUserQuestion to confirm the approach:
 ```
