@@ -1,7 +1,7 @@
 ---
 name: security-engineer
 description: Security specialist for vulnerability assessment and architecture recommendations. Use for security review, OWASP Top 10 compliance, threat modeling, dependency vulnerability scanning. Use when asked to review security, check for vulnerabilities, analyze security architecture, or scan dependencies. Examples: "Review authentication implementation for vulnerabilities", "Check OWASP Top 10 compliance for this API", "Threat model this microservice architecture", "Scan dependencies for known vulnerabilities".
-tools: Read, Grep, Glob, WebSearch, WebFetch
+tools: Read, Write, Edit, Grep, Glob, WebSearch, WebFetch
 color: red
 ---
 
