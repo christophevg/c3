@@ -206,6 +206,25 @@ Run tests automatically on push. Create `.github/workflows/test.yml`:
 | `on: push` | Run on every push |
 | `on: [push, pull_request]` | Also run on PRs (libraries) |
 
+**Coverage Reporting:**
+
+Library workflows include coverage reporting to Coveralls:
+
+```yaml
+- name: Run tests
+  run: uv run pytest -v --cov=src --cov-report=xml
+
+- name: Upload coverage to Coveralls
+  uses: coverallsapp/github-action@v2
+  if: matrix.python-version == '3.11' && matrix.os == 'ubuntu-latest'
+  with:
+    github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+The `if` condition ensures coverage is uploaded once (not for every matrix combination).
+
+**Note:** `coveralls>=3.3.0` should be included in dev dependencies for coverage reporting.
+
 See `templates/github-actions-app.yml` and `templates/github-actions-lib.yml` for complete workflows.
 
 ## ReadTheDocs Configuration
