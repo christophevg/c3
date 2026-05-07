@@ -32,25 +32,11 @@
 
 ### P3 - Medium
 
-- [ ] **Extract email MCP into standalone package: simple-email-gw**
-  - Create new Python package for PyPI distribution
-  - Core modules: IMAP client, SMTP client, connection pool, safety features
-  - MCP server entry point for `uvx --from simple-email-gw mcp`
-  - Replace C3's local email/ after PyPI publication
-  - Workflow phases:
-    1. **Project Setup**: Create with uv, standard src/ layout, pyproject.toml
-    2. **Core Extraction**: Copy IMAP/SMTP clients, connection pool, safety modules
-    3. **MCP Entry Point**: Configure `uvx mcp` command via `[project.scripts]`
-    4. **PyPI Configuration**: Build settings, publish configuration
-    5. **Documentation**: End-user docs in docs/ folder
-    6. **Tests**: Migrate and extend tests from email/tests
-    7. **Quality Improvements**: Address email/TODO.md items (H5-H13, M1-M26)
-    8. **Publication**: Publish to PyPI
-    9. **C3 Integration**: Update C3 to use `uvx --from simple-email-gw mcp`
-    10. **Cleanup**: Remove email/ from C3
-  - Supersedes: "Migrate email MCP server to scripts/"
-  - Depends on: python-project skill for structure standards
-  - Acceptance: Package on PyPI, C3 uses uvx, email/ removed
+- [x] **Extract email MCP into standalone package: simple-email-gw** — 2026-05-07
+  - Package published to PyPI as `simple-email-gw`
+  - C3 now uses `uvx --from simple-email-gw mcp-server`
+  - Local `email/` directory removed from repository
+  - Acceptance: ✓ Package on PyPI, C3 uses uvx, email/ removed
 
 - [ ] **Document scripts centralization pattern in C3 documentation**
   - Explain distinction between:

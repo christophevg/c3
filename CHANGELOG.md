@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Email MCP server now uses PyPI package `simple-email-gw` instead of local `email/` directory
+  - Updated `.mcp.json` to use `uvx --from simple-email-gw mcp-server`
+  - Removed `email/` directory from repository
+  - Simplified setup: no local build required
+
 ### Added
 
 *Nothing yet*

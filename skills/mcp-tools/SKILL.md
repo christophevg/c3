@@ -111,11 +111,9 @@ What (exact) function definitions were provided to you?
 
 ### Method 2: Check MCP Server Source
 
-Look at the MCP server's tool definitions file:
+For PyPI packages, check the package documentation or source repository.
 
-```
-~/.claude/plugins/cache/<plugin>/email/src/email_mcp/tools/definitions.py
-```
+For local development, look at the server's tool definitions file.
 
 ### Method 3: Check MCP Server Connection
 

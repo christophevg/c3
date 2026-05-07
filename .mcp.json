@@ -1,10 +1,11 @@
 {
   "mcpServers": {
     "email": {
-      "command": "bash",
+      "command": "uvx",
       "args": [
-        "-c",
-        "cd \"${CLAUDE_PLUGIN_ROOT}/email\" && exec uv run python -m email_mcp"
+        "--from",
+        "simple-email-gw",
+        "mcp-server"
       ],
       "env": {
         "EMAIL_IMAP_HOST": "${EMAIL_IMAP_HOST}",

@@ -1,1 +1,0 @@
-"""Connection pooling for IMAP and SMTP."""
