@@ -1,9 +1,5 @@
-#MODEL=qwen3.5:397b-cloud
-ARGS += --plugin-dir ./
-ARGS += --agent c3:project-manager
-#ARGS += "manage the project!"
-
--include ~/.claude/Makefile
+C3_FOLDER = ./
+-include Makefile.claude
 
 SRC = $(PWD)
 

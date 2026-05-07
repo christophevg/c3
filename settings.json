@@ -32,5 +32,6 @@
     }
   },
   "awaySummaryEnabled": false,
-  "theme": "light"
+  "theme": "light",
+  "skillListingBudgetFraction" : 0.03
 }

@@ -13,8 +13,12 @@ ifneq (,$(wildcard skills/))
 ARGS += --plugin-dir ./		   # if we expose our own skills
 endif
 
-ifneq (,$(wildcard ../c3/))
-ARGS += --plugin-dir ../c3   # use the local C3 plugin if available
+C3_FOLDER ?= ../c3
+
+ifneq ($(C3_FOLDER),./)             # don't include local C3 twice
+ifneq (,$(wildcard $(C3_FOLDER)))
+ARGS += --plugin-dir $(C3_FOLDER)   # use the local C3 plugin if available
+endif
 endif
 
 all: claude
