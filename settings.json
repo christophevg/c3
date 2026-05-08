@@ -18,7 +18,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "~/.claude/bin/statusline.py"
+    "command": "uv run python ~/.claude/bin/statusline.py"
   },
   "enabledPlugins": {
     "c3@christophe.vg": true

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Status line generator for Claude Code
 # See: https://code.claude.com/docs/en/statusline
 
