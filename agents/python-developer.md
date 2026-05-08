@@ -98,6 +98,117 @@ When invoked to implement a task:
 
 ### 4. Implement
 - Follow the patterns from AGENTS.md and CLAUDE.md
+- **For I/O operations: Use async-first design with optional sync wrappers** (see Async-First Pattern below)
+- Follow the testing patterns for your context (see Test-Driven Development section)
+
+## Async-First Implementation Pattern
+
+**When implementing I/O-bound operations (database, network, file system), ALWAYS use async-first design.**
+
+### Design Principle
+
+1. **Primary implementation**: Async client with `async`/`await`
+2. **Convenience layer**: Sync wrapper for simpler usage
+
+This is **NOT optional** - it's the standard pattern for all I/O operations in this project.
+
+### Implementation Steps
+
+**Step 1: Implement Async Client (Primary)**
+```python
+class IMAPClient:
+    """Async IMAP client - primary implementation."""
+    
+    async def connect(self) -> IMAP4_SSL:
+        # Async connection logic
+        ...
+    
+    async def search(self, folder: str) -> list[str]:
+        # Async search logic
+        ...
+    
+    async def __aenter__(self) -> IMAPClient:
+        await self.connect()
+        return self
+    
+    async def __aexit__(self, *args) -> None:
+        await self.disconnect()
+```
+
+**Step 2: Implement Sync Wrapper (Convenience)**
+```python
+class SyncIMAPClient:
+    """Synchronous wrapper around IMAPClient."""
+    
+    def __init__(self, account: EmailAccount):
+        self._async_client = IMAPClient(account)
+        self._loop = asyncio.new_event_loop()
+        self._thread = threading.Thread(target=self._loop.run_forever, daemon=True)
+        self._thread.start()
+    
+    def _run_coroutine(self, coro: object) -> Any:
+        """Run coroutine in dedicated event loop."""
+        future = asyncio.run_coroutine_threadsafe(coro, self._loop)
+        return future.result()
+    
+    def search(self, folder: str) -> list[str]:
+        """Sync wrapper around async search."""
+        return self._run_coroutine(self._async_client.search(folder))
+    
+    def __enter__(self) -> SyncIMAPClient:
+        return self
+    
+    def __exit__(self, *args) -> None:
+        self.disconnect()
+```
+
+**Step 3: Export Both**
+```python
+# __init__.py
+from .async_client import AsyncClient
+from .sync_client import SyncClient
+
+__all__ = ["AsyncClient", "SyncClient"]
+```
+
+### Key Requirements
+
+1. **Context managers**: Both async (`async with`) and sync (`with`) versions
+2. **Error handling**: Sync wrappers wrap network errors in `RuntimeError`
+3. **Thread safety**: Each sync client has its own event loop and thread
+4. **Type annotations**: Full type annotations for both versions
+5. **Documentation**: Document both APIs clearly
+
+### Test Coverage
+
+Write tests for both async and sync versions:
+
+```python
+# tests/test_async_client.py
+class TestAsyncClient:
+    @pytest.mark.asyncio
+    async def test_search(self):
+        async with AsyncClient(account) as client:
+            result = await client.search("INBOX")
+            assert len(result) > 0
+
+# tests/test_sync_client.py
+class TestSyncClient:
+    def test_search(self):
+        with SyncClient(account) as client:
+            result = client.search("INBOX")
+            assert len(result) > 0
+```
+
+### When to Apply
+
+| Operation Type | Pattern Required |
+|----------------|------------------|
+| Database queries | ✅ Async-first + sync wrapper |
+| Network calls (HTTP, IMAP, SMTP) | ✅ Async-first + sync wrapper |
+| File system operations | ✅ Async-first + sync wrapper |
+| CPU-bound computations | ❌ Pure sync OK |
+| In-memory operations | ❌ Pure sync OK |
 - Use two-space indentation in all files
 - Follow the pymongo skill patterns for MongoDB operations
 - Create comprehensive unit tests alongside implementation

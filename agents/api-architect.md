@@ -94,6 +94,108 @@ Only deviate from RESTful design when:
 2. The user has provided a clear, documented reason
 3. The reason is recorded in the API analysis document
 
+## ⚠️ Mandatory Design Principle: Async-First with Optional Sync Wrappers
+
+**For I/O-bound operations (database, network, file system), ALWAYS design async-first with optional sync wrappers.**
+
+### Why Async-First?
+
+| Benefit | Async Clients | Sync Wrappers |
+|---------|--------------|---------------|
+| **Performance** | No thread overhead | Small thread overhead |
+| **Context** | For async applications | For sync applications |
+| **Simplicity** | Requires async/await | Simpler syntax |
+| **Flexibility** | Max flexibility | Convenience layer |
+
+### Required Architecture
+
+```
+Primary Implementation: Async Client (IMAPClient, SMTPClient, etc.)
+    ↓
+    Wrapper Layer: Sync Client (SyncIMAPClient, SyncSMTPClient, etc.)
+```
+
+**NOT:** Sync-first with async wrappers
+**ALWAYS:** Async-first with sync wrappers
+
+### Implementation Requirements
+
+1. **Primary async implementation**:
+   - All I/O operations use `async`/`await`
+   - Context manager support: `async with AsyncClient() as client`
+   - Connection pooling and resource management in async layer
+
+2. **Sync wrapper layer**:
+   - Dedicated event loop in background thread (Strategy 2)
+   - Context manager support: `with SyncClient() as client`
+   - Delegates all operations to async client
+   - Proper cleanup (stop loop, join thread)
+
+3. **Package exports**:
+   ```python
+   __all__ = ["AsyncClient", "SyncClient", ...]
+   ```
+
+4. **Documentation**:
+   - Clearly state both async and sync APIs are provided
+   - Explain when to use each (async apps vs sync apps)
+   - Provide usage examples for both
+
+### When to Apply This Principle
+
+| Operation Type | Async-First Required |
+|----------------|---------------------|
+| Database queries | ✅ Yes |
+| Network calls (HTTP, IMAP, SMTP) | ✅ Yes |
+| File system operations | ✅ Yes |
+| CPU-bound computations | ❌ No (pure sync OK) |
+| In-memory operations | ❌ No (pure sync OK) |
+
+### Example API Design
+
+**Async Client (Primary):**
+```python
+class IMAPClient:
+    async def connect(self) -> IMAP4_SSL: ...
+    async def search(self, folder: str) -> list[str]: ...
+    async def __aenter__(self) -> IMAPClient: ...
+    async def __aexit__(self, *args) -> None: ...
+```
+
+**Sync Wrapper (Convenience):**
+```python
+class SyncIMAPClient:
+    def __init__(self, account: EmailAccount):
+        self._async_client = IMAPClient(account)
+        self._loop = asyncio.new_event_loop()
+        self._thread = threading.Thread(target=self._loop.run_forever, daemon=True)
+        self._thread.start()
+    
+    def search(self, folder: str) -> list[str]:
+        return asyncio.run_coroutine_threadsafe(
+            self._async_client.search(folder), self._loop
+        ).result()
+    
+    def __enter__(self) -> SyncIMAPClient: ...
+    def __exit__(self, *args) -> None: ...
+```
+
+### Documentation Language
+
+Use this standard language in API documentation:
+
+```markdown
+## Choosing Async or Sync
+
+This package provides **both async and sync APIs**:
+
+- **Async clients** (IMAPClient, SMTPClient): For async applications (FastAPI, Quart, asyncio)
+- **Sync clients** (SyncIMAPClient, SyncSMTPClient): For simpler synchronous code (scripts, CLI tools)
+
+Use async clients in async contexts for maximum performance.
+Use sync clients for simpler syntax in synchronous applications.
+```
+
 ## Artifact Root Folder
 
 All artifacts are created relative to an **artifact root folder**. This allows the agent to work in different contexts (project root, idea folder, feature branch, etc.).
