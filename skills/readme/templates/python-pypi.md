@@ -103,6 +103,17 @@ For PyPI packages, include these badges:
 **Optional badges** (if applicable):
 - Downloads: `https://img.shields.io/pypi/dm/{package}`
 - Code style: `https://img.shields.io/badge/code%20style-ruff-black`
+- Agentic workflow: `https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square`
+
+### Agentic Workflow Badge
+
+For projects built using agentic workflow, add:
+
+```markdown
+[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Coding-Agent)
+```
+
+Include this badge for projects in `~/Workspace/agentic/` or explicitly built with agentic development practices.
 
 ## Section Guidelines
 

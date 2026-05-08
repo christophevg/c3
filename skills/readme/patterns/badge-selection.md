@@ -109,6 +109,19 @@ Shields.io is the most popular badge service (1.6 billion images/month).
 
 ---
 
+### Workflow Badges
+
+**Agentic Workflow**:
+```markdown
+[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Coding-Agent)
+```
+- Indicates project built using agentic workflow (AI agents implementing architecture)
+- Links to explanation of agentic development approach
+- Use for projects under `~/Workspace/agentic` or explicitly built with agentic workflow
+- Optional: customize link to your own agentic workflow documentation
+
+---
+
 ## Badge Selection by Project Type
 
 ### Python (PyPI)
@@ -126,14 +139,25 @@ Shields.io is the most popular badge service (1.6 billion images/month).
 6. Downloads
 7. Documentation
 8. Code style
+9. Agentic workflow (if applicable)
 
-**Example row**:
+**Example row (standard)**:
 ```markdown
 [![PyPI](https://img.shields.io/pypi/v/package.svg)][pypi]
 [![Python](https://img.shields.io/pypi/pyversions/package.svg)][pypi]
 [![CI](https://img.shields.io/github/actions/workflow/status/user/repo/ci.yml.svg)][ci]
 [![Coverage](https://img.shields.io/coveralls/github/user/repo.svg)][coveralls]
 [![License](https://img.shields.io/github/license/user/repo.svg)][license]
+```
+
+**Example row (with agentic workflow)**:
+```markdown
+[![PyPI](https://img.shields.io/pypi/v/package.svg)][pypi]
+[![Python](https://img.shields.io/pypi/pyversions/package.svg)][pypi]
+[![CI](https://img.shields.io/github/actions/workflow/status/user/repo/ci.yml.svg)][ci]
+[![Coverage](https://img.shields.io/coveralls/github/user/repo.svg)][coveralls]
+[![License](https://img.shields.io/github/license/user/repo.svg)][license]
+[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Coding-Agent)
 ```
 
 ---

@@ -5,6 +5,7 @@
 
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 # Color codes
@@ -100,8 +101,6 @@ def main():
   if line2_stats:
     print(" | ".join(f"{YELLOW}{s}{RESET}" for s in line2_stats))
 
-
-import sys
 
 if __name__ == "__main__":
   main()

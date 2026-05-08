@@ -99,3 +99,14 @@ Include these badges in every README:
 | Code style | `https://img.shields.io/badge/code%20style-ruff-blue.svg` |
 | Type checked | `https://img.shields.io/badge/type%20checked-mypy-blue.svg` |
 | ReadTheDocs | `https://img.shields.io/readthedocs/PACKAGE.svg` |
+| Agentic workflow (optional) | `https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square` |
+
+### Agentic Workflow Badge
+
+For projects built using agentic workflow (AI agents implementing architecture), add:
+
+```markdown
+[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Coding-Agent)
+```
+
+This badge should be included for projects in `~/Workspace/agentic/` or any project explicitly built with agentic development practices.
