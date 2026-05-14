@@ -26,6 +26,52 @@ uv --version
 
 **Before using uv commands, verify it's available:** `which uv` or `uv --version`
 
+## Phase 0: UV Setup Validation (MANDATORY)
+
+**CRITICAL: Validate UV setup BEFORE any implementation work.**
+
+### Validation Checklist
+
+Run ALL of these checks before starting work:
+
+```bash
+# 1. Check for pyproject.toml
+ls pyproject.toml
+
+# 2. Verify uv is installed
+uv --version
+
+# 3. Sync dependencies
+uv sync
+
+# 4. Verify package imports work
+uv run python -c "from app import server"  # or main module
+
+# 5. Verify tests can collect
+uv run pytest --collect-only
+```
+
+**If ANY check fails, STOP and fix setup before continuing.**
+
+### Common Issues
+
+| Issue | Fix |
+|-------|-----|
+| `uv: command not found` | Install uv globally |
+| `No pyproject.toml` | Run `uv init` |
+| `Module not found` | Run `uv sync` |
+| `ImportError` | Check `[tool.uv.sources]` paths |
+| `Tests can't collect` | Install pytest: `uv add --dev pytest` |
+
+### Pre-Implementation Gate
+
+**DO NOT proceed to implementation until:**
+- [ ] `uv sync` completes successfully
+- [ ] Package imports work (`uv run python -c "..."`)
+- [ ] Tests can collect (`uv run pytest --collect-only`)
+
+**Only THEN start implementation.**
+
 ## Why uv?
 
 `uv` replaces multiple tools with a single fast solution (10-100x faster than pip):
@@ -101,16 +147,160 @@ uv add --dev pytest ruff    # Development
 uv add --optional docs sphinx  # Optional (libraries)
 ```
 
-## Daily Commands
+## Command Pattern: ALWAYS use `uv run`
 
-### Running and Testing
+**CRITICAL: ALL commands MUST use `uv run`. NEVER run commands directly.**
+
+| Wrong | Correct |
+|-------|---------|
+| `pytest` | `uv run pytest` |
+| `python main.py` | `uv run python main.py` |
+| `black .` | `uv run black .` |
+| `ruff check .` | `uv run ruff check .` |
+
+**Why:**
+- `uv run` ensures correct virtual environment
+- `uv run` manages Python version automatically
+- Direct commands may use wrong Python/environment
+
+### Installation
+
+**Single command is sufficient:**
 
 ```bash
-uv run python main.py                    # Run application
-uv run pytest                            # Run all tests
-uv run pytest tests/test_module.py       # Run specific file
-uv run pytest -n auto                    # Run in parallel
-uv run pytest --cov=src --cov-report=term-missing  # With coverage
+uv sync
+```
+
+DO NOT give multiple installation commands:
+- ❌ `uv sync && uv sync --extra dev && uv pip install -e .`
+- ✓ `uv sync`
+
+The `uv sync` command:
+- Creates `.venv` if needed
+- Installs all dependencies
+- Installs dev dependencies (from `[project.optional-dependencies]`)
+- Syncs to lock file
+
+### Running Tests
+
+```bash
+# All tests
+uv run pytest
+
+# Specific test file
+uv run pytest tests/test_module.py
+
+# With coverage
+uv run pytest --cov=src
+
+# Parallel execution
+uv run pytest -n auto
+```
+
+### Running Application
+
+```bash
+# Web application
+uv run gunicorn -k uvicorn.workers.UvicornWorker app:asgi_app
+
+# Or via Makefile
+make run
+```
+
+### Code Quality
+
+```bash
+# Format code
+uv run black .
+uv run ruff format .
+
+# Lint
+uv run ruff check .
+
+# Type check
+uv run mypy src/
+
+# Or via Makefile
+make check
+```
+
+## Makefile (Required)
+
+**ALL Python projects MUST have a Makefile with uv-based targets.**
+
+### Standard Makefile
+
+Create `Makefile` at project root:
+
+```makefile
+include ~/.claude/Makefile
+
+# Testing
+test:
+	uv run pytest
+
+test-cov:
+	uv run pytest --cov=src --cov-report=term-missing
+
+test-all:
+	uv run tox
+
+# Code Quality
+format:
+	uv run black .
+	uv run ruff format .
+
+lint:
+	uv run ruff check .
+
+typecheck:
+	uv run mypy src/
+
+check: format lint typecheck test
+
+# Running
+run:
+	uv run gunicorn -k uvicorn.workers.UvicornWorker app:asgi_app
+
+# Or for CLI apps:
+# run:
+#     uv run python -m package_name
+
+# Documentation
+docs:
+	cd docs && uv run sphinx-build -M html . _build
+
+# All
+all: check docs
+```
+
+### Makefile Requirements
+
+| Target | Purpose | Required |
+|--------|---------|-----------|
+| `test` | Run tests | ✓ Required |
+| `run` | Run application | ✓ Required |
+| `format` | Format code | ✓ Required |
+| `lint` | Lint code | ✓ Required |
+| `check` | Format + lint + test | ✓ Required |
+| `test-cov` | Coverage report | Recommended |
+| `docs` | Build docs | If has docs |
+| `all` | Complete check | Recommended |
+
+### Why Makefile?
+
+1. **Consistent commands** - Same `make test` across all projects
+2. **uv integration** - All targets use `uv run`
+3. **Onboarding** - New developers know `make check`
+4. **CI/CD** - GitHub Actions can use `make check`
+
+### Using Makefile
+
+```bash
+make test      # Run tests
+make run       # Start application
+make check     # Run all quality checks
+make all       # Complete check (including docs)
 ```
 
 ### Code Quality
@@ -385,6 +575,73 @@ my-package/
 │   ├── conftest.py
 │   └── test_module.py
 └── Makefile                  # From template
+```
+
+## Local Development vs PyPI Publishing
+
+**CRITICAL: Local development configuration must be removed before PyPI publishing.**
+
+### Local Development Configuration
+
+When developing against local checkouts of dependencies:
+
+```toml
+# pyproject.toml - for local development ONLY
+[tool.uv.sources]
+baseweb = { path = "../baseweb", editable = true }
+oatk = { path = "../oatk", editable = true }
+
+[tool.uv.workspace]
+members = ["packages/*"]
+```
+
+This tells uv to use local paths instead of PyPI packages.
+
+### Before PyPI Publishing
+
+**REMOVE these sections before building for PyPI:**
+
+```bash
+# These sections reference local paths that don't exist on PyPI
+# Delete them from pyproject.toml before:
+#   uv build
+#   uv publish
+```
+
+| Section | Action | Why |
+|---------|--------|-----|
+| `[tool.uv.sources]` | Remove | References local paths |
+| `[tool.uv.workspace]` | Remove | Defines workspace members |
+
+### Workflow
+
+```bash
+# Local development:
+uv add --editable ../baseweb    # Creates [tool.uv.sources]
+uv sync                         # Uses local package
+
+# Before PyPI publish:
+# 1. Remove [tool.uv.sources] and [tool.uv.workspace] from pyproject.toml
+# 2. Update dependencies to PyPI versions:
+uv add baseweb>=0.5.0           # Uses PyPI version
+uv sync
+# 3. Build and publish:
+uv build
+uv publish --token $PYPI_TOKEN
+
+# After publishing (for continued local dev):
+# Re-add local sources:
+uv add --editable ../baseweb
+```
+
+### Verify Before Publishing
+
+```bash
+# Check wheel contents for local path references
+unzip -l dist/*.whl | head -30
+
+# Should show source files, not .dist-info only
+# Should NOT contain any local paths
 ```
 
 ## Pre-Publish Checklist

@@ -45,6 +45,7 @@ A personal assistant agent that helps organize unstructured input into actionabl
 
 ### Read
 
+- **Read PERSONAL.md first** — Start every session by reading your personal configuration to understand your identity and learned behaviors
 - Read inbox files to process
 - Read session-state.md to understand current state
 - Read project CLAUDE.md files to understand context
@@ -85,10 +86,11 @@ Invoke sub-skills for specialized tasks:
 ### Phase 1: Initialize
 
 ```
-1. Check for inbox files
-2. If empty, report status and exit
-3. Read session-state.md (or create if missing)
-4. Read relevant memory files
+1. Read PERSONAL.md — Your identity and learned behaviors come first
+2. Check for inbox files
+3. If empty, report status and exit
+4. Read session-state.md (or create if missing)
+5. Read relevant memory files
 ```
 
 ### Phase 2: Process
@@ -273,6 +275,37 @@ Store these in memory files under `memory/` with type `project` or `feedback`.
 ## Personalization
 
 Identity and personal context should be configured in:
-- `~/.claude/PERSONAL.md` — User preferences and project context
+- `PERSONAL.md` — In the working directory, contains user identity, goals, and learned behaviors
 - Project `CLAUDE.md` files — Project-specific guidance
 - Memory files — Discovered knowledge over time
+
+**PERSONAL.md Structure:**
+
+```markdown
+# Personal Configuration
+
+## Hello
+- User name and preferred address
+- Website and project context
+
+## Eira
+- Your identity and how you should present yourself
+
+## When Sending Emails
+- Tone and style guidelines
+
+## Personal Goals
+- What the user wants to achieve
+
+## Behaviors
+- Learned behaviors (self-learning section)
+  - Behavioral instructions go here (not in memory files)
+  - Email formatting, workflow preferences, etc.
+```
+
+**Where to store learned information:**
+
+| Type | Location | Examples |
+|------|----------|----------|
+| Behavioral instructions | PERSONAL.md → Behaviors | Email formatting, workflow preferences |
+| Discovered knowledge | memory/*.md | Project locations, tool patterns, reference info |

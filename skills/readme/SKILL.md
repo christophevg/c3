@@ -17,6 +17,60 @@ Create and maintain README.md files with appropriate structure, badges, and cont
 | Section validation | Check existing READMEs against best practices |
 | Maintenance workflow | Keep READMEs synchronized with project evolution |
 
+## Philosophy: End-User First
+
+**READMEs must be END-USER ORIENTED, not developer oriented.**
+
+### End-User README (✓)
+
+- **What is this?** — Clear description in first 50 words
+- **Quick Start** — 3 commands or less to run
+- **How to Use** — User-facing functionality
+- **How to Test** — How to verify it works
+- **User Acceptance Testing** — Steps for users to verify
+
+**Example structure:**
+```markdown
+# Project Name
+
+Brief description (50 words max)
+
+## Quick Start
+
+```bash
+uv sync
+make run
+```
+
+## How to Use
+
+1. Step 1
+2. Step 2
+3. Step 3
+
+## Testing
+
+```bash
+make test
+```
+```
+
+### Developer README (✗)
+
+- Architecture details
+- Implementation notes
+- Developer setup
+- Code structure
+- Internal design
+
+**These belong in:**
+- `docs/architecture.md`
+- `docs/developer-guide.md`
+- `CLAUDE.md` (for AI agents)
+- `analysis/` (for design docs)
+
+**NOT in README.**
+
 ## When to Use This Skill
 
 Use this skill when:
@@ -113,6 +167,40 @@ mv .github/README.md README.md
 | Quick Start | Works in 3 commands max |
 | Links | All valid |
 | Line count | Under 500 lines |
+| End-user focus | User can follow without questions |
+
+## README Validation Checklist
+
+**Before marking complete, verify:**
+
+- [ ] **Title + Description** in first 50 words
+- [ ] **What is this?** — Clear explanation for non-developers
+- [ ] **Quick Start** — 3 commands or less:
+  - [ ] Installation: `uv sync` (NOT multiple install commands)
+  - [ ] Run: `make run` or single `uv run` command
+  - [ ] Test: `make test` or `uv run pytest`
+- [ ] **How to Use** — User-facing features, not internal architecture
+- [ ] **How to Test** — Clear testing instructions
+- [ ] **User Acceptance Testing** — Steps for users to verify (if applicable)
+- [ ] **Badges** — Appropriate for project type (5-10 max)
+- [ ] **Total length** — Under 500 lines
+- [ ] **End-user can complete** — Setup without asking questions
+
+**End-user validation:**
+
+Ask yourself: "Can a user follow this README from start to finish without asking me questions?"
+
+If NO → README is incomplete. Add missing steps or clarifications.
+
+**Common end-user questions (and how to fix):**
+
+| Question | Fix |
+|-----------|-----|
+| "What do I install?" | Single `uv sync` command |
+| "How do I run it?" | Single `make run` or `uv run` command |
+| "Which command first?" | Number steps: 1, 2, 3 |
+| "What's the output?" | Show expected output in examples |
+| "How do I know it works?" | Add "Expected result" after commands |
 
 ## Section Requirements by Type
 

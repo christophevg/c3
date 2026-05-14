@@ -48,6 +48,144 @@ End result: Tests transition FAIL → PASS
 **Your responsibility:** Create clear, behavior-focused test stubs that specify WHAT should happen.
 **Developer's responsibility:** Implement the feature AND convert stubs to real assertions.
 
+## Test Quality Standard
+
+**CRITICAL: ALL tests must pass or be properly skipped.**
+
+### Test Quality Requirements
+
+✓ **PASS** — Test has meaningful assertions that verify behavior
+✓ **SKIP** — Test marked `@pytest.mark.skip(reason="...")` with clear explanation
+
+✗ **NEVER:**
+- Use `pass` as test body
+- Use `assert True`
+- Use `assert False` (use `pytest.fail()` instead)
+- Leave empty test bodies
+- Create tests that can't run (missing infrastructure)
+
+### Test Stub Quality
+
+When creating test stubs:
+
+```python
+# ✓ GOOD — Clear specification of expected behavior
+def test_message_broadcast_to_all_clients():
+    """
+    Given: Multiple clients connected to server
+    When: One client sends a message
+    Then: All connected clients receive the message
+    """
+    pytest.fail("Not implemented: Message broadcast to all clients")
+
+# ✗ BAD — No clear specification
+def test_message():
+    pass  # What does this test?
+```
+
+### Test Infrastructure Check
+
+**Before creating tests, verify infrastructure is available:**
+
+```bash
+# Can tests be collected?
+uv run pytest --collect-only
+
+# Can tests run?
+uv run pytest -v
+
+# Can package be imported?
+uv run python -c "from app import server"
+```
+
+If infrastructure is missing:
+1. Document what's missing
+2. Mark tests as skipped with reason
+3. Report to developer: "Tests created but infrastructure needed: [infrastructure]"
+
+**Example:**
+```python
+@pytest.mark.skip(reason="Integration test needs WebSocket test client infrastructure")
+def test_message_broadcast_to_all_clients():
+    """Test requires SocketIO AsyncServer test_client which is not available."""
+    pytest.fail("Not implemented: Message broadcast")
+```
+
+## Test Focus Priority
+
+**DO Test** (High Value):
+
+1. **Functional behavior** — What the user sees/does
+   - User can send message
+   - Message appears to all users
+   - User receives error when disconnected
+
+2. **API endpoints** — Request/response behavior
+   - POST /auth returns token
+   - GET /rooms returns list
+   - Error responses have correct format
+
+3. **Business logic** — Rules and calculations
+   - Rate limiting prevents spam
+   - Message length is enforced
+   - Authentication validates tokens
+
+4. **Edge cases** — Boundary conditions
+   - Empty input rejected
+   - Maximum length enforced
+   - Invalid format handled
+
+5. **Error handling** — Failure modes
+   - Network disconnection handled
+   - Invalid data rejected
+   - Authorization failures
+
+**DON'T Test** (Low Value):
+
+1. **Project structure** — File existence
+   ```python
+   # ✗ LOW VALUE
+   def test_pyproject_toml_exists():
+       assert Path("pyproject.toml").exists()
+   ```
+
+2. **Configuration files** — Settings
+   ```python
+   # ✗ LOW VALUE
+   def test_debug_setting_is_false():
+       assert settings.DEBUG is False
+   ```
+
+3. **HTML structure** — Tag existence
+   ```python
+   # ✗ LOW VALUE
+   def test_page_has_div():
+       assert "<div>" in html
+   ```
+
+4. **Framework internals** — Library behavior
+   ```python
+   # ✗ LOW VALUE
+   def test_flask_routes_exist():
+       assert "/" in app.routes
+   ```
+
+**Why avoid these?** They test that files exist, not that features work. Focus on user-facing behavior.
+
+### Test Value Examples
+
+| Test | Value | Reason |
+|------|-------|--------|
+| User can send message | HIGH | Tests functional behavior |
+| Message broadcasts to all | HIGH | Tests core feature |
+| Empty message rejected | HIGH | Tests edge case |
+| Rate limit enforced | HIGH | Tests business rule |
+| pyproject.toml exists | LOW | Tests file existence |
+| Page has div tag | LOW | Tests HTML structure |
+| Flask app created | LOW | Tests framework setup |
+
+## Test Stub Creation Workflow
+
 ### Phase 5: Test Review (After Implementation)
 
 When invoked for test review:
