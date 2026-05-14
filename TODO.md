@@ -1,5 +1,27 @@
 # TODO
 
+## Email Input (2026-05-14)
+
+From: Christophe VG (contact@christophe.vg)
+
+Topics for cross-project standardization:
+
+1. **Unified pyproject.toml configuration**
+   - All projects need consistent ruff, type checking, testing configuration
+   - Example ruff config provided
+   - Action: Create session in C3 with agent to analyze all projects
+   - After approval: Update python-project skill and apply to all projects
+
+2. **Standardization compliance skill**
+   - New skill to check standardization application across projects
+   - Produces reports like git-activity-report
+   - Report on demand when asked
+
+3. **Testing-engineer improvement**
+   - Current: Produces too detailed unit tests, creating maintenance burden
+   - Action: Research better guidelines for focused testing
+   - Implement in testing-engineer agent
+
 ## Backlog (Prioritized)
 
 ### P1 - Critical

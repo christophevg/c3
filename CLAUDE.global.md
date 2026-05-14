@@ -2,10 +2,6 @@
 
 These instructions are mandatory for all agents!
 
-# Personal Configuration
-
-@~/.claude/PERSONAL.md
-
 ## Best Practices to Strictly Follow
 
 ### Tool Selection
