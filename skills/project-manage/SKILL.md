@@ -355,6 +355,20 @@ Invoke the `python-developer` agent (or appropriate specialized agent) to:
 - **Run tests and verify all pass before completing**
 - Provide the developer with task details from TODO.md and relevant analysis documents
 
+**CRITICAL: Incremental Changes When Fixing Issues**
+
+When fixing issues or making changes:
+1. **Make ONE change at a time** — Don't batch multiple fixes
+2. **Test after each change** — Verify each fix works before proceeding
+3. **Restore if broken** — If a change breaks working code, restore to working state first
+4. **Ask before guessing** — If unsure about the root cause, ask for clarification
+
+**Anti-Patterns to Avoid:**
+- Making multiple changes simultaneously
+- Guessing at fixes without understanding root cause
+- Continuing to add changes when already broken
+- Skipping tests between changes
+
 #### Step 8: Implementation Review Cycle
 
 ⚠️ **This step is MANDATORY and cannot be skipped.**

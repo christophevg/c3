@@ -75,6 +75,35 @@ Tests use `pytest` with the following patterns:
 - Use descriptive test names that explain what is being tested
 - Test both success and error paths
 
+### AsyncServer Testing Note
+
+**SocketIO AsyncServer does NOT support `test_client()`**
+
+The `test_client()` method only exists on sync `Server`, not `AsyncServer`. When testing async SocketIO applications:
+
+```python
+# ❌ WRONG: AsyncServer doesn't have test_client()
+client = server.socketio.test_client(server)  # AttributeError!
+
+# ✅ CORRECT: Unit test handler logic separately
+def test_session_validation():
+    # Test handler logic directly without SocketIO
+    result = validate_session_for_connection(cookies, session_manager)
+    assert result is not None
+
+# ✅ CORRECT: Integration test with running server
+# tests/integration/test_websocket.py
+@pytest.mark.integration
+async def test_websocket_flow():
+    client = socketio.AsyncClient()
+    await client.connect("http://localhost:8000", headers={...})
+    # Test actual WebSocket communication
+```
+
+**Testing Strategy for Async SocketIO:**
+1. **Unit tests**: Extract handler logic to pure functions, test directly
+2. **Integration tests**: Start server subprocess, connect real `AsyncClient`
+
 ### Example Test Structure
 
 ```python
