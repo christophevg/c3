@@ -158,11 +158,19 @@ If the wheel is empty (only `.dist-info/` files), the `packages` configuration i
 
 ### Step 7: Upload to PyPI
 
-```bash
-uv publish --token $PYPI_TOKEN
+**Check Makefile first** - many projects have a `publish` target:
 
-# Or with twine:
-twine upload dist/*
+```bash
+# Check for Makefile publish target
+grep -A2 "^publish:" Makefile
+
+# If exists, use it:
+make publish
+
+# Otherwise, use twine (preferred):
+uv run twine upload dist/*
+
+# Note: uv publish is unreliable - use twine instead
 ```
 
 ### Step 8: Verify Publication
@@ -173,19 +181,6 @@ open https://pypi.org/project/package_name/
 
 # Verify install works
 pip install package_name==VERSION
-```
-
-### Step 6: Upload to PyPI
-
-```bash
-twine upload dist/*
-```
-
-### Step 7: Verify Publication
-
-```bash
-# Wait a few seconds for PyPI to index
-pip install <package> --dry-run
 ```
 
 ## Common Mistakes to Avoid
