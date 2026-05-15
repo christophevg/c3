@@ -6,6 +6,7 @@ tools:
   - Read
   - Bash
   - Skill
+  - AskUserQuestion
 ---
 
 # Git Manager Agent
