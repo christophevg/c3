@@ -24,7 +24,7 @@ endif
 all: claude
 
 claude:
-	ollama launch claude --model ${MODEL} -- $(ARGS) $(PROMPT)
+	CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 ollama launch claude --model ${MODEL} -- $(ARGS) $(PROMPT)
 
 resume: ARGS += --resume
 resume: claude
