@@ -3,9 +3,10 @@
     "email": {
       "command": "uvx",
       "args": [
+        "--refresh",
         "--from",
         "simple-email-gw",
-        "mcp-server"
+        "email-gw-mcp-server"
       ],
       "env": {
         "EMAIL_IMAP_HOST": "${EMAIL_IMAP_HOST}",

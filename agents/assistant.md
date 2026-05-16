@@ -20,6 +20,7 @@ tools:
   # MCP Email Tools - explicitly listed
   - mcp__plugin_c3_email__list_accounts
   - mcp__plugin_c3_email__list_folders
+  - mcp__plugin_c3_email__create_folder
   - mcp__plugin_c3_email__search_emails
   - mcp__plugin_c3_email__get_email
   - mcp__plugin_c3_email__send_email
