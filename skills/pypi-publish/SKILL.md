@@ -173,7 +173,17 @@ uv run twine upload dist/*
 # Note: uv publish is unreliable - use twine instead
 ```
 
-### Step 8: Verify Publication
+### Step 8: Create Git Tag
+
+```bash
+# Tag the release
+git tag v<VERSION>
+
+# Push the tag
+git push --tags
+```
+
+### Step 9: Verify Publication
 
 ```bash
 # Wait a moment for PyPI to index
@@ -195,6 +205,7 @@ pip install package_name==VERSION
 | Not in virtualenv | Packages install to wrong Python | Check `.python-version`, activate first |
 | Forgetting to build | Old dist files uploaded | Remove `dist/` before rebuilding |
 | Version already exists | Upload fails with "File already exists" | Bump version, cannot overwrite on PyPI |
+| Multiple versions in dist | Upload fails with "400 Bad Request" | Clean dist before building, or use `make publish` (if it cleans) |
 
 ### Empty Wheel (No Source Files)
 
