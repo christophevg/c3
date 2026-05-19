@@ -202,19 +202,59 @@ When both functional analysis (either `analysis/functional.md` or `analysis/func
 
 ---
 
-### Task Scope Classification
+### Task Type Classification
 
-After Phase 1, classify the task:
+After Phase 1, classify the task type to determine the appropriate workflow:
+
+| Task Type | Indicators | Workflow |
+|-----------|------------|----------|
+| **Infrastructure/Setup** | "setup", "init", "project", "scaffold", "configure", first task in backlog | Use skills directly (skip TDD) |
+| **Feature Implementation** | "add", "create", "implement", "build", "new feature" | TDD workflow (Phase 2 → Phase 4) |
+| **Bug Fix** | "fix", "bug", "issue", "broken", "error", "crash" | TDD workflow (demonstrate → fix) |
+| **Documentation** | "document", "readme", "guide", no code changes | Use documentation skill |
+| **Research** | "research", "investigate", "evaluate", no implementation | Use researcher agent |
+
+### Infrastructure/Setup Tasks
+
+**Infrastructure tasks use skills directly, NOT TDD workflow:**
+
+```
+1. Identify appropriate skill:
+   - Python project setup → c3:python-project skill
+   - Documentation setup → c3:documentation skill
+   - MCP server setup → c3:mcp-server skill
+
+2. Invoke skill:
+   - Skill({ skill: "c3:python-project" })
+   - Follow skill instructions for project setup
+
+3. Validate setup:
+   - Run `uv sync` to verify dependencies
+   - Run `uv run python -c "import package"` to verify imports
+   - Run `uv run pytest --collect-only` to verify test infrastructure
+
+4. Mark task complete and proceed to next task
+```
+
+**Why skip TDD for infrastructure?**
+- Infrastructure setup creates the foundation for tests
+- Setup follows established templates and patterns
+- Tests verify behavior, but setup creates the structure for behavior to exist
+- TDD applies to feature implementation, not scaffolding
+
+### Feature Implementation Tasks
+
+**Feature tasks follow the full TDD workflow:**
 
 | Scope | Indicators | Agents to Invoke |
 |-------|------------|------------------|
 | **Backend only** | "API", "endpoint", "backend", "data model", no UI | c3:api-architect, c3:security-engineer* |
 | **Frontend only** | "UI", "UX", "frontend", "component", "page", no backend | c3:ui-ux-designer |
 | **Full stack** | Both backend and frontend | c3:api-architect, c3:ui-ux-designer, c3:security-engineer* |
-| **Documentation only** | "document", "readme", "guide" | c3:end-user-documenter |
-| **Research only** | "research", "investigate", "evaluate" | c3:researcher |
 
 *Include security-engineer when task involves: authentication, sensitive data, external APIs, user input, file operations.
+
+Continue to Phase 2 (Cross-Domain Review).
 
 ---
 

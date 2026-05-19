@@ -1,85 +1,98 @@
 # Makefile Template
 
 ```makefile
-.PHONY: run-env dev-env install-pythons sync test test-all test-cov lint format typecheck check docs build publish publish-test clean all help
+.PHONY: env-dev env-run install-pythons test test-cov test-all format lint typecheck check run docs docs-view build publish publish-test clean all help
 
-# Default target
-.DEFAULT_GOAL := help
+include ~/.claude/Makefile
 
-## run-env: Install production dependencies
-run-env:
-  uv sync
+env-dev: ## Install all dependencies (dev + docs)
+	uv sync --all-extras
 
-## dev-env: Install with all dependencies (dev, docs, extras)
-dev-env:
-  uv sync --all-extras
+env-run: ## Install runtime dependencies only
+	uv sync
 
-## install-pythons: Install all supported Python versions for tox
-install-pythons:
-  uv python install 3.10 3.11 3.12
+install-pythons: ## Install all supported Python versions
+	uv python install 3.10 3.11 3.12
 
-## sync: Sync dependencies from lock file (frozen)
-sync:
-  uv sync --frozen --all-extras
+# Testing
+test: env-dev ## Run all tests
+	uv run pytest -v
 
-## test: Run tests with pytest
-test: dev-env
-  uv run pytest
+test-cov: env-dev ## Run tests with coverage report
+	uv run pytest --cov=src --cov-report=term-missing
 
-## test-all: Run tests with tox (all Python versions)
-test-all: dev-env
-  uv run tox
+test-all: env-dev ## Run tests on all Python versions (tox)
+	uv run tox
 
-## test-cov: Run tests with coverage report
-test-cov: dev-env
-  uv run pytest --cov=src --cov-report=term-missing
+# Code Quality
+format: env-dev ## Format code and auto-fix linting issues
+	uv run ruff format src tests
+	uv run ruff check --fix src tests
 
-## lint: Run ruff linting
-lint: dev-env
-  uv run ruff check src/ tests/
+lint: env-dev ## Check code for linting issues
+	uv run ruff check src tests
 
-## format: Format code with ruff
-format: dev-env
-  uv run ruff format src/ tests/
+typecheck: env-dev ## Run type checking
+	uv run mypy src
 
-## typecheck: Run mypy type checking
-typecheck: dev-env
-  uv run mypy src/
+check: format lint typecheck test ## Run all quality checks
 
-## check: Run lint and typecheck
-check: lint typecheck
+# Running
+run: env-run ## Run the application
+	uv run python -m package_name
 
-## docs: Build documentation
-docs: dev-env
-  cd docs && uv run sphinx-build -b html . _build/html
+# Documentation
+docs: env-dev ## Build HTML documentation
+	cd docs && uv run sphinx-build -M html . _build
 
-## build: Build distribution packages
-build: dev-env
-  uv build
+docs-view: docs ## Build and open documentation in browser
+	open docs/_build/html/index.html
 
-## publish: Publish to PyPI (requires credentials)
-publish: build
-  uv run twine upload dist/*
+# Building
+build: env-dev ## Build distribution packages
+	uv build
 
-## publish-test: Publish to TestPyPI (requires credentials)
-publish-test: build
-  uv run twine upload --repository testpypi dist/*
+publish: build ## Publish to PyPI (requires credentials)
+	uv publish
 
-## clean: Clean build artifacts
-clean:
-  rm -rf dist/ build/ *.egg-info .pytest_cache .coverage .mypy_cache
-  rm -rf docs/_build
-  find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+publish-test: build ## Publish to TestPyPI (requires credentials)
+	uv publish --repository testpypi
 
-## all: Run lint, test, and typecheck
-all: dev-env
-  uv run ruff check src/ tests/
-  uv run pytest
-  uv run mypy src/
+# Cleanup
+clean: ## Clean build artifacts
+	rm -rf dist/ build/ *.egg-info .pytest_cache .coverage .mypy_cache .ruff_cache
+	rm -rf docs/_build
+	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 
-## help: Show this help message
-help:
-  @echo "Available targets:"
-  @echo ""
-  @sed -n 's/^## //p' $(MAKEFILE_LIST) | column -t -s ':'
+# Default
+all: help ## Show this help message
+
+help: ## Show this help message
+	@echo "Usage: make [target]"
+	@echo ""
+	@echo "Targets:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' Makefile | grep -v "install-pythons\|sync" | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+```
+
+## Key Features
+
+1. **Environment targets** - `env-dev` and `env-run` ensure dependencies are synced
+2. **Help system** - `## comments` enable `make help` documentation
+3. **Combined format** - Runs both `ruff format` and `ruff check --fix`
+4. **docs-view** - Builds docs and opens in browser (macOS)
+5. **PHONY declarations** - Prevents conflicts with files of same name
+6. **Default to help** - Running `make` shows help, doesn't run checks
+7. **Multi-version testing** - `test-all` runs tox across Python versions
+
+## Usage
+
+```bash
+make              # Show help
+make install-pythons  # Install Python 3.10, 3.11, 3.12 (one-time)
+make env-dev      # Install all dependencies
+make check        # Run all quality checks
+make test         # Run tests (current Python)
+make test-all     # Run tests on all Python versions
+make run          # Run application
+make docs-view    # Build and view docs
 ```

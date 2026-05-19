@@ -59,7 +59,7 @@ Repository = "https://github.com/username/my-package"
 Issues = "https://github.com/username/my-package/issues"
 
 [project.scripts]
-my-package = "mypackage.__main__:main"
+my-package = "mypackage:run"
 
 [tool.hatch.build]
 sources = ["src"]
@@ -71,22 +71,13 @@ packages = ["src/mypackage"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
-addopts = "-v --cov=mypackage --cov-report=term-missing"
 
 # Type checking configuration
 [tool.mypy]
 python_version = "3.10"
+strict = true
 warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_untyped_decorators = true
-no_implicit_optional = true
-warn_redundant_casts = true
 warn_unused_ignores = true
-warn_no_return = true
-strict_equality = true
 
 # Linting and formatting
 [tool.ruff]
@@ -100,13 +91,13 @@ select = [
   "W",   # pycodestyle warnings
   "F",   # pyflakes
   "I",   # isort
-  "N",   # pep8-naming
-  "UP",  # pyupgrade
   "B",   # flake8-bugbear
   "C4",  # flake8-comprehensions
-  "SIM", # flake8-simplify
+  "UP",  # pyupgrade
 ]
-ignore = ["E501"]  # line too long (handled by formatter)
+ignore = [
+  "E501",  # line too long (handled by formatter)
+]
 
 [tool.ruff.lint.isort]
 known-first-party = ["mypackage"]
@@ -159,3 +150,36 @@ target-version = "py311"
 [tool.tox]
 env_list = ["py311"]  # Single version for applications
 ```
+
+## Key Configuration Details
+
+### Ruff Lint Rules
+
+The template uses a focused set of lint rules:
+
+| Rule | Description |
+|------|-------------|
+| `E` | pycodestyle errors |
+| `W` | pycodestyle warnings |
+| `F` | pyflakes |
+| `I` | isort |
+| `B` | flake8-bugbear |
+| `C4` | flake8-comprehensions |
+| `UP` | pyupgrade |
+
+**Excluded rules** (common but not included by default):
+- `N` (pep8-naming) - Can be added for naming conventions
+- `ANN` (flake8-annotations) - Too strict for some projects
+- `SIM` (flake8-simplify) - Sometimes produces false positives
+
+### Python Version Support
+
+Libraries support Python 3.10, 3.11, 3.12:
+- `requires-python = ">=3.10"`
+- `target-version = "py310"` (for ruff)
+- `python_version = "3.10"` (for mypy)
+
+Applications typically target a single version:
+- `requires-python = ">=3.11"`
+- `target-version = "py311"`
+- `python_version = "3.11"`
