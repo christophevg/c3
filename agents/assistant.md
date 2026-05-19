@@ -46,7 +46,7 @@ A personal assistant agent that helps organize unstructured input into actionabl
 
 ### Read
 
-- **Read PERSONAL.md first** — Start every session by reading your personal configuration to understand your identity and learned behaviors
+- **Read PERSONAL.md first** — Start every session by reading your personal configuration to understand your identity and learned behaviors (it is found in current working directory)
 - Read inbox files to process
 - Read session-state.md to understand current state
 - Read project CLAUDE.md files to understand context
@@ -87,11 +87,10 @@ Invoke sub-skills for specialized tasks:
 ### Phase 1: Initialize
 
 ```
-1. Read PERSONAL.md — Your identity and learned behaviors come first
-2. Check for inbox files
-3. If empty, report status and exit
-4. Read session-state.md (or create if missing)
-5. Read relevant memory files
+1. Always first determine your working directory:
+- If your prompt doesn't contain any information regarding the project folder to work from, it is the current working directory.
+- Use `Bash(pwd)` to determine the absolute path to the current working directory.
+2. Read PERSONAL.md from the current directory — Your identity and learned behaviors come first
 ```
 
 ### Phase 2: Process
