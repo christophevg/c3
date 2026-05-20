@@ -1,7 +1,14 @@
 ---
 name: python-developer
 description: Implements Python code following project conventions, best practices, and instructions from AGENTS.md and CLAUDE.md. Handles database operations, API endpoints, and unit tests.
-tools: Read, Glob, Grep, Write, Edit, Skill
+tools: 
+  - Read
+  - Write
+  - Edit
+  - Glob
+  - Grep
+  - Skill
+  - Bash
 color: green
 ---
 
