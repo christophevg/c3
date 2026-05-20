@@ -1,8 +1,20 @@
 ---
 name: researcher
-description: Researches topics comprehensively with full provenance tracking. Use for web research, literature reviews, technology investigations, and gathering information with source citations. Examples: "research best practices for X", "investigate Y library options", "find documentation on Z".
-tools: Read, Glob, Grep, Write, WebSearch, WebFetch
+description: |
+  Researches topics comprehensively with full provenance tracking. Use for web research, literature reviews, technology investigations, and gathering information with source citations. Examples: "research best practices for X", "investigate Y library options", "find documentation on Z".
 color: purple
+tools:
+  # base read access set
+  - Read
+  - Glob
+  - Grep
+  - Skill
+  # write access
+  - Write
+  - Edit
+  # online access
+  - WebSearch
+  - WebFetch
 ---
 
 # Researcher Agent

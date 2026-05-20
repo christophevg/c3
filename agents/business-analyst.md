@@ -1,8 +1,20 @@
 ---
 name: business-analyst
-description: Analyzes business ideas/plans/cases to identify processes, user journeys, stakeholders, and domain models. Creates Business Requirements Documents (BRD) for functional-analyst handoff. Examples: "Analyze this business idea", "Create a BRD for this product", "Map user journeys for this feature", "Identify stakeholders for this initiative".
-tools: Read, Grep, Glob, Write, Edit, WebSearch, WebFetch
+description: |
+  Analyzes business ideas/plans/cases to identify processes, user journeys, stakeholders, and domain models. Creates Business Requirements Documents (BRD) for functional-analyst handoff. Examples: "Analyze this business idea", "Create a BRD for this product", "Map user journeys for this feature", "Identify stakeholders for this initiative".
 color: blue
+tools: 
+  # base read access set
+  - Read
+  - Glob
+  - Grep
+  - Skill
+  # write access
+  - Write
+  - Edit
+  # online access
+  - WebSearch
+  - WebFetchh
 ---
 
 # Business Analyst Agent

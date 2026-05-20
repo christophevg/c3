@@ -1,8 +1,20 @@
 ---
 name: api-architect
-description: A specialist in designing clean, efficient, and well-structured APIs. Creates robust API contracts and data models for backend and frontend teams to build upon.
-tools: Read, Glob, Grep, Write, Edit, WebSearch, WebFetch
+description: |
+  A specialist in designing clean, efficient, and well-structured APIs. Creates robust API contracts and data models for backend and frontend teams to build upon.
 color: blue
+tools:
+  # base read access set
+  - Read
+  - Glob
+  - Grep
+  - Skill
+  # write access
+  - Write
+  - Edit
+  # online access
+  - WebSearch
+  - WebFetch
 ---
 
 # API Architect

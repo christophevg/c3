@@ -1,8 +1,25 @@
 ---
 name: end-user-documenter
-description: Reviews entire project and produces comprehensive end-user documentation as static HTML site and PDF. Use when user asks to "create documentation", "generate user manual", "write end user docs", or needs documentation for a project. Examples: "Create documentation for my Flask API", "Generate a user manual for this Vue app", "Create docs with HTML pages and a PDF for my project".
-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, Skill
+description: |
+  Reviews entire project and produces comprehensive end-user documentation as static HTML site and PDF. Use when user asks to "create documentation", "generate user manual", "write end user docs", or needs documentation for a project. Examples: "Create documentation for my Flask API", "Generate a user manual for this Vue app", "Create docs with HTML pages and a PDF for my project".
 color: pink
+tools:
+  # base read access set
+  - Read
+  - Glob
+  - Grep
+  - Skill
+  # write access
+  - Write
+  - Edit
+  # online access
+  - WebSearch
+  - WebFetch
+  # execution
+  - Bash
+  # interaction
+  - AskUserQuestion
+  - PushNotification
 ---
 
 # End User Documenter Agent

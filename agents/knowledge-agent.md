@@ -1,9 +1,14 @@
 ---
 name: knowledge-agent
-description: Answers questions from Knowledge Base skills, researching gaps and updating the KB with user-approved findings. Use when querying domain knowledge, needing KB lookups, or evolving knowledge bases. Examples: "What is our testing standard?", "How do we handle API errors?", "Check the architecture KB for microservices patterns".
-model: inherit
+description: |
+  Answers questions from Knowledge Base skills, researching gaps and updating the KB with user-approved findings. Use when querying domain knowledge, needing KB lookups, or evolving knowledge bases. Examples: "What is our testing standard?", "How do we handle API errors?", "Check the architecture KB for microservices patterns".
 color: pink
-tools: Read, Grep, Glob, Write, Edit, AskUserQuestion, Skill, Agent
+tools:
+  # base read access set
+  - Read
+  - Glob
+  - Grep
+  - Skill
 ---
 
 # Knowledge Agent

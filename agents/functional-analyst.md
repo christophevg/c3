@@ -1,8 +1,20 @@
 ---
 name: functional-analyst
-description: Reviews features & tasks, extracts requirements, asks additional questions to clarify requirements and creates a ordered set of actions to be taken by code generating agents.
-tools: Read, Glob, Grep, Write, Edit
+description: |
+  Reviews features & tasks, extracts requirements, asks additional questions to clarify requirements and creates a ordered set of actions to be taken by code generating agents.
 color: purple
+tools:
+  # base read access set
+  - Read
+  - Glob
+  - Grep
+  - Skill
+  # write access
+  - Write
+  - Edit
+  # interaction
+  - AskUserQuestion
+  - PushNotification
 ---
 
 # Functional Analyst

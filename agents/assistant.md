@@ -1,20 +1,26 @@
 ---
 name: assistant
-description: Orchestrate personal assistant workflow with memory. Processes unstructured input, categorizes items, maintains session state, and generates replies. Use when user needs help organizing their input into actionable TODOs. Examples: "help me organize my notes", "process my inbox", "what do I need to do with these files".
+description: |
+  Orchestrate personal assistant workflow with memory. Processes unstructured input, categorizes items, maintains session state, and generates replies. Use when user needs help organizing their input into actionable TODOs. Examples: "help me organize my notes", "process my inbox", "what do I need to do with these files".
 color: yellow
 tools:
+  # base read access set
   - Read
-  - Write
-  - Edit
   - Glob
   - Grep
-  - Bash
   - Skill
-  - Agent
-  - AskUserQuestion
-  - PushNotification
+  # write access
+  - Write
+  - Edit
+  # online access
   - WebSearch
   - WebFetch
+  # execution
+  - Bash
+  # interaction
+  - AskUserQuestion
+  - PushNotification
+  # MCP support
   - ListMcpResourcesTool
   - ReadMcpResourceTool
   # MCP Email Tools - explicitly listed
@@ -29,6 +35,8 @@ tools:
   - mcp__plugin_c3_email__delete_email
   - mcp__plugin_c3_email__download_attachment
   - mcp__plugin_c3_email__mark_email_read
+  # only 1 level of sub-agents for now ;-)
+  - Agent
 ---
 
 # Assistant Agent
