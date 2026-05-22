@@ -106,14 +106,14 @@ Only deviate from RESTful design when:
 2. The user has provided a clear, documented reason
 3. The reason is recorded in the API analysis document
 
-## ⚠️ Mandatory Design Principle: Async-First with Optional Sync Wrappers
+## ⚠️ Mandatory Design Principle: Async-First with Class/AsyncClass Naming
 
-**For I/O-bound operations (database, network, file system), ALWAYS design async-first with optional sync wrappers.**
+**For I/O-bound operations (database, network, file system), ALWAYS design async-first with Class/AsyncClass naming convention.**
 
 ### Why Async-First?
 
-| Benefit | Async Clients | Sync Wrappers |
-|---------|--------------|---------------|
+| Benefit | AsyncClass | Class (wrapper) |
+|---------|------------|-----------------|
 | **Performance** | No thread overhead | Small thread overhead |
 | **Context** | For async applications | For sync applications |
 | **Simplicity** | Requires async/await | Simpler syntax |
@@ -122,11 +122,12 @@ Only deviate from RESTful design when:
 ### Required Architecture
 
 ```
-Primary Implementation: Async Client (IMAPClient, SMTPClient, etc.)
+Primary Implementation: AsyncClient (async-native)
     ↓
-    Wrapper Layer: Sync Client (SyncIMAPClient, SyncSMTPClient, etc.)
+    Wrapper Layer: Client (sync wrapper)
 ```
 
+**Naming convention:** `{Class}` for sync, `Async{Class}` for async (following httpx: Client/AsyncClient)
 **NOT:** Sync-first with async wrappers
 **ALWAYS:** Async-first with sync wrappers
 
@@ -138,14 +139,14 @@ Primary Implementation: Async Client (IMAPClient, SMTPClient, etc.)
    - Connection pooling and resource management in async layer
 
 2. **Sync wrapper layer**:
-   - Dedicated event loop in background thread (Strategy 2)
-   - Context manager support: `with SyncClient() as client`
+   - Dedicated event loop in background thread
+   - Context manager support: `with Client() as client`
    - Delegates all operations to async client
    - Proper cleanup (stop loop, join thread)
 
 3. **Package exports**:
    ```python
-   __all__ = ["AsyncClient", "SyncClient", ...]
+   __all__ = ["Client", "AsyncClient", ...]
    ```
 
 4. **Documentation**:
@@ -165,30 +166,30 @@ Primary Implementation: Async Client (IMAPClient, SMTPClient, etc.)
 
 ### Example API Design
 
-**Async Client (Primary):**
+**AsyncClient (Primary):**
 ```python
-class IMAPClient:
-    async def connect(self) -> IMAP4_SSL: ...
-    async def search(self, folder: str) -> list[str]: ...
-    async def __aenter__(self) -> IMAPClient: ...
+class AsyncClient:
+    async def connect(self) -> Connection: ...
+    async def request(self, query: str) -> Response: ...
+    async def __aenter__(self) -> AsyncClient: ...
     async def __aexit__(self, *args) -> None: ...
 ```
 
-**Sync Wrapper (Convenience):**
+**Client (Sync Wrapper):**
 ```python
-class SyncIMAPClient:
-    def __init__(self, account: EmailAccount):
-        self._async_client = IMAPClient(account)
+class Client:
+    def __init__(self, config: Config):
+        self._async_client = AsyncClient(config)
         self._loop = asyncio.new_event_loop()
         self._thread = threading.Thread(target=self._loop.run_forever, daemon=True)
         self._thread.start()
     
-    def search(self, folder: str) -> list[str]:
+    def request(self, query: str) -> Response:
         return asyncio.run_coroutine_threadsafe(
-            self._async_client.search(folder), self._loop
+            self._async_client.request(query), self._loop
         ).result()
     
-    def __enter__(self) -> SyncIMAPClient: ...
+    def __enter__(self) -> Client: ...
     def __exit__(self, *args) -> None: ...
 ```
 
@@ -197,15 +198,15 @@ class SyncIMAPClient:
 Use this standard language in API documentation:
 
 ```markdown
-## Choosing Async or Sync
+## Choosing Client or AsyncClient
 
 This package provides **both async and sync APIs**:
 
-- **Async clients** (IMAPClient, SMTPClient): For async applications (FastAPI, Quart, asyncio)
-- **Sync clients** (SyncIMAPClient, SyncSMTPClient): For simpler synchronous code (scripts, CLI tools)
+- **AsyncClient**: For async applications (FastAPI, Quart, asyncio) — primary implementation
+- **Client**: For synchronous applications (scripts, CLI tools) — convenience wrapper
 
-Use async clients in async contexts for maximum performance.
-Use sync clients for simpler syntax in synchronous applications.
+Use AsyncClient in async contexts for maximum performance.
+Use Client for simpler syntax in synchronous applications.
 ```
 
 ## Artifact Root Folder

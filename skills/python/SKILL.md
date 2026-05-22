@@ -261,12 +261,17 @@ class App(TextualApp):
 
 ## Async-First Design Pattern
 
-When designing Python modules that involve I/O operations (database, network, file system), **prefer async-first with optional sync wrappers**.
+When designing Python modules that involve I/O operations (database, network, file system), **use async-first architecture with the Class/AsyncClass naming convention**.
 
 ### Design Principle
 
-**Primary implementation:** Async-first using `async`/`await`
-**Convenience layer:** Sync wrapper classes for simpler usage
+**Default approach:** Async-first architecture is the default for all I/O-bound operations.
+**Naming convention:** Follow the httpx pattern with `{Class}` (sync) and `Async{Class}` (async).
+
+```
+Primary: AsyncClient (async-native implementation)
+  └── Convenience: Client (sync wrapper)
+```
 
 This approach provides:
 - **Maximum flexibility**: Async clients for async applications (FastAPI, Quart, asyncio)
@@ -277,39 +282,39 @@ This approach provides:
 ### Implementation Pattern
 
 ```python
-# 1. Primary async implementation (IMAPClient, SMTPClient, etc.)
-class IMAPClient:
-    """Async IMAP client - primary implementation."""
+# 1. Primary async implementation (AsyncClient, AsyncDatabase, etc.)
+class AsyncClient:
+    """Async client - primary implementation."""
     
-    async def connect(self) -> IMAP4_SSL:
+    async def connect(self) -> Connection:
         """Async connection establishment."""
         ...
     
-    async def search(self, folder: str = "INBOX") -> list[str]:
-        """Async search operation."""
+    async def request(self, query: str) -> Response:
+        """Async request operation."""
         ...
     
-    async def __aenter__(self) -> IMAPClient:
+    async def __aenter__(self) -> AsyncClient:
         await self.connect()
         return self
     
     async def __aexit__(self, *args) -> None:
         await self.disconnect()
 
-# 2. Sync wrapper (SyncIMAPClient, SyncSMTPClient, etc.)
-class SyncIMAPClient:
-    """Synchronous wrapper around IMAPClient.
+# 2. Sync wrapper (Client, Database, etc.)
+class Client:
+    """Synchronous wrapper around AsyncClient.
     
-    Uses dedicated event loop in background thread (Strategy 2).
+    Uses dedicated event loop in background thread.
     """
     
-    def __init__(self, account: EmailAccount):
-        self._async_client = IMAPClient(account)
+    def __init__(self, config: Config):
+        self._async_client = AsyncClient(config)
         self._loop = asyncio.new_event_loop()
         self._thread = threading.Thread(target=self._loop.run_forever, daemon=True)
         self._thread.start()
     
-    def __enter__(self) -> SyncIMAPClient:
+    def __enter__(self) -> Client:
         return self
     
     def __exit__(self, *args) -> None:
@@ -320,37 +325,38 @@ class SyncIMAPClient:
         future = asyncio.run_coroutine_threadsafe(coro, self._loop)
         return future.result()
     
-    def connect(self) -> IMAP4_SSL:
+    def connect(self) -> Connection:
         """Sync wrapper around async connect."""
         return self._run_coroutine(self._async_client.connect())
     
-    def search(self, folder: str = "INBOX") -> list[str]:
-        """Sync wrapper around async search."""
-        return self._run_coroutine(self._async_client.search(folder))
+    def request(self, query: str) -> Response:
+        """Sync wrapper around async request."""
+        return self._run_coroutine(self._async_client.request(query))
 ```
 
 ### Key Implementation Details
 
-1. **Context Manager Support**: Both async and sync versions support context managers
-2. **Error Handling**: Sync wrappers should wrap network errors in `RuntimeError`
-3. **Thread Safety**: Each sync client has its own event loop and thread
-4. **Connection Pooling**: Preserved from async implementation
-5. **Type Annotations**: Full type annotations for both async and sync versions
+1. **Naming Convention**: `{Class}` for sync, `Async{Class}` for async (following httpx: Client/AsyncClient)
+2. **Same Interface**: Both classes have identical method names (e.g., `.request()`, `.connect()`)
+3. **Context Manager Support**: Both async and sync versions support context managers
+4. **Error Handling**: Sync wrappers should wrap network errors in `RuntimeError`
+5. **Thread Safety**: Each sync client has its own event loop and thread
+6. **Type Annotations**: Full type annotations for both async and sync versions
 
 ### Package Exports
 
 ```python
 # __init__.py
-from .async_client import AsyncClient  # Primary
-from .sync_client import SyncClient    # Wrapper
+from .async_client import AsyncClient  # Primary async implementation
+from .client import Client             # Sync wrapper
 
-__all__ = ["AsyncClient", "SyncClient", ...]
+__all__ = ["Client", "AsyncClient", ...]
 ```
 
 ### When to Use Which
 
-| Use Async Clients | Use Sync Clients |
-|-------------------|------------------|
+| Use AsyncClass | Use Class |
+|----------------|-----------|
 | FastAPI, Quart, etc. | Scripts, CLI tools |
 | asyncio-based apps | Synchronous applications |
 | Need max performance | Simplicity is priority |
@@ -359,15 +365,15 @@ __all__ = ["AsyncClient", "SyncClient", ...]
 ### What NOT to Do
 
 ```python
-# ❌ WRONG: Using sync client in async context
+# ❌ WRONG: Using sync Client in async context
 async def my_async_function():
-    with SyncIMAPClient(account) as client:  # Error: nested event loop
-        messages = client.search()
+    with Client(config) as client:  # Error: nested event loop
+        response = client.request("query")
 
-# ✅ CORRECT: Use async client in async context
+# ✅ CORRECT: Use AsyncClient in async context
 async def my_async_function():
-    async with IMAPClient(account) as client:
-        messages = await client.search()
+    async with AsyncClient(config) as client:
+        response = await client.request("query")
 ```
 
 ### Documentation Pattern
@@ -375,14 +381,14 @@ async def my_async_function():
 When documenting both APIs:
 
 ```markdown
-## Choosing Async or Sync
+## Choosing Client or AsyncClient
 
 This package provides **both async and sync APIs**:
 
-- **Async clients** (IMAPClient, SMTPClient): For async applications (FastAPI, Quart, asyncio)
-- **Sync clients** (SyncIMAPClient, SyncSMTPClient): For simpler synchronous code (scripts, CLI tools)
+- **AsyncClient**: For async applications (FastAPI, Quart, asyncio) — primary implementation
+- **Client**: For synchronous applications (scripts, CLI tools) — convenience wrapper
 
-Both client types provide identical functionality - sync clients are thin wrappers around async clients using a dedicated event loop in a background thread.
+Both classes provide identical functionality with the same interface.
 ```
 
 ## Related Skills

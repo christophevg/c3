@@ -70,9 +70,23 @@ The commit skill handles this automatically. After skill completes:
 
 ## Guardrails
 
-1. **NEVER bypass pre-commit hooks** — Hooks exist for safety
-2. **NEVER commit sensitive files** — Skill blocks these automatically
-3. **NEVER force commit** — Always get user verification
-4. **NEVER amend commits** — Except to add missing attribution
-5. **NEVER describe what you will do** — Just invoke the skill immediately
-6. **NEVER confirm commit without verifying attribution** — Check commit message
+1. **NEVER commit directly to master/main in project mode** — User acceptance happens on PRs
+2. **NEVER bypass pre-commit hooks** — Hooks exist for safety
+3. **NEVER commit sensitive files** — Skill blocks these automatically
+4. **NEVER force commit** — Always get user verification
+5. **NEVER amend commits** — Except to add missing attribution
+6. **NEVER describe what you will do** — Just invoke the skill immediately
+7. **NEVER confirm commit without verifying attribution** — Check commit message
+
+## Project Management Mode
+
+When invoked by `project-manage` skill:
+- Commits go to **feature branch**, never master/main
+- After commit, **do NOT push** — project-manage handles push and PR
+- Return commit info to project-manage for PR workflow
+
+## After PR is Merged
+
+When user reports PR merge:
+- This is handled by project-manage, not git-manager
+- git-manager only handles the commit phase

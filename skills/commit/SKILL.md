@@ -31,12 +31,20 @@ Use this skill when:
 
 | Rule | Reason |
 |------|--------|
+| NEVER commit directly to master/main in project mode | User acceptance happens on PRs |
 | NEVER update git config | Preserves user's configuration |
 | NEVER skip hooks (`--no-verify`, `--no-gpg-sign`) | Hooks exist for safety |
 | NEVER amend commits | Except to add missing attribution |
 | NEVER force push to main/master | Protects shared branches |
 | NEVER use `-i` flag (interactive) | Not supported in non-interactive context |
 | Prefer specific files over `git add -A` or `git add .` | Avoids sensitive files, large binaries |
+
+**Project Management Mode:**
+
+When invoked via `project-manage` skill:
+1. **ALWAYS commit to feature branch** — Never master/main
+2. **After commit, push branch** — Enable PR creation
+3. **PR URL returned to user** — User handles acceptance testing
 
 **Destructive Operations:**
 
@@ -326,6 +334,27 @@ When a pre-commit hook fails:
 **Why not amend:** After hook failure, `--amend` would modify the PREVIOUS commit, potentially destroying work or losing changes.
 
 **Exception:** Amending to add missing attribution is allowed for successful commits.
+
+### Project Management Mode (PR Workflow)
+
+When this skill is invoked via `project-manage`:
+
+1. **Verify branch**: Check that current branch is NOT master/main
+   ```bash
+   git branch --show-current
+   ```
+   If on master/main, project-manage should have created a feature branch.
+
+2. **Commit to feature branch**: All commits go to the feature branch
+
+3. **After commit, do NOT push automatically** — Let project-manage handle push and PR creation
+
+4. **Return control** to project-manage for:
+   - Pushing branch to remote
+   - Creating pull request
+   - Updating GitHub issue status
+
+**Direct commits to master/main are NEVER allowed in project management mode.**
 
 ## Related Patterns
 

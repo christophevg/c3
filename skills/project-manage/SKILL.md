@@ -41,6 +41,9 @@ User Request
 Task Type Detection ──── Bug ───► Bug Fixing Workflow
     │
     ▼ Feature
+GitHub Issue Check
+    │
+    ▼
 Project State Detection
     │
     ├── New Project ───────────► Phase 1A (Analysis)
@@ -82,7 +85,22 @@ Project State Detection
                                                                                 Review Cycle (parallelized)
                                                                                         │
                                                                                         ▼
-                                                                                    Commit
+                                                                            Create Feature Branch
+                                                                                        │
+                                                                                        ▼
+                                                                            Commit to Branch
+                                                                                        │
+                                                                                        ▼
+                                                                            Push & Create PR
+                                                                                        │
+                                                                                        ▼
+                                                                        ┌─── User Acceptance on PR ───┐
+                                                                        │                             │
+                                                                        ▼                             ▼
+                                                                    User Merges PR              User Rejects PR
+                                                                        │                             │
+                                                                        ▼                             ▼
+                                                                Mark Task Complete          Return to Implementation
 ```
 
 ---
@@ -109,7 +127,56 @@ Before starting, detect whether the task is a **feature** or a **bug**:
 
 When the task is identified as a feature, follow this sequential workflow:
 
-### Phase 0: Project State Detection
+### Phase 0A: GitHub Issue Check
+
+**Check for open issues before starting work:**
+
+1. Run `gh issue list --limit 10 --state open` to check for open GitHub issues
+2. Filter out issues with status labels (already reviewed):
+   ```bash
+   gh issue list --limit 10 --state open --json number,title,labels
+   ```
+3. If unreviewed issues exist (no status label), ask the user:
+   - "Found X unreviewed GitHub issue(s). Would you like to review them before starting work?"
+4. If user agrees, review each issue:
+   - Display issue title, number, and existing labels
+   - Ask if the user wants to see details
+   - Decide on disposition (accept, reject, needs research)
+
+**Issue Status Labels:**
+
+| Label | Meaning | Action |
+|-------|---------|--------|
+| `status:backlog` | Reviewed, added to TODO.md | Keep open, implement later |
+| `status:in-progress` | Currently implementing | Keep open, track progress |
+| `status:wont-do` | Decision: won't implement | Close with explanation |
+| `status:needs-research` | Needs evaluation | Keep open, research first |
+| `status:blocked` | Blocked by dependency | Keep open, note blocker |
+
+**Issue Handling Actions:**
+
+```bash
+# Accept issue → add to backlog
+gh issue edit {number} --add-label "status:backlog"
+gh issue comment {number} --body "Reviewed and accepted. Added to TODO.md."
+
+# Reject issue → close with explanation
+gh issue edit {number} --add-label "status:wont-do"
+gh issue close {number} --comment "Closing: not in scope because..."
+
+# Needs research
+gh issue edit {number} --add-label "status:needs-research"
+gh issue comment {number} --body "Needs evaluation for..."
+
+# Starting implementation
+gh issue edit {number} --add-label "status:in-progress"
+```
+
+5. Continue to Phase 0B after issues are handled
+
+---
+
+### Phase 0B: Project State Detection
 
 Check the project's analysis artifacts to determine the appropriate workflow:
 
@@ -402,29 +469,101 @@ For tasks with user-facing changes:
 - Return to Step 7 with consolidated feedback (max 2 rounds)
 - Only proceed to Step 9 when ALL invoked agents approve
 
-#### Step 9: Task Completion
+#### Step 9: Task Completion (Pending PR Review)
 
-- Mark the task as completed
-- Move the completed task from "Backlog" to "Done" section in TODO.md
+- Mark the task as **pending review** (not complete until PR is merged)
+- Update task in TODO.md with PR reference
 - Ensure `reporting/` folder exists
 - Create summary report in `reporting/{task-name}/summary.md` including:
   - What was implemented
   - Key decisions made
   - Lessons learned
   - Files modified
+  - **PR link** (once created)
 
-#### Step 10: Commit Changes
+#### Step 10: Create Pull Request
 
-- Ask user to commit changes or provide commit guidance
+**CRITICAL:** In project management mode, commits NEVER go directly to master/main.
+
+**Step 10a: Ensure Feature Branch**
+
+```bash
+# Check current branch
+git branch --show-current
+
+# If on master/main, create feature branch
+if on master/main:
+    git checkout -b feature/{task-name}
+```
+
+**Step 10b: Commit to Feature Branch**
+
+Invoke `git-manager` agent to commit changes:
+- Commits go to feature branch, not master
 - Use conventional commit message format
+- Include task reference in commit body
+
+**Step 10c: Push Branch**
+
+```bash
+git push -u origin feature/{task-name}
+```
+
+**Step 10d: Create Pull Request**
+
+```bash
+gh pr create --title "feat: {task title}" --body "$(cat <<'EOF'
+## Summary
+
+{Brief description of what this PR implements}
+
+## Changes
+
+- {Change 1}
+- {Change 2}
+
+## Test Plan
+
+- [ ] {Test step 1}
+- [ ] {Test step 2}
+
+## Related
+
+- Task: TODO.md #{task-id}
+- Closes #{issue-number} (if applicable)
+EOF
+)"
+```
+
+**Step 10e: Update GitHub Issue**
+
+```bash
+gh issue edit {issue-number} --add-label "status:in-progress"
+gh issue comment {issue-number} --body "PR created: {PR URL}"
+```
+
+**Step 10f: Report to User**
+
+After PR creation:
+- Display PR URL
+- Explain that user acceptance testing happens on the PR
+- Task will be marked complete after PR is merged
 
 #### Step 11: Exit Plan Mode
 
-Exit plan mode.
+Exit plan mode and report:
+- PR URL for user review
+- What was implemented
+- Awaiting user acceptance on PR
 
-#### Step 12: Repeat
+#### Step 12: Post-Merge (After User Merges PR)
 
-Continue with next task from Step 5 until all tasks complete.
+When user reports PR is merged:
+1. Update GitHub issue: `gh issue edit {number} --remove-label "status:in-progress"`
+2. If issue is resolved: `gh issue close {number}`
+3. Mark task as completed in TODO.md
+4. Move task to "Done" section
+5. Continue to next task from Step 5
 
 ---
 

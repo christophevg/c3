@@ -114,31 +114,32 @@ When invoked to implement a task:
 
 ## Async-First Implementation Pattern
 
-**When implementing I/O-bound operations (database, network, file system), ALWAYS use async-first design.**
+**When implementing I/O-bound operations (database, network, file system), ALWAYS use async-first architecture with the Class/AsyncClass naming convention.**
 
 ### Design Principle
 
-1. **Primary implementation**: Async client with `async`/`await`
-2. **Convenience layer**: Sync wrapper for simpler usage
+1. **Primary implementation**: `AsyncClient` — async-native with `async`/`await`
+2. **Convenience layer**: `Client` — sync wrapper for simpler usage
+3. **Same interface**: Both classes use identical method names
 
 This is **NOT optional** - it's the standard pattern for all I/O operations in this project.
 
 ### Implementation Steps
 
-**Step 1: Implement Async Client (Primary)**
+**Step 1: Implement AsyncClient (Primary)**
 ```python
-class IMAPClient:
-    """Async IMAP client - primary implementation."""
+class AsyncClient:
+    """Async client - primary implementation."""
     
-    async def connect(self) -> IMAP4_SSL:
+    async def connect(self) -> Connection:
         # Async connection logic
         ...
     
-    async def search(self, folder: str) -> list[str]:
-        # Async search logic
+    async def request(self, query: str) -> Response:
+        # Async request logic
         ...
     
-    async def __aenter__(self) -> IMAPClient:
+    async def __aenter__(self) -> AsyncClient:
         await self.connect()
         return self
     
@@ -146,13 +147,13 @@ class IMAPClient:
         await self.disconnect()
 ```
 
-**Step 2: Implement Sync Wrapper (Convenience)**
+**Step 2: Implement Client (Sync Wrapper)**
 ```python
-class SyncIMAPClient:
-    """Synchronous wrapper around IMAPClient."""
+class Client:
+    """Synchronous wrapper around AsyncClient."""
     
-    def __init__(self, account: EmailAccount):
-        self._async_client = IMAPClient(account)
+    def __init__(self, config: Config):
+        self._async_client = AsyncClient(config)
         self._loop = asyncio.new_event_loop()
         self._thread = threading.Thread(target=self._loop.run_forever, daemon=True)
         self._thread.start()
@@ -162,11 +163,11 @@ class SyncIMAPClient:
         future = asyncio.run_coroutine_threadsafe(coro, self._loop)
         return future.result()
     
-    def search(self, folder: str) -> list[str]:
-        """Sync wrapper around async search."""
-        return self._run_coroutine(self._async_client.search(folder))
+    def request(self, query: str) -> Response:
+        """Sync wrapper around async request."""
+        return self._run_coroutine(self._async_client.request(query))
     
-    def __enter__(self) -> SyncIMAPClient:
+    def __enter__(self) -> Client:
         return self
     
     def __exit__(self, *args) -> None:
@@ -177,18 +178,20 @@ class SyncIMAPClient:
 ```python
 # __init__.py
 from .async_client import AsyncClient
-from .sync_client import SyncClient
+from .client import Client
 
-__all__ = ["AsyncClient", "SyncClient"]
+__all__ = ["Client", "AsyncClient"]
 ```
 
 ### Key Requirements
 
-1. **Context managers**: Both async (`async with`) and sync (`with`) versions
-2. **Error handling**: Sync wrappers wrap network errors in `RuntimeError`
-3. **Thread safety**: Each sync client has its own event loop and thread
-4. **Type annotations**: Full type annotations for both versions
-5. **Documentation**: Document both APIs clearly
+1. **Naming convention**: `{Class}` for sync, `Async{Class}` for async (follows httpx pattern)
+2. **Same interface**: Both classes have identical method names
+3. **Context managers**: Both async (`async with`) and sync (`with`) versions
+4. **Error handling**: Sync wrappers wrap network errors in `RuntimeError`
+5. **Thread safety**: Each sync client has its own event loop and thread
+6. **Type annotations**: Full type annotations for both versions
+7. **Documentation**: Document both APIs clearly
 
 ### Test Coverage
 
@@ -198,26 +201,26 @@ Write tests for both async and sync versions:
 # tests/test_async_client.py
 class TestAsyncClient:
     @pytest.mark.asyncio
-    async def test_search(self):
-        async with AsyncClient(account) as client:
-            result = await client.search("INBOX")
-            assert len(result) > 0
+    async def test_request(self):
+        async with AsyncClient(config) as client:
+            result = await client.request("query")
+            assert result is not None
 
-# tests/test_sync_client.py
-class TestSyncClient:
-    def test_search(self):
-        with SyncClient(account) as client:
-            result = client.search("INBOX")
-            assert len(result) > 0
+# tests/test_client.py
+class TestClient:
+    def test_request(self):
+        with Client(config) as client:
+            result = client.request("query")
+            assert result is not None
 ```
 
 ### When to Apply
 
 | Operation Type | Pattern Required |
 |----------------|------------------|
-| Database queries | ✅ Async-first + sync wrapper |
-| Network calls (HTTP, IMAP, SMTP) | ✅ Async-first + sync wrapper |
-| File system operations | ✅ Async-first + sync wrapper |
+| Database queries | ✅ AsyncClient + Client |
+| Network calls (HTTP, IMAP, SMTP) | ✅ AsyncClient + Client |
+| File system operations | ✅ AsyncClient + Client |
 | CPU-bound computations | ❌ Pure sync OK |
 | In-memory operations | ❌ Pure sync OK |
 - Use two-space indentation in all files
@@ -360,6 +363,13 @@ After implementation and verification:
 4. List all files created/modified
 5. Note any decisions made or deviations from the plan
 6. **Report test results explicitly** (e.g., "All X tests pass")
+7. **Do NOT commit directly** — Return control to project-manage for PR workflow
+
+**Important:** In project management mode, commits go to feature branches and user acceptance happens via pull request. The project-manage skill handles:
+- Creating feature branch
+- Committing changes
+- Pushing and creating PR
+- Updating GitHub issue status
 
 ## Summary Report Format
 
