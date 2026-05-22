@@ -491,9 +491,11 @@ For tasks with user-facing changes:
 # Check current branch
 git branch --show-current
 
-# If on master/main, create feature branch
+# Branch naming convention: feature/{issue-number}-{short-description}
+# Example: feature/1-async-agent
 if on master/main:
-    git checkout -b feature/{task-name}
+    branch_name="feature/{issue-number}-{short-description}"
+    git checkout -b "$branch_name"
 ```
 
 **Step 10b: Commit to Feature Branch**
@@ -506,7 +508,7 @@ Invoke `git-manager` agent to commit changes:
 **Step 10c: Push Branch**
 
 ```bash
-git push -u origin feature/{task-name}
+git push -u origin feature/{issue-number}-{short-description}
 ```
 
 **Step 10d: Create Pull Request**
@@ -524,16 +526,27 @@ gh pr create --title "feat: {task title}" --body "$(cat <<'EOF'
 
 ## Test Plan
 
-- [ ] {Test step 1}
-- [ ] {Test step 2}
+- [ ] All tests pass (`make test`)
+- [ ] Linting passes (`make lint`)
+- [ ] Manual testing completed
+- [ ] Documentation updated (if applicable)
+
+## Review Checklist
+
+- [ ] Code follows project conventions
+- [ ] Tests cover new functionality
+- [ ] No sensitive files committed
+- [ ] Commit messages follow conventional format
 
 ## Related
 
 - Task: TODO.md #{task-id}
-- Closes #{issue-number} (if applicable)
+- Closes #{issue-number}
 EOF
 )"
 ```
+
+**Note:** Using `Closes #{issue-number}` auto-closes the issue when PR is merged.
 
 **Step 10e: Update GitHub Issue**
 
