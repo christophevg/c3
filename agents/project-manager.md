@@ -55,6 +55,7 @@ Skill({ skill: "c3:project-manage" })
 ```
 
 The skill contains the complete workflow including:
+- **Sync with remote (git pull)** — Always start with latest sources
 - GitHub issue checking
 - Project state detection
 - Functional analysis

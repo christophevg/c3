@@ -30,6 +30,28 @@ pwd
 
 ---
 
+## Sync with Remote
+
+**CRITICAL: The human operator works on their own clones. Always sync before starting work.**
+
+Before any analysis or implementation, sync with the remote:
+
+```bash
+git pull
+```
+
+This ensures:
+- Agent works on the latest sources
+- No conflicts from changes made by human on another clone
+- Clean working state before any modifications
+
+**If pull fails due to conflicts:**
+- Report to user and wait for resolution
+- Do NOT attempt to resolve conflicts automatically
+- User may have local changes that need manual merging
+
+---
+
 This skill is invoked by the user to manage the entire project workflow, orchestrating specialized agents to ensure proper analysis, design, implementation, and review of all tasks.
 
 ## Workflow Overview
