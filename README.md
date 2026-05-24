@@ -1,21 +1,20 @@
-# C3 - Christophe's Coding Crew
+# C3 - Christophe's Agentic Collective
 
 [![Platform](https://img.shields.io/badge/platform-mac%20%7C%20linux-lightgrey.svg)][platform]
 [![License](https://img.shields.io/github/license/christophevg/c3.svg)][license]
+[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Coding-Agent)
 
-> A personal collection of skills and agents for agentic coding and other stuff.
+> C3, short for Christophe Agentic Collective, is a personal collective of agents and skills designed for agentic coding and various other purposes. It originated as Christophe’s Coding Crew, which is how the name C3 came to be. Over time, it has undergone significant evolution and has now become known as Christophe’s Agentic Collective. The C3 name has remained consistent throughout its journey. 😉
 
-## Disclaimer
+> [!CAUTION]
+> **Before installing any plugin**: Plugins can execute arbitrary commands on your machine. Always review a plugin's code before installing it.
 
-> ⚠️ **Before installing any plugin**: Plugins can execute arbitrary commands on your machine. Always review a plugin's code before installing it.
->
-> This is **my personal collection**. It is in constant flux. I try to keep the plugin version stable and usable, but **YMMV** 😇
-
----
+> [!WARNING]  
+> This is **my personal collective**. It is in constant flux. I try to keep the plugin version stable and usable, but **YMMV** 😇
 
 ## Philosophy
 
-The agentic workflow is built on a simple belief: **create small automation steps, use them, and iteratively improve**. Each skill and agent emerged from real needs, was refined through use, and continues to evolve.
+My agentic workflow is built on a simple belief: **create small automation steps, use them, and iteratively improve**. Each skill and agent emerged from real needs, was refined through use, and continues to evolve.
 
 ### The Skill Evolution Cycle
 
@@ -66,12 +65,11 @@ To develop or test the latest version locally:
 # Clone the repository
 git clone https://github.com/christophevg/c3.git
 cd c3
-
-# Test locally (overrides installed plugin)
-make local
+make install
 ```
 
-The `make local` target runs Claude with `--plugin-dir ./` to test unreleased changes.
+> [!NOTE]  
+> `make install` copies `Makefile.clause` to your personal `~/.claude` folder and allows your project Makefiles to include it using `-include ~/.claude/Makefile`. Now you can use several utility targets to work with claude and use C3 as a harness configuration. For example `make` basically runs Claude Code using Ollama. If you do this from the C3 folder, it will also include that folder as a plugin.
 
 ---
 
