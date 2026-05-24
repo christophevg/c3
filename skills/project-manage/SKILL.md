@@ -595,8 +595,12 @@ Exit plan mode and report:
 #### Step 12: Post-Merge (After User Merges PR)
 
 When user reports PR is merged:
-1. Update GitHub issue: `gh issue edit {number} --remove-label "status:in-progress"`
-2. If issue is resolved: `gh issue close {number}`
+1. **Clean up GitHub issue labels:**
+   ```bash
+   # Remove in-progress label (issue may be auto-closed by "Fixes #N")
+   gh issue edit {number} --remove-label "status:in-progress"
+   ```
+2. If issue is not auto-closed: `gh issue close {number}`
 3. Mark task as completed in TODO.md
 4. Move task to "Done" section
 5. Continue to next task from Step 5

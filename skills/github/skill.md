@@ -300,6 +300,10 @@ gh issue edit {number} --add-label "status:in-progress"
 
 # Link to PR
 gh issue comment {number} --body "PR created: {PR URL}"
+
+# After PR is merged - clean up labels
+# Note: "Fixes #N" in PR auto-closes the issue, but doesn't remove labels
+gh issue edit {number} --remove-label "status:in-progress"
 ```
 
 ---
