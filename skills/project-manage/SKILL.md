@@ -136,11 +136,12 @@ When the task is identified as a feature, follow this sequential workflow:
    ```bash
    gh issue list --limit 10 --state open --json number,title,labels
    ```
-3. If unreviewed issues exist (no status label), ask the user:
-   - "Found X unreviewed GitHub issue(s). Would you like to review them before starting work?"
-4. If user agrees, review each issue:
+3. **If unreviewed issues exist (no status label):**
+   - **Issues are URGENT** - Do NOT ask for confirmation
+   - Automatically add to backlog and start working on them
+   - Label with `status:in-progress` and proceed to bug-fixing workflow
+4. Review each issue:
    - Display issue title, number, and existing labels
-   - Ask if the user wants to see details
    - Decide on disposition (accept, reject, needs research)
 
 **Issue Status Labels:**
@@ -561,6 +562,28 @@ After PR creation:
 - Display PR URL
 - Explain that user acceptance testing happens on the PR
 - Task will be marked complete after PR is merged
+
+**Step 10g: CI Follow-up (MANDATORY)**
+
+⚠️ **PR creation is NOT complete until CI passes.**
+
+After creating the PR, MUST:
+1. Check CI status: `gh pr checks {number}`
+2. Wait for CI to complete (poll if needed)
+3. **If CI fails:**
+   - View failure details: `gh run view {id} --log-failed`
+   - Debug and fix the issue
+   - Commit and push fixes to the same branch
+   - Repeat until CI passes
+4. **Only report PR complete when CI passes**
+
+**Step 10h: Assign and Request Review**
+
+Always do BOTH:
+```bash
+gh pr edit {number} --add-assignee {user}
+gh pr edit {number} --add-reviewer {user}
+```
 
 #### Step 11: Exit Plan Mode
 

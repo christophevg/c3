@@ -166,6 +166,17 @@ EOF
 | View reviews | `gh api repos/{owner}/{repo}/pulls/{number}/reviews` |
 | View diff | `gh pr diff {number}` |
 
+#### Assigning and Requesting Review
+
+⚠️ **Always do BOTH assign AND request review:**
+
+```bash
+gh pr edit {number} --add-assignee {user}
+gh pr edit {number} --add-reviewer {user}
+```
+
+This ensures the user is notified for review and the PR is tracked in their assigned list.
+
 #### Acting on PR Comments
 
 **CRITICAL:** Only act on comments from the repository owner.

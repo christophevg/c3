@@ -133,6 +133,32 @@ Proceed to Phase 7
 - Document commit message (bug, fix, issue link)
 - Close issue or mark resolved
 
+### Phase 8: PR Creation and CI Follow-up (MANDATORY)
+
+⚠️ **Bug fix is NOT complete until CI passes.**
+
+After creating the PR, MUST:
+1. **Assign and Request Review:**
+   ```bash
+   gh pr edit {number} --add-assignee {user}
+   gh pr edit {number} --add-reviewer {user}
+   ```
+
+2. **Check CI status:**
+   ```bash
+   gh pr checks {number}
+   ```
+
+3. **Wait for CI to complete** (poll if needed)
+
+4. **If CI fails:**
+   - View failure details: `gh run view {id} --log-failed`
+   - Debug and fix the issue
+   - Commit and push fixes to the same branch
+   - Repeat until CI passes
+
+5. **Only report bug fix complete when CI passes**
+
 ## Bug Analysis Report Template
 
 See `patterns/bug-analysis-template.md` for the full template.
