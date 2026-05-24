@@ -595,15 +595,25 @@ Exit plan mode and report:
 #### Step 12: Post-Merge (After User Merges PR)
 
 When user reports PR is merged:
-1. **Clean up GitHub issue labels:**
+
+1. **Find the issue number:**
+   - Check TODO.md task entry (includes issue reference)
+   - Or parse from PR body: `gh pr view {pr-number} --json body --jq '.body' | grep -o "Fixes #[0-9]*"`
+   - Or check commit message: `git log --oneline -1 | grep -o "#[0-9]*"`
+
+2. **Clean up GitHub issue labels:**
    ```bash
    # Remove in-progress label (issue may be auto-closed by "Fixes #N")
-   gh issue edit {number} --remove-label "status:in-progress"
+   gh issue edit {issue-number} --remove-label "status:in-progress"
    ```
-2. If issue is not auto-closed: `gh issue close {number}`
-3. Mark task as completed in TODO.md
-4. Move task to "Done" section
-5. Continue to next task from Step 5
+
+3. If issue is not auto-closed: `gh issue close {issue-number}`
+
+4. Mark task as completed in TODO.md
+
+5. Move task to "Done" section
+
+6. Continue to next task from Step 5
 
 ---
 
