@@ -230,65 +230,7 @@ make check
 
 ### Standard Makefile
 
-Create `Makefile` at project root:
-
-```makefile
-include ~/.claude/Makefile
-
-.PHONY: env-dev env-run install-pythons test test-cov test-all format lint typecheck check run docs docs-view all help
-
-env-dev: ## Install all dependencies (dev + docs)
-	uv sync --all-extras
-
-env-run: ## Install runtime dependencies only
-	uv sync
-
-install-pythons: ## Install all supported Python versions
-	uv python install 3.10 3.11 3.12
-
-# Testing
-test: env-dev ## Run all tests
-	uv run pytest -v
-
-test-cov: env-dev ## Run tests with coverage report
-	uv run pytest --cov=src --cov-report=term-missing
-
-test-all: env-dev ## Run tests on all Python versions (tox)
-	uv run tox
-
-# Code Quality
-format: env-dev ## Format code and auto-fix linting issues
-	uv run ruff format src tests
-	uv run ruff check --fix src tests
-
-lint: env-dev ## Check code for linting issues
-	uv run ruff check src tests
-
-typecheck: env-dev ## Run type checking
-	uv run mypy src
-
-check: format lint typecheck test ## Run all quality checks
-
-# Running
-run: env-run ## Run the application
-	uv run python -m package_name
-
-# Documentation
-docs: env-dev ## Build HTML documentation
-	cd docs && uv run sphinx-build -M html . _build
-
-docs-view: docs ## Build and open documentation in browser
-	open docs/_build/html/index.html
-
-# Default
-all: help ## Show this help message
-
-help: ## Show this help message
-	@echo "Usage: make [target]"
-	@echo ""
-	@echo "Targets:"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' Makefile | grep -v "install-pythons\|sync" | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
-```
+Create `Makefile` at project root. See `templates/makefile` for the full template.
 
 ### Makefile Requirements
 
@@ -296,16 +238,43 @@ help: ## Show this help message
 |--------|---------|-----------|
 | `env-dev` | Install all dependencies | ✓ Required |
 | `env-run` | Install runtime dependencies | ✓ Required |
-| `test` | Run tests | ✓ Required |
+| `install-pythons` | Install Python 3.10, 3.11, 3.12 | Recommended |
+| `test` | Run tests (supports `TEST=file|test`) | ✓ Required |
 | `test-cov` | Run tests with coverage | Recommended |
 | `test-all` | Run tests on all Python versions | For libraries |
 | `run` | Run application | ✓ Required |
 | `format` | Format and auto-fix code | ✓ Required |
 | `lint` | Lint code | ✓ Required |
+| `typecheck` | Run mypy | ✓ Required |
 | `check` | Format + lint + typecheck + test | ✓ Required |
 | `docs` | Build docs | If has docs |
 | `docs-view` | Build and view docs | Recommended |
+| `build` | Build distribution packages | ✓ Required |
+| `pre-publish` | Pre-publication checks | For libraries |
+| `publish` | Publish to PyPI (includes pre-publish) | For libraries |
+| `clean` | Remove build artifacts | ✓ Required |
+| `clean-all` | Remove venv and lock file | Recommended |
 | `help` | Show help (default target) | ✓ Required |
+
+### Test Target with Optional TEST Parameter
+
+The `test` target supports an optional `TEST` parameter for running specific tests:
+
+```bash
+# Run all tests
+make test
+
+# Run specific test file
+make test TEST=tests/test_module.py
+
+# Run specific test function
+make test TEST=tests/test_module.py::test_function
+
+# Run tests matching a pattern
+make test TEST=tests/test_module.py -k "test_pattern"
+```
+
+This eliminates the need for separate `test-file` and `test-one` targets.
 
 ### Key Features
 
@@ -313,15 +282,59 @@ help: ## Show this help message
 2. **Help system** - `## comments` enable `make help` documentation
 3. **Combined format** - Runs both `ruff format` and `ruff check --fix`
 4. **docs-view** - Builds docs and opens in browser (macOS)
-5. **Default to help** - Running `make` shows help, doesn't run checks
-6. **Multi-version testing** - `test-all` runs tox across Python versions
+5. **PHONY declarations** - Prevents conflicts with files of same name
+6. **Default to help** - Running `make` shows help, doesn't run checks
+7. **Multi-version testing** - `test-all` runs tox across Python versions
+8. **Project-specific section** - Preserve custom targets at the bottom
+9. **Pre-publish checks** - Validates before PyPI upload
 
-### Why Makefile?
+### Pre-Publish Target
 
-1. **Consistent commands** - Same `make test` across all projects
-2. **uv integration** - All targets use `uv run`
-3. **Onboarding** - New developers know `make check`
-4. **CI/CD** - GitHub Actions can use `make check`
+The `pre-publish` target runs critical checks before publishing to PyPI:
+
+```makefile
+pre-publish: check ## Pre-publication checks (run before publishing)
+	@echo "Checking for relative image paths in README..."
+	@grep -n '!\[.*](media/' README.md && (echo "ERROR: Relative image paths found - use raw GitHub URLs for PyPI"; exit 1) || echo "OK: No relative image paths"
+	@echo "Checking version sync..."
+	@VERSION_PY=$$(grep '^version =' pyproject.toml | cut -d'"' -f2); \
+	VERSION_INIT=$$(grep '^__version__ = ' src/{package}/__init__.py | cut -d'"' -f2); \
+	if [ "$$VERSION_PY" != "$$VERSION_INIT" ]; then \
+		echo "ERROR: Version mismatch - pyproject.toml ($$VERSION_PY) vs __init__.py ($$VERSION_INIT)"; \
+		exit 1; \
+	fi; \
+	echo "OK: Versions match ($$VERSION_PY)"
+	@echo "Pre-publication checks passed"
+```
+
+**Checks performed:**
+
+1. **`check`** - Runs format, lint, typecheck, test
+2. **Relative image paths** - Ensures README uses absolute URLs for PyPI
+3. **Version sync** - Verifies pyproject.toml and `__init__.py` versions match
+
+**Usage:**
+
+```bash
+make pre-publish  # Run checks manually
+make publish      # Automatically runs pre-publish first
+```
+
+### Project-Specific Targets
+
+When a project needs custom targets, add them at the bottom in a dedicated section:
+
+```makefile
+# Project-specific targets (review and integrate)
+# - showcase: Run the feature showcase application
+# - screenshot: Capture screenshot for docs
+
+showcase: env-run ## Run the showcase application
+	uv run python -m package_name.showcase
+
+screenshot: ## Capture screenshot
+	screencapture -iW media/screenshot.png
+```
 
 ### Using Makefile
 
@@ -331,6 +344,8 @@ make install-pythons  # Install Python 3.10, 3.11, 3.12 (one-time)
 make env-dev      # Install all dependencies
 make check        # Run all quality checks
 make test         # Run tests (current Python)
+make test TEST=tests/test_module.py  # Run specific test file
+make test TEST=tests/test_module.py::test_func  # Run specific test
 make test-all     # Run tests on all Python versions
 make run          # Start application
 make docs-view    # Build and view docs
@@ -415,6 +430,37 @@ Complete templates for project configuration:
 | `templates/docs-conf.py` | Sphinx configuration and docs templates |
 | `templates/github-actions-app.yml` | CI workflow for applications |
 | `templates/github-actions-lib.yml` | CI workflow for libraries |
+
+## pyproject.toml Standard
+
+All pyproject.toml files MUST follow this section order:
+
+1. `[build-system]` - Always first
+2. `[project]` - Project metadata
+3. `[project.optional-dependencies]` - docs and dev extras (separate)
+4. `[project.urls]` - Links
+5. `[project.scripts]` - Entry points
+6. `[tool.hatch.build.targets.wheel]` - Build configuration
+7. `[tool.pytest.ini_options]` - Test configuration
+8. `[tool.mypy]` - Type checking
+9. `[tool.ruff]` - Linting base config
+10. `[tool.ruff.lint]` - Lint rules
+11. `[tool.ruff.lint.isort]` - Import sorting
+12. `[tool.ruff.format]` - Formatting options
+13. `[tool.coverage.run]` - Coverage configuration
+14. `[tool.coverage.report]` - Coverage exclusions
+15. `[tool.tox]` - Multi-version testing
+16. `[tool.uv.sources]` - Local development only (remove before PyPI)
+
+### Key Standards
+
+- **Build system**: hatchling (not setuptools)
+- **Python version**: `>=3.10` for libraries, `>=3.11` for applications
+- **Line length**: 100
+- **Indent width**: 2
+- **Ruff rules**: E, W, F, I, B, C4, UP
+- **mypy**: strict mode with `warn_return_any` and `warn_unused_ignores`
+- **tox**: Uses `uv pip install` for faster dependency resolution
 
 ## GitHub Actions CI
 

@@ -29,20 +29,64 @@ Publish Python packages to PyPI with proper checks and workflow.
 
 Before publishing, verify:
 
-1. **Build configuration is correct** in `pyproject.toml`:
-   ```toml
-   # For hatch builds:
-   [tool.hatch.build.targets.wheel]
-   packages = ["src/package_name"]  # NOT ["package_name"]
-
-   # For setuptools:
-   [tool.setuptools.packages.find]
-   where = ["src"]
+1. **README image paths use absolute URLs**:
+   ```markdown
+   # WRONG - won't display on PyPI
+   ![Alt](media/image.svg)
+   ![Alt](docs/image.png)
+   
+   # CORRECT - works on PyPI
+   ![Alt](https://raw.githubusercontent.com/owner/repo/main/media/image.svg)
    ```
-   - Wrong `packages` configuration creates empty wheels
-   - Verify path matches actual source directory
+   - PyPI doesn't serve relative paths from the package
+   - All images in README must use `raw.githubusercontent.com` URLs
+   - Check: `grep -n '!\[.*](media/' README.md` should return nothing
 
-2. **Remove local development configuration**:
+2. **Hatch build configuration is correct**:
+   ```toml
+   # CORRECT - use this pattern:
+   [tool.hatch.build.targets.wheel]
+   packages = ["src/package_name"]
+   
+   # WRONG - conflicting configuration causes empty wheel:
+   [tool.hatch.build]
+   sources = ["src"]
+   
+   [tool.hatch.build.targets.wheel]
+   packages = ["src/package_name"]  # WRONG: includes src/ when sources is set
+   ```
+   - Never use both `[tool.hatch.build]` sources AND `packages = ["src/..."]`
+   - When `sources = ["src"]` is set, packages must be relative: `["package_name"]`
+   - Or just omit `sources` and use `packages = ["src/package_name"]`
+
+3. **Version is synced across all files**:
+   ```bash
+   # Check version in pyproject.toml
+   grep '^version =' pyproject.toml
+   
+   # Check version in __init__.py
+   grep '^__version__ = ' src/package/__init__.py
+   ```
+   - Both must match exactly
+   - uv.lock will update automatically on build
+
+4. **Build configuration is correct** in `pyproject.toml`:
+   ```toml
+   # CORRECT - use this pattern:
+   [tool.hatch.build.targets.wheel]
+   packages = ["src/package_name"]
+   
+   # WRONG - conflicting configuration:
+   [tool.hatch.build]
+   sources = ["src"]  # Don't use this with packages = ["src/..."]
+   
+   [tool.hatch.build.targets.wheel]
+   packages = ["src/package_name"]  # WRONG when sources is set
+   ```
+   - Never use both `sources` and `packages` with `src/` prefix
+   - Use ONE approach: either `packages = ["src/package"]` OR `sources = ["src"]` with `packages = ["package"]`
+
+5. **Remove local development configuration**:
    ```toml
    # REMOVE before publishing:
    [tool.uv.sources]
@@ -54,7 +98,7 @@ Before publishing, verify:
    - These sections cause PyPI to fail or create broken packages
    - They reference local paths that don't exist on PyPI
 
-3. **Entry point is correct**:
+6. **Entry point is correct**:
    ```toml
    [project.scripts]
    package-name = "package.__main__:main"  # Must exist!
@@ -62,7 +106,7 @@ Before publishing, verify:
    - Check that the module and function actually exist
    - Common mistake: `package.main:cli` when file doesn't exist
 
-4. **License format is correct**:
+7. **License format is correct**:
    ```toml
    license = "MIT"
    license-files = ["LICENSE"]
@@ -70,39 +114,41 @@ Before publishing, verify:
    - Avoid deprecated `{text = "MIT"}` format
    - Include a LICENSE file
 
-5. **Version is bumped** if updating existing package
+8. **Version is bumped** if updating existing package
 
-6. **Virtual environment is activated**:
-   - Check for `.python-version` file
-   - Activate: `source ~/.pyenv/versions/<name>/bin/activate`
+9. **Dependencies are synced**:
+   - Run `uv sync --all-extras` before building
 
 ## Workflow
 
-### Step 1: Activate Virtual Environment
+### Step 1: Sync Dependencies
 
 ```bash
-# Check for .python-version
-cat .python-version 2>/dev/null
-
-# If exists, activate
-source ~/.pyenv/versions/<name>/bin/activate
+# Sync all dependencies
+uv sync --all-extras
 ```
 
-### Step 2: Install Build Dependencies
+### Step 2: Run Pre-Publish Checks
 
 ```bash
-pip install -e ".[dev]"
+# Check for Makefile pre-publish target
+make pre-publish
+
+# Or manually:
+make check
+
+# Or directly:
+uv run pytest -v
+uv run ruff check src tests
+uv run mypy src
 ```
 
-### Step 3: Run Tests (if they exist)
+### Step 3: Clean Previous Builds
 
 ```bash
-pytest tests/ -v
-```
+make clean
 
-### Step 4: Clean Previous Builds
-
-```bash
+# Or manually:
 rm -rf dist/ build/ *.egg-info
 ```
 
@@ -112,18 +158,15 @@ rm -rf dist/ build/ *.egg-info
 # For uv-managed projects:
 uv build
 
-# For hatch projects:
-hatch build
-
-# For setuptools:
-python -m build
+# Or via Makefile:
+make build
 ```
 
 This creates:
 - `dist/<package>-<version>-py3-none-any.whl` (wheel)
 - `dist/<package>-<version>.tar.gz` (source distribution)
 
-### Step 6: Verify Package Contents
+### Step 6: Verify Package Contents (Before Upload)
 
 **CRITICAL: Always verify before publishing.**
 
@@ -158,7 +201,15 @@ If the wheel is empty (only `.dist-info/` files), the `packages` configuration i
 
 ### Step 7: Upload to PyPI
 
-**Check Makefile first** - many projects have a `publish` target:
+**Best practice: Use `make publish` which runs pre-publish checks automatically.**
+
+```bash
+# Preferred: make publish runs pre-publish checks then uploads
+make publish
+
+# Alternative: Manual upload (if you ran pre-publish separately)
+uv run twine upload dist/*
+```
 
 ```bash
 # Check for Makefile publish target
@@ -190,7 +241,7 @@ git push --tags
 open https://pypi.org/project/package_name/
 
 # Verify install works
-pip install package_name==VERSION
+uv pip install package_name==VERSION
 ```
 
 ## Common Mistakes to Avoid
@@ -202,7 +253,7 @@ pip install package_name==VERSION
 | Wrong entry point | `ModuleNotFoundError` after install | Verify module exists before building |
 | Old license format | Deprecation warnings | Use `license = "MIT"` with LICENSE file |
 | Missing LICENSE file | Badge shows no license | Create LICENSE file |
-| Not in virtualenv | Packages install to wrong Python | Check `.python-version`, activate first |
+| Not in virtualenv | Packages install to wrong Python | Run `uv sync` before building |
 | Forgetting to build | Old dist files uploaded | Remove `dist/` before rebuilding |
 | Version already exists | Upload fails with "File already exists" | Bump version, cannot overwrite on PyPI |
 | Multiple versions in dist | Upload fails with "400 Bad Request" | Clean dist before building, or use `make publish` (if it cleans) |

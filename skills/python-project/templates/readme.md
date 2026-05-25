@@ -106,7 +106,7 @@ Include these badges in every README:
 For projects built using agentic workflow (AI agents implementing architecture), add:
 
 ```markdown
-[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Coding-Agent)
+[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Agentic-Workflow)
 ```
 
 This badge should be included for projects in `~/Workspace/agentic/` or any project explicitly built with agentic development practices.

@@ -61,25 +61,20 @@ Issues = "https://github.com/username/my-package/issues"
 [project.scripts]
 my-package = "mypackage:run"
 
-[tool.hatch.build]
-sources = ["src"]
-
 [tool.hatch.build.targets.wheel]
 packages = ["src/mypackage"]
 
-# Testing configuration
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+addopts = "-v --cov=mypackage --cov-report=term-missing"
 
-# Type checking configuration
 [tool.mypy]
 python_version = "3.10"
 strict = true
 warn_return_any = true
 warn_unused_ignores = true
 
-# Linting and formatting
 [tool.ruff]
 line-length = 100
 target-version = "py310"
@@ -106,7 +101,6 @@ known-first-party = ["mypackage"]
 quote-style = "double"
 indent-style = "space"
 
-# Coverage configuration
 [tool.coverage.run]
 source = ["src"]
 branch = true
@@ -119,7 +113,6 @@ exclude_lines = [
   "if TYPE_CHECKING:",
 ]
 
-# Multi-version testing
 [tool.tox]
 env_list = ["py310", "py311", "py312"]
 
@@ -151,6 +144,24 @@ target-version = "py311"
 env_list = ["py311"]  # Single version for applications
 ```
 
+## Section Order (Standard)
+
+1. `[build-system]` - Always first
+2. `[project]` - Project metadata
+3. `[project.optional-dependencies]` - docs and dev extras
+4. `[project.urls]` - Links
+5. `[project.scripts]` - Entry points
+6. `[tool.hatch.build.targets.wheel]` - Build configuration
+7. `[tool.pytest.ini_options]` - Test configuration
+8. `[tool.mypy]` - Type checking
+9. `[tool.ruff]` - Linting and formatting
+10. `[tool.ruff.lint]` - Lint rules
+11. `[tool.ruff.lint.isort]` - Import sorting
+12. `[tool.ruff.format]` - Formatting options
+13. `[tool.coverage.run]` - Coverage configuration
+14. `[tool.coverage.report]` - Coverage exclusions
+15. `[tool.tox]` - Multi-version testing
+
 ## Key Configuration Details
 
 ### Ruff Lint Rules
@@ -167,11 +178,6 @@ The template uses a focused set of lint rules:
 | `C4` | flake8-comprehensions |
 | `UP` | pyupgrade |
 
-**Excluded rules** (common but not included by default):
-- `N` (pep8-naming) - Can be added for naming conventions
-- `ANN` (flake8-annotations) - Too strict for some projects
-- `SIM` (flake8-simplify) - Sometimes produces false positives
-
 ### Python Version Support
 
 Libraries support Python 3.10, 3.11, 3.12:
@@ -179,7 +185,23 @@ Libraries support Python 3.10, 3.11, 3.12:
 - `target-version = "py310"` (for ruff)
 - `python_version = "3.10"` (for mypy)
 
-Applications typically target a single version:
-- `requires-python = ">=3.11"`
-- `target-version = "py311"`
-- `python_version = "3.11"`
+### Tox Configuration
+
+Uses `uv pip install` for faster dependency installation:
+
+```toml
+commands_pre = [
+  ["uv", "pip", "install", "-e", "."],
+  ["uv", "pip", "install", "pytest", "pytest-cov", "pytest-asyncio"],
+]
+```
+
+### mypy Overrides
+
+For third-party packages without type stubs, add overrides:
+
+```toml
+[[tool.mypy.overrides]]
+module = "third_party_package.*"
+ignore_missing_imports = true
+```
