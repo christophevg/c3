@@ -5,7 +5,9 @@ Use this template for configuration repositories, dotfile managers, skill/agent 
 ```markdown
 # {repo-name}
 
+[![Platform](https://img.shields.io/badge/platform-mac%20%7C%20linux-lightgrey.svg)][platform]
 [![License](https://img.shields.io/github/license/{user}/{repo}.svg)][license]
+[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Agentic-Workflow)
 
 > One-line description of what this configuration/toolset provides.
 
@@ -110,19 +112,24 @@ Contributions welcome! See guidelines in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 [MIT](LICENSE)
 
+[platform]: #
 [license]: LICENSE
 ```
 
 ## Badge Reference
 
-For config/tools repositories:
+For config/tools repositories, include these badges (3 total):
 
 | Badge | Markdown |
 |-------|----------|
+| Platform | `[![Platform](https://img.shields.io/badge/platform-mac%20%7C%20linux-lightgrey.svg)][platform]` |
 | License | `[![License](https://img.shields.io/github/license/{user}/{repo}.svg)][license]` |
+| Agentic | `[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Agentic-Workflow)` |
 
-**Optional badges**:
-- Platform: `https://img.shields.io/badge/platform-mac%20%7C%20linux%20%7C%20windows-lightgrey`
+**Important:**
+
+- **Agentic badge is required** for all projects built using agentic workflow
+- Platform badge shows OS compatibility (mac, linux, windows)
 
 ## Section Guidelines
 

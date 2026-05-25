@@ -5,7 +5,9 @@ Use this template for Flask, FastAPI, Django, or other web applications.
 ```markdown
 # {app-name}
 
+[![CI](https://img.shields.io/github/actions/workflow/status/{user}/{repo}/ci.yml.svg)][ci]
 [![License](https://img.shields.io/github/license/{user}/{repo}.svg)][license]
+[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Agentic-Workflow)
 
 > One-line description of what the app does.
 
@@ -30,10 +32,10 @@ git clone https://github.com/{user}/{repo}.git
 cd {repo}
 
 # Install dependencies
-pip install -e .
+uv sync
 
 # Run
-python app.py
+uv run python app.py
 \`\`\`
 
 Access at: http://localhost:5000
@@ -55,14 +57,15 @@ Access at: http://localhost:5000
 ### Requirements
 
 - Python 3.X+
+- [uv](https://docs.astral.sh/uv/) for dependency management
 - Node.js X+ (if frontend build needed)
 - Database (MongoDB/PostgreSQL)
 
 ### Setup
 
 \`\`\`bash
-# Install backend dependencies
-pip install -e .
+# Install dependencies
+uv sync
 
 # Install frontend dependencies (if applicable)
 cd frontend
@@ -87,7 +90,7 @@ LOG_LEVEL=INFO
 
 \`\`\`bash
 # Initialize database
-python scripts/init_db.py
+uv run python scripts/init_db.py
 \`\`\`
 
 ## Usage
@@ -96,17 +99,17 @@ python scripts/init_db.py
 
 \`\`\`bash
 # Run development server
-python app.py
+uv run python app.py
 
 # Or with auto-reload
-flask run --debug
+uv run flask run --debug
 \`\`\`
 
 ### Production
 
 \`\`\`bash
-# Using gunicorn
-gunicorn app:app
+# Using gunicorn + uvicorn
+uv run gunicorn app:app -w 1 -k uvicorn.workers.UvicornWorker
 
 # Using docker
 docker-compose up -d
@@ -123,17 +126,17 @@ docker-compose up -d
 ├── templates/          # HTML templates
 ├── static/             # CSS, JS, images
 ├── tests/              # Test suite
-└── requirements.txt    # Dependencies
+└── pyproject.toml      # Dependencies
 \`\`\`
 
 ## Testing
 
 \`\`\`bash
 # Run all tests
-pytest
+uv run pytest
 
 # Run with coverage
-pytest --cov=app
+uv run pytest --cov=app
 \`\`\`
 
 ## Deployment
@@ -173,21 +176,24 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 [MIT](LICENSE)
 
-[license]: LICENSE
+[ci]: https://github.com/{user}/{repo}/actions
+[license]: https://github.com/{user}/{repo}/blob/main/LICENSE
 ```
 
 ## Badge Reference
 
-For web applications:
+For web applications, include these badges (3 total):
 
 | Badge | Markdown |
 |-------|----------|
+| CI | `[![CI](https://img.shields.io/github/actions/workflow/status/{user}/{repo}/ci.yml.svg)][ci]` *(only if workflow exists)* |
 | License | `[![License](https://img.shields.io/github/license/{user}/{repo}.svg)][license]` |
-| Deploy | `[![Deploy](https://img.shields.io/github/deployments/{user}/{repo}/production.svg)][deploy]` |
+| Agentic | `[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Agentic-Workflow)` |
 
-**Optional badges**:
-- CI: `[![CI](https://img.shields.io/github/actions/workflow/status/{user}/{repo}/ci.yml.svg)][ci]`
-- Dependencies: `https://img.shields.io/github/license-count/{user}/{repo}`
+**Important:**
+
+- **CI badge only if workflow exists** — check `.github/workflows/` before adding
+- **Agentic badge is required** for all projects built using agentic workflow
 
 ## Section Guidelines
 

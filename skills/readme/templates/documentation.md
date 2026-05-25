@@ -5,7 +5,9 @@ Use this template for documentation-only repositories (plans, research, knowledg
 ```markdown
 # {repo-name}
 
+[![Last Update](https://img.shields.io/github/last-commit/{user}/{repo}.svg)][commits]
 [![License](https://img.shields.io/github/license/{user}/{repo}.svg)][license]
+[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Agentic-Workflow)
 
 > One-line description of what this documentation covers.
 
@@ -98,19 +100,23 @@ Start with `INDEX.md` for navigation, or `PLAN.md` for the overview.
 
 [MIT](LICENSE)
 
-[license]: LICENSE
+[commits]: https://github.com/{user}/{repo}/commits/main
+[license]: https://github.com/{user}/{repo}/blob/main/LICENSE
 ```
 
 ## Badge Reference
 
-For documentation repositories:
+For documentation repositories, include these badges (3 total):
 
 | Badge | Markdown |
 |-------|----------|
+| Last Update | `[![Last Update](https://img.shields.io/github/last-commit/{user}/{repo}.svg)][commits]` |
 | License | `[![License](https://img.shields.io/github/license/{user}/{repo}.svg)][license]` |
+| Agentic | `[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Agentic-Workflow)` |
 
-**Optional badges**:
-- Last update: `https://img.shields.io/github/last-commit/{user}/{repo}`
+**Important:**
+
+- **Agentic badge is required** for all projects built using agentic workflow
 
 ## Section Guidelines
 

@@ -5,7 +5,9 @@ Use this template for Jekyll-based static sites (GitHub Pages, blogs, personal s
 ```markdown
 # {site-name}
 
+[![GitHub Pages](https://img.shields.io/github/deployments/{user}/{repo}/github-pages.svg)][pages]
 [![License](https://img.shields.io/github/license/{user}/{repo}.svg)][license]
+[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Agentic-Workflow)
 
 > One-line description of the site.
 
@@ -156,19 +158,23 @@ Content is licensed under [License Type].
 
 Site code is [MIT](LICENSE).
 
-[license]: LICENSE
+[pages]: https://{user}.github.io/{repo}/
+[license]: https://github.com/{user}/{repo}/blob/main/LICENSE
 ```
 
 ## Badge Reference
 
-For Jekyll sites:
+For Jekyll sites, include these badges (3 total):
 
 | Badge | Markdown |
 |-------|----------|
+| GitHub Pages | `[![GitHub Pages](https://img.shields.io/github/deployments/{user}/{repo}/github-pages.svg)][pages]` |
 | License | `[![License](https://img.shields.io/github/license/{user}/{repo}.svg)][license]` |
+| Agentic | `[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Agentic-Workflow)` |
 
-**Optional badges**:
-- GitHub Pages: `https://img.shields.io/github/deployments/{user}/{repo}/github-pages`
+**Important:**
+
+- **Agentic badge is required** for all projects built using agentic workflow
 
 ## Section Guidelines
 

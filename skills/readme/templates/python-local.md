@@ -5,7 +5,11 @@ Use this template for Python packages not published to PyPI (internal tools, pri
 ```markdown
 # {package-name}
 
+[![Python](https://img.shields.io/badge/Python-{version}-blue.svg)][python]
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)][uv]
+[![CI](https://img.shields.io/github/actions/workflow/status/{user}/{repo}/ci.yml.svg)][ci]
 [![License](https://img.shields.io/github/license/{user}/{repo}.svg)][license]
+[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Agentic-Workflow)
 
 > One-line description of what the package does.
 
@@ -16,6 +20,7 @@ Brief description of why this package exists and what problem it solves.
 ## Requirements
 
 - Python 3.X+
+- [uv](https://docs.astral.sh/uv/) for dependency management
 - Other dependencies listed in pyproject.toml
 
 ## Installation
@@ -25,7 +30,7 @@ Brief description of why this package exists and what problem it solves.
 \`\`\`bash
 git clone https://github.com/{user}/{repo}.git
 cd {repo}
-pip install -e .
+uv sync
 \`\`\`
 
 ## Quick Start
@@ -62,13 +67,13 @@ result = main_thing("input")
 ### Setup
 
 \`\`\`bash
-pip install -e ".[dev]"
+uv sync --all-extras
 \`\`\`
 
 ### Testing
 
 \`\`\`bash
-pytest
+uv run pytest
 \`\`\`
 
 ### Code Style
@@ -76,7 +81,7 @@ pytest
 This project uses ruff for linting:
 
 \`\`\`bash
-ruff check .
+uv run ruff check .
 \`\`\`
 
 ## Project Structure
@@ -96,23 +101,33 @@ ruff check .
 
 [MIT](LICENSE)
 
-[license]: LICENSE
+[python]: https://python.org/
+[uv]: https://docs.astral.sh/uv/
+[ci]: https://github.com/{user}/{repo}/actions
+[license]: https://github.com/{user}/{repo}/blob/main/LICENSE
 ```
 
 ## Badge Reference
 
-For non-PyPI Python packages, use minimal badges:
+For non-PyPI Python packages, include these badges (4-5 total):
 
 | Badge | Markdown |
 |-------|----------|
+| Python version | `[![Python](https://img.shields.io/badge/Python-{version}-blue.svg)][python]` |
+| uv | `[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)][uv]` |
+| CI | `[![CI](https://img.shields.io/github/actions/workflow/status/{user}/{repo}/ci.yml.svg)][ci]` *(only if workflow exists)* |
 | License | `[![License](https://img.shields.io/github/license/{user}/{repo}.svg)][license]` |
+| Agentic | `[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Agentic-Workflow)` |
 
-**Optional badges** (if applicable):
-- CI: `[![CI](https://img.shields.io/github/actions/workflow/status/{user}/{repo}/ci.yml.svg)][ci]`
+**Important:**
+
+- **CI badge only if workflow exists** — check `.github/workflows/` before adding
+- Replace `{version}` with Python version from `.python-version` or `pyproject.toml`
+- **Agentic badge is required** for all projects built using agentic workflow
 
 ## Section Guidelines
 
 - **Overview**: Explain why this isn't on PyPI (internal tool, prototype, etc.)
 - **Requirements**: Be explicit about Python version and dependencies
-- **Installation**: Focus on source installation
+- **Installation**: Focus on source installation with uv
 - **Project Structure**: Helpful for contributors since no PyPI docs exist

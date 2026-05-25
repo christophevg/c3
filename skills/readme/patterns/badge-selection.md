@@ -10,271 +10,169 @@ Shields.io is the most popular badge service (1.6 billion images/month).
 
 **URL format**: `https://img.shields.io/{type}/{params}`
 
-## Badge Categories
+---
+
+## Badge Types
 
 ### Distribution Badges
 
-**PyPI**:
-```markdown
-[![PyPI](https://img.shields.io/pypi/v/package-name.svg)][pypi]
-```
-- Shows current version
-- Links to PyPI page
+| Badge | URL | Purpose |
+|-------|-----|---------|
+| PyPI version | `https://img.shields.io/pypi/v/{package}.svg` | Current version |
+| Python versions | `https://img.shields.io/pypi/pyversions/{package}.svg` | Supported Python |
+| Python version (static) | `https://img.shields.io/badge/Python-{version}-blue.svg` | Python version (non-PyPI) |
 
-**Python versions**:
-```markdown
-[![Python](https://img.shields.io/pypi/pyversions/package-name.svg)][pypi]
-```
-- Shows supported Python versions
-- Links to PyPI page
+### Package Manager Badge
 
-**Downloads**:
-```markdown
-[![Downloads](https://img.shields.io/pypi/dm/package-name.svg)][pypi]
-```
-- Shows monthly downloads
-- Links to PyPI page
+| Badge | URL | Purpose |
+|-------|-----|---------|
+| uv | `https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json` | uv package manager |
 
----
+**Usage**: All Python projects using uv should include this badge.
 
 ### Build/Quality Badges
 
-**CI Status**:
-```markdown
-[![CI](https://img.shields.io/github/actions/workflow/status/user/repo/ci.yml.svg)][ci]
-```
-- Shows build status
-- Links to workflow
+| Badge | URL | Purpose |
+|-------|-----|---------|
+| CI status | `https://img.shields.io/github/actions/workflow/status/{user}/{repo}/{workflow}.svg` | Build status |
+| Coverage | `https://img.shields.io/coveralls/github/{user}/{repo}.svg` | Test coverage % |
 
-**Coverage**:
-```markdown
-[![Coverage](https://img.shields.io/coveralls/github/user/repo.svg)][coveralls]
-```
-- Shows test coverage percentage
-- Links to Coveralls
+**Important:** The CI badge workflow filename must match the actual file in `.github/workflows/`. Common filenames:
+- `ci.yml` or `ci.yaml` - for CI workflows
+- `test.yml` or `test.yaml` - for test workflows
 
-**Code Quality**:
-```markdown
-[![Code Style](https://img.shields.io/badge/code%20style-ruff-black.svg)][ruff]
-```
-- Shows linting tool
-- Custom badge
+Check the workflow file with: `ls .github/workflows/`
 
----
+### License Badge
 
-### License Badges
-
-**GitHub License**:
-```markdown
-[![License](https://img.shields.io/github/license/user/repo.svg)][license]
-```
-- Detects license from LICENSE file
-- Links to LICENSE
-
-**Custom License**:
-```markdown
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)][license]
-```
-- Manual license type
-- Blue color for MIT
-
----
+| Badge | URL | Purpose |
+|-------|-----|---------|
+| License | `https://img.shields.io/github/license/{user}/{repo}.svg` | Usage rights |
 
 ### Documentation Badges
 
-**ReadTheDocs**:
-```markdown
-[![Docs](https://img.shields.io/readthedocs/package-name.svg)][docs]
-```
-- Shows docs build status
-- Links to docs
+| Badge | URL | Purpose |
+|-------|-----|---------|
+| ReadTheDocs | `https://img.shields.io/readthedocs/{package}.svg` | Docs status |
+| GitHub Pages | `https://img.shields.io/github/deployments/{user}/{repo}/github-pages.svg` | Pages status |
 
-**GitHub Pages**:
-```markdown
-[![Pages](https://img.shields.io/github/deployments/user/repo/github-pages.svg)][pages]
-```
-- Shows deployment status
-- Links to site
+### Platform Badge
 
----
+| Badge | URL | Purpose |
+|-------|-----|---------|
+| Platform | `https://img.shields.io/badge/platform-mac%20%7C%20linux-lightgrey.svg` | Compatibility |
 
-### Platform Badges
+### Workflow Badge
 
-**Platform Support**:
-```markdown
-[![Platform](https://img.shields.io/badge/platform-mac%20%7C%20linux%20%7C%20windows-lightgrey.svg)][platform]
-```
-- Manual badge
-- Shows supported platforms
+| Badge | URL | Purpose |
+|-------|-----|---------|
+| Agentic | `https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square` | Agentic methodology |
+
+**Usage**: Include this badge for projects built using agentic workflow (AI agents implementing architecture).
 
 ---
 
-### Workflow Badges
+## Badge Sets by Project Type
 
-**Agentic Workflow**:
+### Python (PyPI Package)
+
 ```markdown
-[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Coding-Agent)
+[![PyPI](https://img.shields.io/pypi/v/{package}.svg)][pypi]
+[![Python](https://img.shields.io/pypi/pyversions/{package}.svg)][pypi]
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)][uv]
+[![CI](https://img.shields.io/github/actions/workflow/status/{user}/{repo}/ci.yml.svg)][ci]
+[![Coverage](https://img.shields.io/coveralls/github/{user}/{repo}.svg)][coveralls]
+[![License](https://img.shields.io/github/license/{user}/{repo}.svg)][license]
+[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Agentic-Workflow)
 ```
-- Indicates project built using agentic workflow (AI agents implementing architecture)
-- Links to explanation of agentic development approach
-- Use for projects under `~/Workspace/agentic` or explicitly built with agentic workflow
-- Optional: customize link to your own agentic workflow documentation
+
+**7 badges**: PyPI, Python, uv, CI, Coverage, License, Agentic
 
 ---
 
-## Badge Selection by Project Type
+### Python (Non-PyPI / Local)
 
-### Python (PyPI)
-
-**Required**:
-1. PyPI version
-2. Python versions
-3. License
-
-**Recommended**:
-4. CI status
-5. Coverage
-
-**Optional**:
-6. Downloads
-7. Documentation
-8. Code style
-9. Agentic workflow (if applicable)
-
-**Example row (standard)**:
 ```markdown
-[![PyPI](https://img.shields.io/pypi/v/package.svg)][pypi]
-[![Python](https://img.shields.io/pypi/pyversions/package.svg)][pypi]
-[![CI](https://img.shields.io/github/actions/workflow/status/user/repo/ci.yml.svg)][ci]
-[![Coverage](https://img.shields.io/coveralls/github/user/repo.svg)][coveralls]
-[![License](https://img.shields.io/github/license/user/repo.svg)][license]
+[![Python](https://img.shields.io/badge/Python-{version}-blue.svg)][python]
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)][uv]
+[![CI](https://img.shields.io/github/actions/workflow/status/{user}/{repo}/ci.yml.svg)][ci]
+[![License](https://img.shields.io/github/license/{user}/{repo}.svg)][license]
+[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Agentic-Workflow)
 ```
 
-**Example row (with agentic workflow)**:
-```markdown
-[![PyPI](https://img.shields.io/pypi/v/package.svg)][pypi]
-[![Python](https://img.shields.io/pypi/pyversions/package.svg)][pypi]
-[![CI](https://img.shields.io/github/actions/workflow/status/user/repo/ci.yml.svg)][ci]
-[![Coverage](https://img.shields.io/coveralls/github/user/repo.svg)][coveralls]
-[![License](https://img.shields.io/github/license/user/repo.svg)][license]
-[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Coding-Agent)
-```
+**5 badges**: Python, uv, CI, License, Agentic
+
+**Note**: Replace `{version}` with the Python version from `.python-version` or `pyproject.toml`.
 
 ---
 
-### Python (Non-PyPI)
+### Web Application
 
-**Required**:
-1. License
-
-**Optional**:
-2. CI status
-
-**Example**:
 ```markdown
-[![CI](https://img.shields.io/github/actions/workflow/status/user/repo/ci.yml.svg)][ci]
-[![License](https://img.shields.io/github/license/user/repo.svg)][license]
+[![CI](https://img.shields.io/github/actions/workflow/status/{user}/{repo}/ci.yml.svg)][ci]
+[![License](https://img.shields.io/github/license/{user}/{repo}.svg)][license]
+[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Agentic-Workflow)
 ```
+
+**3 badges**: CI, License, Agentic
 
 ---
 
-### Web Applications
+### Config/Tools Repository
 
-**Required**:
-1. License
-
-**Recommended**:
-2. Deploy status
-3. CI status
-
-**Example**:
-```markdown
-[![Deploy](https://img.shields.io/github/deployments/user/repo/production.svg)][deploy]
-[![CI](https://img.shields.io/github/actions/workflow/status/user/repo/ci.yml.svg)][ci]
-[![License](https://img.shields.io/github/license/user/repo.svg)][license]
-```
-
----
-
-### Config/Tools Repositories
-
-**Required**:
-1. License
-
-**Optional**:
-2. Platform support
-3. CI status
-
-**Example**:
 ```markdown
 [![Platform](https://img.shields.io/badge/platform-mac%20%7C%20linux-lightgrey.svg)][platform]
-[![License](https://img.shields.io/github/license/user/repo.svg)][license]
+[![License](https://img.shields.io/github/license/{user}/{repo}.svg)][license]
+[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Agentic-Workflow)
 ```
+
+**3 badges**: Platform, License, Agentic
 
 ---
 
-### Documentation Repositories
+### Documentation Repository
 
-**Required**:
-1. License
-
-**Optional**:
-2. Last update
-3. GitHub Pages status
-
-**Example**:
 ```markdown
-[![Last Update](https://img.shields.io/github/last-commit/user/repo.svg)][commits]
-[![License](https://img.shields.io/github/license/user/repo.svg)][license]
+[![Last Update](https://img.shields.io/github/last-commit/{user}/{repo}.svg)][commits]
+[![License](https://img.shields.io/github/license/{user}/{repo}.svg)][license]
+[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Agentic-Workflow)
 ```
+
+**3 badges**: Last Update, License, Agentic
 
 ---
 
-### Jekyll Static Sites
+### Jekyll Static Site
 
-**Required**:
-1. License
-
-**Optional**:
-2. GitHub Pages status
-
-**Example**:
 ```markdown
-[![GitHub Pages](https://img.shields.io/github/deployments/user/repo/github-pages.svg)][pages]
-[![License](https://img.shields.io/github/license/user/repo.svg)][license]
+[![GitHub Pages](https://img.shields.io/github/deployments/{user}/{repo}/github-pages.svg)][pages]
+[![License](https://img.shields.io/github/license/{user}/{repo}.svg)][license]
+[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Agentic-Workflow)
 ```
+
+**3 badges**: GitHub Pages, License, Agentic
 
 ---
 
-## Badge Best Practices
+## Badge Count Summary
 
-### 1. Count
-
-**Maximum 10 badges**. More creates clutter and reduces impact.
-
-**Priority order**:
-1. Distribution (PyPI, npm)
-2. Build/Quality (CI, Coverage)
-3. License
-4. Documentation
-5. Compatibility
+| Project Type | Badge Count |
+|--------------|-------------|
+| Python (PyPI) | 7 |
+| Python (Non-PyPI) | 5 |
+| Web Application | 3 |
+| Config/Tools | 3 |
+| Documentation | 3 |
+| Jekyll Static Site | 3 |
 
 ---
 
-### 2. Placement
+## Best Practices
 
-**Position**: Top of README, after title and description.
+### Placement
 
-**Before**:
-```markdown
-# Project Name
+Position badges at the top of README, after title and description:
 
-> Description
-
-## About
-```
-
-**After**:
 ```markdown
 # Project Name
 
@@ -286,11 +184,9 @@ Shields.io is the most popular badge service (1.6 billion images/month).
 ## About
 ```
 
----
+### Clickability
 
-### 3. Clickability
-
-**Always make badges clickable**. Use reference-style links:
+Always use reference-style links:
 
 ```markdown
 [![PyPI](https://img.shields.io/pypi/v/package.svg)][pypi]
@@ -298,89 +194,29 @@ Shields.io is the most popular badge service (1.6 billion images/month).
 [pypi]: https://pypi.org/project/package/
 ```
 
-This allows:
-- Badge to be clicked
-- Clean badge line
-- Easy to update links
+### Link References
 
----
-
-### 4. Grouping
-
-**Group related badges together**:
+Add link references at the bottom of README:
 
 ```markdown
-<!-- Distribution -->
-[![PyPI][badge-pypi]][pypi]
-[![Python][badge-python]][pypi]
-
-<!-- Quality -->
-[![CI][badge-ci]][ci]
-[![Coverage][badge-coverage]][coveralls]
-
-<!-- Legal -->
-[![License][badge-license]][license]
+[pypi]: https://pypi.org/project/{package}/
+[uv]: https://docs.astral.sh/uv/
+[python]: https://python.org/
+[ci]: https://github.com/{user}/{repo}/actions
+[coveralls]: https://coveralls.io/github/{user}/{repo}
+[license]: https://github.com/{user}/{repo}/blob/main/LICENSE
 ```
 
 ---
 
-### 5. Color Awareness
+## Validation Checklist
 
-**Shield.io colors**:
-- `brightgreen` = passing/success
-- `green` = good
-- `yellowgreen` = warning
-- `yellow` = in progress
-- `orange` = attention
-- `red` = critical/failure
-- `blue` = informational
-- `lightgrey` = neutral
-
-**Override color** (for custom badges):
-```markdown
-[![Custom](https://img.shields.io/badge/label-message-color.svg)][link]
-```
-
----
-
-## Badge Generators
-
-### Shields.io
-
-**URL**: https://shields.io
-
-**Features**:
-- 100+ badge types
-- Custom badges
-- Dynamic badges
-
-**Custom badge**:
-```
-https://img.shields.io/badge/{label}-{message}-{color}.svg
-```
-
-Example:
-```markdown
-[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)][python]
-```
-
----
-
-### Badgen
-
-**URL**: https://badgen.net
-
-**Alternative** to Shields.io with different style.
-
----
-
-## Badge Validation Checklist
-
-Before adding badges, verify:
-
-- [ ] Badge URL is correct
-- [ ] Badge renders correctly
-- [ ] Link destination is valid
-- [ ] Badge count under 10
-- [ ] Badges are grouped logically
-- [ ] All badges are clickable
+- [ ] Badge URLs are correct
+- [ ] Badges render correctly
+- [ ] Link destinations are valid
+- [ ] Badges are clickable
+- [ ] Badge count matches project type
+- [ ] Agentic badge present for agentic projects
+- [ ] License badge only if LICENSE file exists (check for `LICENSE`, `LICENSE.txt`, or `LICENSE.md`)
+- [ ] CI badge only if workflow file exists — check `.github/workflows/` for actual filename
+- [ ] CI badge workflow filename matches actual file (e.g., `ci.yml`, `test.yml`, `test.yaml`)

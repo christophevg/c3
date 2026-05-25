@@ -242,20 +242,59 @@ If NO → README is incomplete. Add missing steps or clarifications.
 
 ## Badge Selection Logic
 
-| Project Type | Recommended Badges |
-|--------------|-------------------|
-| Python (PyPI) | PyPI version, Python versions, Coverage, CI, License |
-| Python (local) | CI, License |
-| Web App | Deploy status, CI, License |
-| Config/Tools | License, Platform support |
-| Documentation | Last update, License |
+See `patterns/badge-selection.md` for detailed badge configuration.
+
+**Summary by Project Type:**
+
+| Project Type | Badges | Count |
+|--------------|--------|-------|
+| Python (PyPI) | PyPI, Python, uv, CI, Coverage, License, Agentic | 7 |
+| Python (Non-PyPI) | Python, uv, CI (if exists), License, Agentic | 4-5 |
+| Web App | CI, License, Agentic | 3 |
+| Config/Tools | Platform, License, Agentic | 3 |
+| Documentation | Last Update, License, Agentic | 3 |
+| Jekyll Site | GitHub Pages, License, Agentic | 3 |
+
+**Badge Placement:**
+
+```markdown
+# Project Name
+
+[![Badge1][badge1]][link1]
+[![Badge2][badge2]][link2]
+[![Badge3][badge3]][link3]
+
+> Short description
+
+[body]
+
+[badge1]: https://...
+[link1]: https://...
+```
+
+- **One badge per line** for readability
+- **Description immediately after** badges (blank line, then `> description`)
+- **Link references** at the bottom of the file
+
+**Key Rules:**
+
+1. **Agentic badge is required** for all projects built using agentic workflow
+2. **uv badge is required** for all Python projects (standard package manager)
+3. **License badge only if LICENSE file exists** — check for `LICENSE`, `LICENSE.txt`, or `LICENSE.md`
+4. **CI badge only if workflow exists** — check `.github/workflows/` for actual filename
+5. **CI badge filename must match** — use `ci.yml`, `test.yml`, `test.yaml`, etc. as appropriate
+6. **Downloads badge is removed** (rate limiting causes broken badges)
+7. **Deploy badge is removed** (not using GH Actions for deployment)
 
 **Badge sources:**
-- PyPI: `https://img.shields.io/pypi/v/{package}`
-- Python versions: `https://img.shields.io/pypi/pyversions/{package}`
-- Coverage: `https://img.shields.io/coveralls/github/{user}/{repo}`
-- CI: `https://img.shields.io/github/actions/workflow/status/{user}/{repo}/{workflow}`
-- License: `https://img.shields.io/github/license/{user}/{repo}`
+- PyPI: `https://img.shields.io/pypi/v/{package}.svg`
+- Python versions: `https://img.shields.io/pypi/pyversions/{package}.svg`
+- Python (static): `https://img.shields.io/badge/Python-{version}-blue.svg`
+- uv: `https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json`
+- Coverage: `https://img.shields.io/coveralls/github/{user}/{repo}.svg`
+- CI: `https://img.shields.io/github/actions/workflow/status/{user}/{repo}/{workflow}.svg` (replace `{workflow}` with actual filename from `.github/workflows/`)
+- License: `https://img.shields.io/github/license/{user}/{repo}.svg`
+- Agentic: `https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square` (links to `https://christophe.vg/about/Agentic-Workflow`)
 
 ## Template Files
 

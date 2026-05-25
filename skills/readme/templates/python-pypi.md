@@ -7,7 +7,11 @@ Use this template for Python packages published to PyPI.
 
 [![PyPI](https://img.shields.io/pypi/v/{package-name}.svg)][pypi]
 [![Python](https://img.shields.io/pypi/pyversions/{package-name}.svg)][pypi]
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)][uv]
+[![CI](https://img.shields.io/github/actions/workflow/status/{user}/{repo}/ci.yml.svg)][ci]
+[![Coverage](https://img.shields.io/coveralls/github/{user}/{repo}.svg)][coveralls]
 [![License](https://img.shields.io/github/license/{user}/{repo}.svg)][license]
+[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Agentic-Workflow)
 
 > One-line description of what the package does.
 
@@ -55,6 +59,7 @@ Full documentation: https://{package-name}.readthedocs.io
 ### Requirements
 
 - Python 3.X+
+- [uv](https://docs.astral.sh/uv/) for dependency management
 - Dependencies listed in pyproject.toml
 
 ### Setup
@@ -62,13 +67,13 @@ Full documentation: https://{package-name}.readthedocs.io
 \`\`\`bash
 git clone https://github.com/{user}/{repo}.git
 cd {repo}
-pip install -e ".[dev]"
+uv sync
 \`\`\`
 
 ### Testing
 
 \`\`\`bash
-pytest
+uv run pytest
 \`\`\`
 
 ## Contributing
@@ -84,36 +89,32 @@ See [CHANGELOG.md](CHANGELOG.md) for version history.
 [MIT](LICENSE)
 
 [pypi]: https://pypi.org/project/{package-name}/
-[license]: LICENSE
+[uv]: https://docs.astral.sh/uv/
+[ci]: https://github.com/{user}/{repo}/actions
+[coveralls]: https://coveralls.io/github/{user}/{repo}
+[license]: https://github.com/{user}/{repo}/blob/main/LICENSE
 ```
 
 ## Badge Reference
 
-For PyPI packages, include these badges:
+For PyPI packages, include these badges (7 total):
 
 | Badge | Markdown |
 |-------|----------|
 | PyPI version | `[![PyPI](https://img.shields.io/pypi/v/{package}.svg)][pypi]` |
 | Python versions | `[![Python](https://img.shields.io/pypi/pyversions/{package}.svg)][pypi]` |
-| License | `[![License](https://img.shields.io/github/license/{user}/{repo}.svg)][license]` |
+| uv | `[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)][uv]` |
 | CI | `[![CI](https://img.shields.io/github/actions/workflow/status/{user}/{repo}/ci.yml.svg)][ci]` |
 | Coverage | `[![Coverage](https://img.shields.io/coveralls/github/{user}/{repo}.svg)][coveralls]` |
-| Docs | `[![Docs](https://img.shields.io/readthedocs/{package}.svg)][docs]` |
+| License | `[![License](https://img.shields.io/github/license/{user}/{repo}.svg)][license]` |
+| Agentic | `[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Agentic-Workflow)` |
 
-**Optional badges** (if applicable):
-- Downloads: `https://img.shields.io/pypi/dm/{package}`
-- Code style: `https://img.shields.io/badge/code%20style-ruff-black`
-- Agentic workflow: `https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square`
+**Important:**
 
-### Agentic Workflow Badge
-
-For projects built using agentic workflow, add:
-
-```markdown
-[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Coding-Agent)
-```
-
-Include this badge for projects in `~/Workspace/agentic/` or explicitly built with agentic development practices.
+- **Agentic badge is required** for all projects built using agentic workflow
+- **uv badge is required** for all Python projects (standard package manager)
+- **Downloads badge is NOT used** (rate limiting causes broken badges)
+- **CI badge only if workflow exists** — check `.github/workflows/` before adding
 
 ## Section Guidelines
 

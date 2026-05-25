@@ -1,8 +1,9 @@
-# C3 - Christophe's Agentic Collective
+# C3 - Christophe’s Agentic Collective
 
-[![Platform](https://img.shields.io/badge/platform-mac%20%7C%20linux-lightgrey.svg)][platform]
+[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)][python]
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)][uv]
 [![License](https://img.shields.io/github/license/christophevg/c3.svg)][license]
-[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Coding-Agent)
+[![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Agentic-Workflow)
 
 > C3, short for Christophe Agentic Collective, is a personal collective of agents and skills designed for agentic coding and various other purposes. It originated as Christophe’s Coding Crew, which is how the name C3 came to be. Over time, it has undergone significant evolution and has now become known as Christophe’s Agentic Collective. The C3 name has remained consistent throughout its journey. 😉
 
@@ -73,7 +74,7 @@ make install
 
 ---
 
-## Skills (41)
+## Skills (42)
 
 Skills provide focused guidance for specific technologies and workflows.
 
@@ -84,7 +85,7 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/mcp-server` | Guide for designing and building MCP servers (FastMCP, security, deployment). |
 | `/plugin-development` | Guide for creating Claude Code plugins (structure, manifest, distribution). |
 
-### Project Management (5)
+### Project Management (6)
 
 | Skill | Description |
 |-------|-------------|
@@ -93,6 +94,7 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/project-manage` | Full implementation workflow with specialized agents. |
 | `/project-status` | Generate STATUS.md with executive summary, metrics, dependencies, blockers, risks. |
 | `/project-todo-refine` | Iteratively refine TODO.md topics by reviewing state, scope, and priority. |
+| `/website-manage` | Manage content websites with conversational workflow. No PRs, no agents. |
 
 ### Personal Assistant (4)
 
@@ -276,5 +278,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 [MIT](LICENSE)
 
-[platform]: #
+[python]: https://python.org/
+[uv]: https://docs.astral.sh/uv/
 [license]: LICENSE
