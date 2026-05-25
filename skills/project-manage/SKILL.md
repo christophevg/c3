@@ -52,6 +52,111 @@ This ensures:
 
 ---
 
+## Post-Merge State Detection
+
+**After syncing, detect if we're on a merged feature branch:**
+
+```bash
+# Check current branch
+current_branch=$(git branch --show-current)
+
+# Check if we're on a feature branch
+if [[ "$current_branch" == feature/* ]]; then
+  # Check if branch has open PR
+  pr_status=$(gh pr list --head "$current_branch" --state open --json number 2>/dev/null)
+  
+  if [[ -z "$pr_status" || "$pr_status" == "[]" ]]; then
+    # No open PR - branch may have been merged or abandoned
+    echo "Feature branch with no open PR detected."
+  fi
+fi
+
+# Check for untracked artifacts from previous work
+git status --porcelain | grep '^??' | head -20
+```
+
+**If merged branch detected:**
+
+1. **Report to user that branch may have been merged**
+   - Show untracked files (artifacts from merged work)
+   - Ask user to confirm merge status
+
+2. **Handle untracked artifacts:**
+   - Analysis files in `analysis/` from merged work
+   - Reporting files in `reporting/` from merged work
+   - Ask whether to commit as documentation or clean up
+
+3. **Recommend switching to main:**
+   ```bash
+   git checkout main && git pull
+   ```
+
+4. **Verify TODO.md reflects merged work:**
+   - Find task referenced in merged PR
+   - Ensure completion date is present
+   - Ensure task is in Done section
+
+---
+
+## Check for Existing PRs
+
+**CRITICAL: Check for open PRs on the current branch before starting new work.**
+
+After syncing, check if there's an existing PR for the current branch:
+
+```bash
+# Get current branch
+current_branch=$(git branch --show-current)
+
+# Check for open PR on this branch
+gh pr list --head "$current_branch" --state open --json number,title,url,reviewDecision,statusCheckRollup
+```
+
+**If an open PR exists:**
+
+1. **Check PR status:**
+   - CI passing or failing?
+   - Review decision (approved, changes requested, pending)?
+
+2. **Check PR feedback (TWO TYPES):**
+
+   **a) PR Issue Comments** (general comments on the PR):
+   ```bash
+   gh pr view {number} --comments --json comments
+   ```
+
+   **b) PR Review Comments** (inline comments on specific code lines):
+   ```bash
+   gh api repos/{owner}/{repo}/pulls/{number}/reviews
+   gh api repos/{owner}/{repo}/pulls/{number}/comments
+   ```
+
+   ⚠️ **CRITICAL**: Review comments are often inline on specific lines of code. You MUST check both:
+   - Issue comments: General discussion
+   - Review comments: Line-specific feedback (often the most detailed feedback)
+
+3. **Process feedback:**
+   - If there are unaddressed comments from the owner, process them
+   - Make necessary changes, push, wait for CI
+   - Comment on PR explaining what was addressed
+
+4. **Wait for owner:**
+   - Report PR status to user
+   - Explain what feedback was addressed
+   - **DO NOT propose merging** - wait for owner to merge
+
+**If CI is failing:**
+- View failure details: `gh run view {id} --log-failed`
+- Fix the issue
+- Push and wait for CI to pass
+- Then check for comments
+
+**If PR is approved and CI passes:**
+- Report to user that PR is ready for merge
+- Wait for owner to merge
+
+---
+
 This skill is invoked by the user to manage the entire project workflow, orchestrating specialized agents to ensure proper analysis, design, implementation, and review of all tasks.
 
 ## Workflow Overview
@@ -116,13 +221,29 @@ Project State Detection
                                                                             Push & Create PR
                                                                                         │
                                                                                         ▼
-                                                                        ┌─── User Acceptance on PR ───┐
-                                                                        │                             │
-                                                                        ▼                             ▼
-                                                                    User Merges PR              User Rejects PR
-                                                                        │                             │
-                                                                        ▼                             ▼
-                                                                Mark Task Complete          Return to Implementation
+                                                                    ┌────────────── Check PR Feedback ──────────────┐
+                                                                    │                                                │
+                                                                    │  Has Owner Comments?                           │
+                                                                    │       │                                        │
+                                                                    │       ├── Yes ──► Address Feedback            │
+                                                                    │       │            │                           │
+                                                                    │       │            ├── Make Changes            │
+                                                                    │       │            ├── Push                     │
+                                                                    │       │            ├── Wait for CI             │
+                                                                    │       │            └── Comment on PR            │
+                                                                    │       │                                        │
+                                                                    │       └── No ──► Wait for Owner                │
+                                                                    │                   │                            │
+                                                                    └───────────────────┴────────────────────────────┘
+                                                                                                │
+                                                                                                ▼
+                                                                                    ┌─── Owner Merges PR ─────┐
+                                                                                    │                         │
+                                                                                    ▼                         ▼
+                                                                                User Merges PR       User Provides More Feedback
+                                                                                    │                         │
+                                                                                    ▼                         │
+                                                                            Mark Task Complete ◄───────┘
 ```
 
 ---
@@ -151,7 +272,17 @@ When the task is identified as a feature, follow this sequential workflow:
 
 ### Phase 0A: GitHub Issue Check
 
+⛔ **MANDATORY: This step MUST execute before any project state detection.**
+
 **Check for open issues before starting work:**
+
+```bash
+gh issue list --limit 10 --state open --json number,title,labels
+```
+
+**If this command fails:**
+- Report to user that GitHub issue check failed
+- Do NOT proceed until resolved
 
 1. Run `gh issue list --limit 10 --state open` to check for open GitHub issues
 2. Filter out issues with status labels (already reviewed):
@@ -607,12 +738,93 @@ gh pr edit {number} --add-assignee {user}
 gh pr edit {number} --add-reviewer {user}
 ```
 
+**Step 10i: Check for PR Feedback (MANDATORY)**
+
+⚠️ **CRITICAL: The agent does NOT merge PRs. Only the owner merges.**
+
+After CI passes, MUST check for PR feedback from TWO sources:
+
+**a) PR Issue Comments** (general comments on the PR):
+```bash
+gh pr view {number} --comments --json comments
+```
+
+**b) PR Review Comments** (inline comments on specific code lines):
+```bash
+gh api repos/{owner}/{repo}/pulls/{number}/reviews
+gh api repos/{owner}/{repo}/pulls/{number}/comments
+```
+
+⚠️ **CRITICAL**: Review comments are often inline on specific lines of code. These contain the most detailed feedback. You MUST check both types.
+
+**Process each feedback item:**
+
+1. **Review each comment from the owner:**
+   - Parse the comment body
+   - For review comments: note the file and line number
+   - Identify what needs to be addressed
+   - Determine if it requires code changes, documentation updates, or clarification
+
+2. **Address the feedback:**
+   - Make the necessary changes
+   - Commit and push to the same branch
+   - Add a comment on the PR explaining what was done
+
+3. **Wait for CI after changes:**
+   - Check CI status again
+   - Fix any failures
+   - Repeat until CI passes
+
+4. **Respond to all feedback:**
+   - Address every comment from the owner
+   - Do NOT skip or ignore any feedback
+   - Ask for clarification if feedback is unclear
+
+5. **Report status and wait:**
+   - Summarize what feedback was addressed
+   - Explain that PR is ready for owner review/merge
+   - **DO NOT propose merging** - that's the owner's decision
+
+**Example feedback handling:**
+
+```bash
+# Get latest comments
+gh pr view 4 --comments --json comments
+
+# Address feedback in code
+# (make changes, commit, push)
+
+# Comment on PR explaining changes
+gh pr comment 4 --body "## ✅ Changes Applied
+
+{Description of what was changed to address feedback}
+
+All tests pass, lint clean, typecheck clean."
+```
+
+**Feedback types and responses:**
+
+| Feedback Type | Response |
+|---------------|----------|
+| Code change request | Make the change, push, comment |
+| Documentation request | Update docs, push, comment |
+| Question | Answer in PR comment |
+| Clarification needed | Ask for more details |
+| Rejection with reason | Fix the issue, push, comment |
+
+**Do NOT:**
+- Propose merging the PR
+- Assume PR is ready without checking comments
+- Skip addressing any feedback
+- Merge without owner approval
+
 #### Step 11: Exit Plan Mode
 
 Exit plan mode and report:
 - PR URL for user review
 - What was implemented
-- Awaiting user acceptance on PR
+- Status of PR feedback (pending/addressed)
+- Awaiting owner to merge PR
 
 #### Step 12: Post-Merge (After User Merges PR)
 
@@ -631,11 +843,26 @@ When user reports PR is merged:
 
 3. If issue is not auto-closed: `gh issue close {issue-number}`
 
-4. Mark task as completed in TODO.md
+4. **Verify TODO.md reflects merged work:**
+   - Find task in TODO.md
+   - Add completion date if missing: `(YYYY-MM-DD)`
+   - Ensure task is in Done section
+   - Check for follow-up tasks or dependencies
 
-5. Move task to "Done" section
+5. **Handle untracked artifacts:**
+   - Check for analysis/ and reporting/ files from merged work
+   - Ask user whether to:
+     - Commit as documentation: `git add analysis/ reporting/`
+     - Clean up: `git clean -fd analysis/ reporting/`
+     - Keep for reference
 
-6. Continue to next task from Step 5
+6. **Sync to main branch:**
+   ```bash
+   git checkout main
+   git pull
+   ```
+
+7. Continue to next task from Step 5
 
 ---
 
@@ -779,6 +1006,8 @@ This applies to situations like:
 - **Parallel reviews** improve efficiency without sacrificing quality
 - **User can request reanalysis**: Use "reanalyze" option when proposing next task to run fresh analysis
 - **Unsorted items**: Quick ideas captured at top of TODO.md that need analysis before prioritization. Offer to sort them before working on backlog, but allow user to skip and proceed with prioritized tasks.
+- **PR Ownership**: The agent creates PRs and processes feedback, but ONLY the owner merges PRs. Never propose merging.
+- **TODO.md Direction is Authoritative**: When TODO.md specifies an implementation approach (e.g., "Use `prompt_async()` for async input"), follow it without asking for confirmation. TODO.md represents the project's decided direction. Only ask for clarification when genuinely ambiguous or conflicting requirements exist.
 
 ---
 
@@ -795,6 +1024,28 @@ This applies to situations like:
 | code-reviewer | 4 (review) | Always |
 | testing-engineer | 4 (review) | Always |
 | end-user-documenter | 4 (completion) | User-facing changes |
+
+---
+
+## Publishing Releases
+
+When the user requests publishing to PyPI:
+
+**Invoke the `pypi-publish` skill** - it contains the complete pre-publish checklist and workflow.
+
+Key checks from that skill:
+- README image paths must use absolute GitHub URLs (not relative paths)
+- Version must be synced between `pyproject.toml` and `__init__.py`
+- Local development configuration (`[tool.uv.sources]`, `[tool.uv.workspace]`) must be removed
+- Entry points must be verified
+- Package contents must be verified after build
+
+**Workflow:**
+1. Run pre-publish checks (or `make pre-publish` if available)
+2. Build: `uv build`
+3. Verify: `unzip -l dist/*.whl | head -30`
+4. Upload: `uv run twine upload dist/*`
+5. Tag: `git tag v<VERSION> && git push --tags`
 
 ---
 

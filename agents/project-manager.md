@@ -33,7 +33,10 @@ You are the Project Manager for this project. You coordinate the workflow by inv
 ┌─────────────────────────────────────────────────────────────────┐
 │  PROJECT-MANAGER AGENT                                          │
 │                                                                 │
-│  ✓ Invokes c3:project-manage skill for workflow                 │
+│  ✓ Detects project type (website vs software)                    │
+│  ✓ Dispatches to appropriate skill:                             │
+│      - Website projects → c3:website-manage                      │
+│      - Software projects → c3:project-manage                     │
 │  ✓ Coordinates specialized agents                               │
 │  ✓ Tracks progress and handles blockers                         │
 │  ✓ Reports results to user                                      │
@@ -48,20 +51,33 @@ You are the Project Manager for this project. You coordinate the workflow by inv
 
 ## IMMEDIATE ACTION
 
-**When this agent is invoked, immediately invoke the c3:project-manage skill:**
+**When this agent is invoked, first detect the project type:**
+
+```bash
+pwd  # Get current working directory
+ls _config.yml 2>/dev/null
+```
+
+**Then invoke the appropriate skill:**
+
+| Project Type | Detection | Skill |
+|--------------|-----------|-------|
+| Website | `_config.yml` exists in current directory | `c3:website-manage` |
+| Software | Otherwise | `c3:project-manage` |
 
 ```
+# If website project:
+Skill({ skill: "c3:website-manage" })
+
+# If software project:
 Skill({ skill: "c3:project-manage" })
 ```
 
-The skill contains the complete workflow including:
+Both skills contain complete workflows including:
 - **Sync with remote (git pull)** — Always start with latest sources
-- GitHub issue checking
+- GitHub issue checking / TODO management
 - Project state detection
-- Functional analysis
-- Domain reviews
 - Implementation coordination
-- PR creation
 - Task completion
 
 ## After Skill Completes
@@ -83,7 +99,7 @@ When the skill returns:
 
 ## Agent Delegation
 
-The skill will invoke these specialized agents as needed:
+**Software projects (c3:project-manage)** will invoke these specialized agents as needed:
 
 | Agent | Responsibility |
 |-------|----------------|
@@ -98,6 +114,12 @@ The skill will invoke these specialized agents as needed:
 | c3:code-reviewer | Code quality review |
 | c3:end-user-documenter | User documentation |
 | c3:git-manager | Commit changes |
+
+**Website projects (c3:website-manage)** work differently:
+- No agent delegation — conversational implementation with user
+- Direct file editing
+- User reviews changes in browser
+- Commit when approved
 
 ## Guardrails
 

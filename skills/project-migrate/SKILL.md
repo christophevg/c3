@@ -1,6 +1,6 @@
 ---
 name: project-migrate
-description: Use this skill when migrating existing Python projects to the uv-based standard. Migrates pyproject.toml, Makefile, GitHub Actions, ReadTheDocs, and removes legacy files. Examples: "migrate project to uv", "update project to new standard", "modernize Python project setup".
+description: Use this skill when migrating existing Python projects to the uv-based standard. Migrates pyproject.toml, Makefile, GitHub Actions, ReadTheDocs, and removes legacy files. Examples: "migrate project to uv", "update project to new standard", "modernize Python project setup", "add uv support to old project", "bring project up to standard", "setup uv for existing project", "convert legacy setup to uv".
 ---
 
 # Python Project Migration to uv
@@ -13,6 +13,10 @@ Use this skill when:
 - User says "migrate project to uv"
 - User says "update project to new standard"
 - User says "modernize Python project setup"
+- User says "add uv support to old project"
+- User says "bring project up to standard"
+- User says "setup uv for existing project"
+- User mentions "old project" with "uv" or "Makefile"
 - Project uses legacy setup (setup.py, requirements.txt, pyenv)
 - Project needs to align with python-project skill standards
 
@@ -39,7 +43,7 @@ When migrating a project, verify **all** of these files:
 
 Update to use hatchling and uv-based tool configuration:
 
-**Required sections:**
+**Required sections (in order):**
 
 ```toml
 [build-system]
@@ -79,11 +83,40 @@ env_list = ["py310", "py311", "py312"]
 
 [tool.tox.env_run_base]
 description = "run tests with pytest"
+skip_install = false
 commands_pre = [
   ["uv", "pip", "install", "-e", "."],
   ["uv", "pip", "install", "pytest", "pytest-cov", "pytest-asyncio"],
 ]
 commands = [["pytest", "tests", "-v", "--cov=package_name", "--cov-report=term-missing"]]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+indent-width = 2
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "C4", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["package_name"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+  "pragma: no cover",
+  "def __repr__",
+  "raise NotImplementedError",
+  "if TYPE_CHECKING:",
+]
 ```
 
 **Verify:**
@@ -92,6 +125,47 @@ commands = [["pytest", "tests", "-v", "--cov=package_name", "--cov-report=term-m
 - ✅ `tox` config uses `commands_pre` workaround
 - ✅ `docs` extra is **separate** from `dev` (not mixed)
 - ✅ `ruff` and `mypy` tool configs present
+- ✅ Hatch build config is correct (no conflicting `sources` and `packages`)
+
+**Critical Check:** Don't use conflicting hatch build configuration:
+
+```toml
+# WRONG - causes empty wheel:
+[tool.hatch.build]
+sources = ["src"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/package_name"]  # src/ prefix conflicts with sources
+
+# CORRECT - use ONE approach:
+[tool.hatch.build.targets.wheel]
+packages = ["src/package_name"]
+
+# OR (alternative):
+[tool.hatch.build]
+sources = ["src"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["package_name"]  # No src/ prefix when sources is set
+```
+- ✅ Sections in correct order (see python-project skill)
+
+**Section Order (Standard):**
+1. `[build-system]`
+2. `[project]`
+3. `[project.optional-dependencies]`
+4. `[project.urls]`
+5. `[project.scripts]`
+6. `[tool.hatch.build.targets.wheel]`
+7. `[tool.pytest.ini_options]`
+8. `[tool.mypy]`
+9. `[tool.ruff]`
+10. `[tool.ruff.lint]`
+11. `[tool.ruff.lint.isort]`
+12. `[tool.ruff.format]`
+13. `[tool.coverage.run]`
+14. `[tool.coverage.report]`
+15. `[tool.tox]`
 
 **Critical Check:** Ensure `docs` dependencies are NOT in `dev`:
 
@@ -109,57 +183,100 @@ docs = ["sphinx>=7.0.0", "sphinx-rtd-theme>=2.0.0", "myst-parser>=2.0.0"]
 
 ### Step 2: Makefile
 
-Update to use uv commands:
+Update to use the standard Makefile format:
 
 ```makefile
-.PHONY: install install-pythons sync test lint format typecheck check tox docs build publish clean
+-include ~/.claude/Makefile
 
-install:
-  uv sync --all-extras
+.PHONY: env-dev env-run install-pythons test test-cov test-all format lint typecheck check run docs docs-view build publish publish-test clean clean-all help
 
-install-pythons:
-  uv python install 3.10 3.11 3.12
+## Environment
 
-sync:
-  uv sync --frozen --all-extras
+env-dev: ## Install all dependencies (dev + docs)
+	uv sync --all-extras
 
-test:
-  uv run pytest
+env-run: ## Install runtime dependencies only
+	uv sync
 
-lint:
-  uv run ruff check src tests
+install-pythons: ## Install Python 3.10, 3.11, 3.12
+	uv python install 3.10 3.11 3.12
 
-format:
-  uv run ruff format src tests
+## Testing
 
-typecheck:
-  uv run mypy src
+test: env-dev ## Run tests (usage: make test / optional: TEST=file|file:test_name)
+	uv run pytest -v $(TEST)
 
-check: lint typecheck test
+test-cov: env-dev ## Run tests with coverage
+	uv run pytest --cov=src --cov-report=term-missing $(TEST)
 
-tox:
-  uv run tox
+test-all: env-dev ## Run tests on all Python versions
+	uv run tox
 
-docs:
-  cd docs; uv run sphinx-build -M html . _build
+## Code Quality
 
-build:
-  uv build
+format: env-dev ## Format code and fix linting issues
+	uv run ruff format src tests
+	uv run ruff check --fix src tests
 
-publish: build
-  uv publish
+lint: env-dev ## Check code for linting issues
+	uv run ruff check src tests
 
-clean:
-  rm -rf build/ dist/ *.egg-info .tox .pytest_cache .ruff_cache .mypy_cache
-  find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+typecheck: env-dev ## Run type checking
+	uv run mypy src
+
+check: format lint typecheck test ## Run all quality checks
+
+## Running
+
+run: env-run ## Run the application
+	uv run python -m package_name
+
+## Documentation
+
+docs: env-dev ## Build HTML documentation
+	cd docs && uv run sphinx-build -M html . _build
+
+docs-view: docs ## Build and open documentation in browser
+	open docs/_build/html/index.html
+
+## Build & Publish
+
+build: ## Build distribution packages
+	uv build
+
+publish: build ## Publish to PyPI
+	uv run twine upload dist/*
+
+publish-test: build ## Publish to TestPyPI
+	uv run twine upload --repository testpypi dist/*
+
+## Cleanup
+
+clean: ## Remove build artifacts
+	rm -rf dist/ build/ *.egg-info .pytest_cache .coverage .mypy_cache .ruff_cache
+	rm -rf docs/_build
+	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+
+clean-all: clean ## Remove virtualenv and lock file
+	rm -rf .venv uv.lock
+
+## Help
+
+help: ## Show this help message
+	@echo "Usage: make [target]"
+	@echo ""
+	@echo "Targets:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' Makefile | grep -v "install-pythons\|sync" | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 ```
 
 **Verify:**
-- ✅ `install` uses `--all-extras`
+- ✅ `env-dev` uses `--all-extras`
 - ✅ `install-pythons` target present
-- ✅ `tox` target present with `uv run`
-- ✅ `docs` target uses `sphinx-build` directly (not `make html`)
+- ✅ `test-all` target present with `uv run tox`
+- ✅ `docs` target uses `sphinx-build` directly
+- ✅ `check` runs format, lint, typecheck, test in order
 - ✅ No references to pip, pyenv, or manual venv activation
+- ✅ Help system with `## comments`
 
 **Critical Check:** Ensure `docs` target uses `sphinx-build`:
 
@@ -169,8 +286,8 @@ docs:
   cd docs && uv run make html
 
 # CORRECT: uses sphinx-build directly
-docs:
-  cd docs && uv run sphinx-build -M html . _build
+docs: env-dev ## Build HTML documentation
+	cd docs && uv run sphinx-build -M html . _build
 ```
 
 ### Step 3: .python-version
@@ -382,8 +499,11 @@ grep -A 5 "\[project.optional-dependencies\]" pyproject.toml | grep docs
 # Check .readthedocs.yaml uses docs extra (not dev)
 grep "extra_requirements" .readthedocs.yaml
 
-# Check Makefile docs target uses sphinx-build
-grep "sphinx-build" Makefile
+# Check Makefile has standard targets
+grep -E "^(env-dev|env-run|install-pythons|test|test-cov|test-all|format|lint|typecheck|check|run|docs|docs-view|build|publish|clean|clean-all|help):" Makefile
+
+# Check Makefile check order
+grep -A1 "^check:" Makefile | grep "format lint typecheck test"
 
 # Check GitHub Actions has all 4 jobs
 grep -E "^  (test|lint|typecheck|build):" .github/workflows/test.yaml
@@ -394,8 +514,11 @@ grep -E "^  (test|lint|typecheck|build):" .github/workflows/test.yaml
 | File | Check For | Fix |
 |------|-----------|-----|
 | `pyproject.toml` | `docs` deps in `dev` extra | Move to separate `docs = [...]` |
+| `pyproject.toml` | Missing `ruff.format` section | Add `[tool.ruff.format]` section |
+| `pyproject.toml` | Wrong section order | Reorder to standard sequence |
 | `.readthedocs.yaml` | `extra_requirements: - dev` | Change to `- docs` |
-| `Makefile` | `uv run make html` | Change to `uv run sphinx-build` |
+| `Makefile` | `uv run make html` | Change to `sphinx-build -M html . _build` |
+| `Makefile` | Non-standard target names | Rename to `env-dev`, `env-run`, `check` |
 | GitHub Actions | Missing `build` job | Add `build` job with `needs` |
 
 ## Common Migration Issues
@@ -427,9 +550,9 @@ After successful migration:
    - Push to GitHub
    - Check GitHub Actions workflow passes
 
-4. **Clean up pyenv (optional):**
-   - Remove pyenv virtualenvs for this project
-   - Keep pyenv installed during transition period
+4. **Clean up legacy files (optional):**
+   - Remove any remaining pyenv-related `.python-version` files
+   - Project now uses uv's `.python-version` format
 
 ## Related Skills
 

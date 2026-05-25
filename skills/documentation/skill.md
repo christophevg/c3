@@ -159,19 +159,20 @@ help:
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 ```
 
-### pyenv Virtualenv Detection
+### uv Environment Detection
 
-If `make docs` fails with "No virtual environment detected", update Makefile:
+If `make docs` fails with "No virtual environment detected", ensure uv is being used:
 
 ```makefile
-# Check for venv or pyenv
-define check_venv
-	@if [ -z "$(VIRTUAL_ENV)" ] && [ "$(shell pyenv version-name 2>/dev/null)" != "$(VENV_NAME)" ]; then \
-		echo "Error: No virtual environment detected."; \
-		exit 1; \
-	fi
-endef
+# Standard docs target (from python-project skill)
+docs: env-dev ## Build HTML documentation
+	cd docs && uv run sphinx-build -M html . _build
+
+docs-view: docs ## Build and open documentation in browser
+	open docs/_build/html/index.html
 ```
+
+**Note:** Use `uv run sphinx-build` instead of `make html` — it works without requiring a separate `docs/Makefile`.
 
 ## Pre-commit Checklist
 
