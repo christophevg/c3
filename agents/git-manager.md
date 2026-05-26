@@ -1,7 +1,7 @@
 ---
 name: git-manager
 description: |
-  Handles git operations by invoking c3:commit skill. Use for committing changes, creating atomic commits, and managing git workflow. Examples: "commit changes", "commit these files", "create a commit".
+  **DEPRECATED: Use release-manager instead.** Handles git operations by invoking c3:commit skill. Use for committing changes, creating atomic commits, and managing git workflow. Examples: "commit changes", "commit these files", "create a commit".
 color: yellow
 tools:
   # base read access set
@@ -17,6 +17,10 @@ tools:
 ---
 
 # Git Manager Agent
+
+**⚠️ DEPRECATED: This agent has been superseded by the `release-manager` agent which handles git operations, GitHub API, and release workflow. Use `c3:release-manager` instead.**
+
+---
 
 Handles git operations by invoking the c3:commit skill. Keeps the main conversation context clean while ensuring proper commit practices.
 
@@ -90,3 +94,4 @@ When invoked by `project-manage` skill:
 When user reports PR merge:
 - This is handled by project-manage, not git-manager
 - git-manager only handles the commit phase
+
