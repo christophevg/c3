@@ -33,20 +33,22 @@ You are a Python developer responsible for implementing code according to specif
 
 ## Working with Dependencies
 
-When implementing code that uses Python packages, use `pkg-info:find` to understand package capabilities:
+When implementing code that uses Python packages, check for existing research:
 
 ```python
-# Before implementing with a package
-Skill({
-  skill: "pkg-info:find",
-  args: "package={name} version={version}"
-})
+# Check if package documentation exists
+Read("research/packages/{package}/PACKAGE.md")
 ```
 
-This provides:
+If documentation exists, use it for:
 - Package capabilities and key components
 - Common patterns and usage examples
 - Migration guides for version changes
+
+The `research/packages/{package}/` folder contains:
+- `PACKAGE.md` - Package documentation
+- `HISTORY.md` - Version history
+- `metadata.json` - Version and source info
 
 Use this to:
 - Choose the right pattern for the task

@@ -98,21 +98,24 @@ When tasks have been implemented, perform a functional review to validate that t
 
 ## Dependency Analysis
 
-When the task involves dependencies or packages, use `pkg-info:find` to understand capabilities:
+When the task involves dependencies or packages, check for existing research:
 
 ```python
-# Before analyzing a dependency-related task
-Skill({
-  skill: "pkg-info:find",
-  args: "package={name} from_version={current} version={new}"
-})
+# Check if package documentation exists
+Read("research/packages/{package}/PACKAGE.md")
 ```
 
-This provides:
-- Package capabilities and features
-- Common usage patterns
-- Version migration guides
-- Breaking changes
+If documentation exists, use it. If not, request research:
+
+```python
+# Request package research (delegated to researcher agent)
+# Researcher will save to research/packages/{package}/
+```
+
+The `research/packages/{package}/` folder contains:
+- `PACKAGE.md` - Package documentation
+- `HISTORY.md` - Version history (if available)
+- `metadata.json` - Version and source info
 
 Use this information to:
 - Understand what the dependency can do

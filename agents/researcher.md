@@ -54,20 +54,89 @@ You route research requests to the appropriate skill based on the topic.
 - Request mentions "package", "library", "PyPI", "upgrade"
 - Asking about Python dependencies
 
+**Workflow:**
+
+1. **Check for cached documentation:**
+   ```
+   research/packages/{package}/metadata.json
+   ```
+
+2. **If cached version exists:**
+   - Read cached version from metadata.json
+   - Call `pkg-info:find` with `from_version={cached_version}`
+   - Skill will check if newer version exists
+   - Skill will update if needed
+
+3. **If not found:**
+   - Call `pkg-info:find` without from_version
+   - Skill will fetch latest version
+
+4. **Save result:**
+   - pkg-info:find returns PACKAGE.md content
+   - Save to `research/packages/{package}/`
+   - Create `metadata.json` with version info
+
+5. **Report to invoking agent:**
+   - Location: `research/packages/{package}/PACKAGE.md`
+   - Version info
+   - Summary
+
+**Cache Structure:**
+```markdown
+research/packages/{package}/
+├── PACKAGE.md      # Package documentation
+├── HISTORY.md      # Version history (if available)
+└── metadata.json   # Version and source info
+```
+
+**metadata.json format:**
+```json
+{
+  "package": "yoker",
+  "version": "2.1.0",
+  "source": "github",
+  "cached": "2026-05-26T15:30:00Z"
+}
+```
+
+**Reporting to Invoking Agent:**
+```markdown
+# Research Complete: {package}
+
+## Location
+research/packages/{package}/PACKAGE.md
+
+## Version
+Cached: {cached_version} → Latest: {latest_version}
+(Or: "Using cached version {version}")
+
+## Summary
+{Brief summary of package capabilities}
+
+Other agents can read the full documentation at the location above.
+```
+
 **Route to: `pkg-info:find`**
 
 ```python
+# If cached version exists
 Skill({
   skill: "pkg-info:find",
-  args: "package={name} from_version={current} version={new}"
+  args: "package={name} from_version={cached_version}"
+})
+
+# If no cached version
+Skill({
+  skill: "pkg-info:find",
+  args: "package={name}"
 })
 ```
 
 The pkg-info:find skill:
-- Checks GitHub for PACKAGE.md
-- Falls back to PyPI documentation
-- Returns structured package information
-- Provides migration guides for version changes
+- Receives cached version (if available)
+- Checks if newer version exists
+- Downloads and returns new version if needed
+- Returns location of documentation
 
 ### General Research
 
@@ -213,3 +282,22 @@ Return: Research report with sources
 - **Never bypass skill selection** - always route through the appropriate skill
 - **Never do WebSearch directly** - let the skill handle it
 - **Return structured results** - make it easy for invoking agent to use findings
+- **Save package docs to research folder** - so other agents can read them
+- **Report location, not content** - tell agents where to find the docs
+
+## Reading Package Documentation
+
+When other agents need package information, they should:
+
+```markdown
+# Reading Package Docs
+
+Location: research/packages/{package}/PACKAGE.md
+
+Contains:
+- Purpose and capabilities
+- Key components and APIs
+- Common patterns
+- Version notes
+- Migration guides
+```
