@@ -65,6 +65,38 @@ research/
 
 **Topic slug:** Lowercase, hyphen-separated topic name (e.g., `diagramming-best-practices`)
 
+## Python Package Research
+
+**When researching Python packages, use pkg-info:find FIRST.**
+
+The pkg-info:find skill provides agent-ready documentation from:
+- Local cache (if PKG_INFO_CACHE set)
+- Package embedded (PEP 770)
+- GitHub repository (PACKAGE.md in repo)
+- Public pkg-info repository
+- PyPI/docs generation
+
+**Workflow for Python packages:**
+
+```
+1. Invoke pkg-info:find skill for each package
+   Skill({
+     skill: "pkg-info:find",
+     args: "package={name} from_version={current} version={new}"
+   })
+
+2. If pkg-info:find returns results:
+   - Use the returned documentation
+   - No need for additional web searches
+   - Skip to Step 6 (Generate Research Report)
+
+3. If pkg-info:find returns nothing:
+   - Continue with normal research process
+   - Use WebSearch and WebFetch
+```
+
+**This avoids redundant research when package documentation is already available.**
+
 ## Research Process
 
 ### 1. Check for Previous Research
