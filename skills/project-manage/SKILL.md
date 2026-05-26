@@ -267,10 +267,10 @@ Determine task complexity:
 
 ```python
 # Step 1: Spawn researcher to gather package information
-# Researcher will use pkg-info:find skill automatically
+# Researcher will use mcp__plugin_c3_pkgq__find_package automatically for Python packages
 Agent({
   subagent_type: "c3:researcher",
-  prompt: "Research Python packages: {packages}. Use pkg-info:find skill first to get package documentation and migration guides. Include: capabilities, patterns, breaking changes, migration steps.",
+  prompt: "Research Python packages: {packages}. Include: capabilities, patterns, breaking changes, migration steps.",
   description: "Research {packages}"
 })
 
@@ -283,10 +283,10 @@ Agent({
   subagent_type: "c3:python-developer",
   prompt: """
   Upgrade {packages}.
-  
+
   Research findings:
   {research_results}
-  
+
   Use the migration guides to update imports and handle breaking changes.
   """,
   description: "Upgrade {package}"
@@ -297,10 +297,10 @@ Agent({
   subagent_type: "c3:functional-analyst",
   prompt: """
   Task: {user_goal}
-  
+
   Research findings:
   {research_results}
-  
+
   Analyze how to use these new features to achieve the goal.
   Identify what code in our project can be simplified.
   Create TODO.md with implementation tasks.
