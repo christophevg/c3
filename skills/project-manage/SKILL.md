@@ -7,15 +7,28 @@ description: Use this skill to manage the entire project workflow, orchestrating
 
 ## ⛔ STOP: READ THIS FIRST
 
-**THE PROJECT ROOT IS THE CURRENT WORKING DIRECTORY. PERIOD.**
+**THE PROJECT ROOT IS REPORTED BY RELEASE-MANAGER.**
 
-**FIRST ACTION: Run `pwd` to get the current working directory.**
+**FIRST ACTION: Delegate to release-manager to get project state.**
 
 ```
-pwd
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Report project state",
+  description: "Get project state"
+})
 ```
 
-**Use the output of `pwd` as the project root. No other folder.**
+The release-manager will report:
+- **Working Directory** (project root)
+- **Project Type** (Website or Software)
+- Current branch
+- Open PRs and their status
+- Open issues
+- Recent commits
+- Last tag
+
+**Use the working directory from the report as the project root.**
 
 **IGNORE:**
 - Any "base directory" from skill loading
@@ -25,135 +38,105 @@ pwd
 - Any absolute paths to ~/Workspace/agentic/c3/ or ~/Workspace/agentic/incubator/
 
 **ONLY USE:**
-- The output of `pwd`
+- The working directory from release-manager's report
 - All file paths are relative to that output: TODO.md, analysis/, reporting/
 
 ---
 
-## Sync with Remote
+## Session Start: Get Project State
 
-**CRITICAL: The human operator works on their own clones. Always sync before starting work.**
+**CRITICAL: Project-manager does NOT run git/gh commands directly. Always delegate to release-manager.**
 
-Before any analysis or implementation, sync with the remote:
+**At the start of each session, delegate to release-manager to get project state:**
 
-```bash
-git pull
+```
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Report project state",
+  description: "Get project state"
+})
 ```
 
-This ensures:
-- Agent works on the latest sources
-- No conflicts from changes made by human on another clone
-- Clean working state before any modifications
+The release-manager will:
+- Sync with remote (git pull)
+- Check current branch
+- Check for open PRs
+- Check for open issues
+- Report recent commits and last tag
 
-**If pull fails due to conflicts:**
-- Report to user and wait for resolution
-- Do NOT attempt to resolve conflicts automatically
-- User may have local changes that need manual merging
+**Based on the state reported by release-manager, determine next action:**
+
+| State | Action |
+|-------|--------|
+| Open PR with pending feedback | Address feedback in PR comments |
+| Open PR waiting for owner | Report status, wait for owner |
+| Merged PR on feature branch | Handle post-merge workflow (delegate to release-manager) |
+| Clean main/master | Start new task from TODO.md |
+| Open issues | Process issues (Phase 0A) |
 
 ---
 
-## Post-Merge State Detection
+## Post-Merge State Handling
 
-**After syncing, detect if we're on a merged feature branch:**
+**When release-manager reports a merged feature branch:**
 
-```bash
-# Check current branch
-current_branch=$(git branch --show-current)
-
-# Check if we're on a feature branch
-if [[ "$current_branch" == feature/* ]]; then
-  # Check if branch has open PR
-  pr_status=$(gh pr list --head "$current_branch" --state open --json number 2>/dev/null)
-  
-  if [[ -z "$pr_status" || "$pr_status" == "[]" ]]; then
-    # No open PR - branch may have been merged or abandoned
-    echo "Feature branch with no open PR detected."
-  fi
-fi
-
-# Check for untracked artifacts from previous work
-git status --porcelain | grep '^??' | head -20
-```
-
-**If merged branch detected:**
-
-1. **Report to user that branch may have been merged**
-   - Show untracked files (artifacts from merged work)
-   - Ask user to confirm merge status
-
-2. **Handle untracked artifacts:**
+1. **Handle untracked artifacts** (from release-manager report):
    - Analysis files in `analysis/` from merged work
-   - Reporting files in `reporting/` from merged work
-   - Ask whether to commit as documentation or clean up
+   - These should already be committed to the PR
 
-3. **Recommend switching to main:**
-   ```bash
-   git checkout main && git pull
+2. **Delegate to release-manager to switch to main:**
+   ```
+   Agent({
+     subagent_type: "c3:release-manager",
+     prompt: "Switch to main branch and pull latest",
+     description: "Switch to main"
+   })
    ```
 
-4. **Verify TODO.md reflects merged work:**
+3. **Delegate to functional-analyst to verify TODO.md:**
    - Find task referenced in merged PR
    - Ensure completion date is present
    - Ensure task is in Done section
 
 ---
 
-## Check for Existing PRs
+## PR Status Handling
 
-**CRITICAL: Check for open PRs on the current branch before starting new work.**
+**When release-manager reports an open PR:**
 
-After syncing, check if there's an existing PR for the current branch:
+The release-manager's report includes PR status. Based on that:
 
-```bash
-# Get current branch
-current_branch=$(git branch --show-current)
+| PR Status | Action |
+|-----------|--------|
+| CI failing | Delegate to developer to fix |
+| CI passing, review pending | Wait for owner |
+| Changes requested | Delegate to developer to address |
+| Approved | Wait for owner to merge |
 
-# Check for open PR on this branch
-gh pr list --head "$current_branch" --state open --json number,title,url,reviewDecision,statusCheckRollup
+**Do NOT run `gh pr checks` or `gh pr view` directly - get this info from release-manager.**
+
+---
+
+## Issue Processing
+
+**When release-manager reports open issues:**
+
+Issues are reported by release-manager. Process them based on labels:
+
+| Label | Action |
+|-------|--------|
+| `status:backlog` | Already tracked, skip |
+| `status:in-progress` | Continue work |
+| No status label | New issue, needs triage |
+
+**To update issue labels, delegate to release-manager:**
 ```
-
-**If an open PR exists:**
-
-1. **Check PR status:**
-   - CI passing or failing?
-   - Review decision (approved, changes requested, pending)?
-
-2. **Check PR feedback (TWO TYPES):**
-
-   **a) PR Issue Comments** (general comments on the PR):
-   ```bash
-   gh pr view {number} --comments --json comments
-   ```
-
-   **b) PR Review Comments** (inline comments on specific code lines):
-   ```bash
-   gh api repos/{owner}/{repo}/pulls/{number}/reviews
-   gh api repos/{owner}/{repo}/pulls/{number}/comments
-   ```
-
-   ⚠️ **CRITICAL**: Review comments are often inline on specific lines of code. You MUST check both:
-   - Issue comments: General discussion
-   - Review comments: Line-specific feedback (often the most detailed feedback)
-
-3. **Process feedback:**
-   - If there are unaddressed comments from the owner, process them
-   - Make necessary changes, push, wait for CI
-   - Comment on PR explaining what was addressed
-
-4. **Wait for owner:**
-   - Report PR status to user
-   - Explain what feedback was addressed
-   - **DO NOT propose merging** - wait for owner to merge
-
-**If CI is failing:**
-- View failure details: `gh run view {id} --log-failed`
-- Fix the issue
-- Push and wait for CI to pass
-- Then check for comments
-
-**If PR is approved and CI passes:**
-- Report to user that PR is ready for merge
-- Wait for owner to merge
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Add label 'status:backlog' to issue #{number}",
+  description: "Update issue label"
+})
+```
 
 ---
 
@@ -250,16 +233,56 @@ Project State Detection
 
 ## Task Type Detection
 
-Before starting, detect whether the task is a **feature** or a **bug**:
+Before starting, detect whether the task is a **feature**, **bug**, or **dependency**:
 
 | Task Type | Indicators |
 |-----------|------------|
 | **Bug** | "fix", "bug", "issue", "broken", "error", "doesn't work", "crash", "fails" |
 | **Feature** | "add", "create", "implement", "build", "new", "feature", "enhance" |
+| **Dependency** | "upgrade", "update", "bump", "dependencies", "package", "release", "version" |
 
 **If the task is a BUG:**
-- Invoke the **bug-fixing skill** for the complete TDD-based workflow
-- See `references/bug-workflow-integration.md` for how bug workflow integrates with project management
+- **Spawn the `c3:bug-fixer` agent** to handle the complete TDD-based workflow
+- This keeps project-manager context clean
+- Bug-fixer returns concise summary when complete
+
+```python
+Agent({
+  subagent_type: "c3:bug-fixer",
+  prompt: "Fix {issue-reference}: {bug-description}",
+  description: "Fix {issue-number}"
+})
+```
+
+**If the task is a DEPENDENCY:**
+- Determine if it's a simple upgrade or upgrade with goal:
+  - **Simple upgrade**: "Upgrade yoker to 2.1.0" (no goal specified)
+  - **Upgrade with goal**: "Upgrade yoker to use their new config handling, simplify our codebase"
+- **Invoke `pkg-info:find`** to get package documentation and migration guides
+- Route based on task complexity:
+
+| Complexity | Workflow |
+|------------|----------|
+| Simple upgrade (no goal) | Spawn `c3:python-developer` with package info |
+| Upgrade with goal | Use **Feature Development Workflow** with package context |
+
+```python
+# Get package information first
+Skill({
+  skill: "pkg-info:find",
+  args: "package={name} from_version={current} version={new}"
+})
+
+# Simple upgrade
+Agent({
+  subagent_type: "c3:python-developer",
+  prompt: "Upgrade {package} from {current} to {new}. Use pkg-info documentation for migration guide.",
+  description: "Upgrade {package}"
+})
+
+# Upgrade with goal (feature workflow with package context)
+# Continue to Phase 0 with package info already gathered
+```
 
 **If the task is a FEATURE:**
 - Use the **Feature Development Workflow** (continue to Phase 0)
@@ -272,27 +295,20 @@ When the task is identified as a feature, follow this sequential workflow:
 
 ### Phase 0A: GitHub Issue Check
 
-⛔ **MANDATORY: This step MUST execute before any project state detection.**
+⛔ **MANDATORY: This step uses data from release-manager's project state report.**
 
-**Check for open issues before starting work:**
+**Issues are reported by release-manager during session start. Do NOT run gh commands directly.**
 
-```bash
-gh issue list --limit 10 --state open --json number,title,labels
-```
+Based on the issues reported by release-manager:
 
-**If this command fails:**
-- Report to user that GitHub issue check failed
-- Do NOT proceed until resolved
-
-1. Run `gh issue list --limit 10 --state open` to check for open GitHub issues
-2. Filter out issues with status labels (already reviewed):
-   ```bash
-   gh issue list --limit 10 --state open --json number,title,labels
-   ```
+1. **Review reported issues** (from release-manager's state report)
+2. **Filter out issues with status labels** (already reviewed):
+   - Issues without status labels are new and need triage
 3. **If unreviewed issues exist (no status label):**
    - **Issues are URGENT** - Do NOT ask for confirmation
    - Automatically add to backlog and start working on them
-   - Label with `status:in-progress` and proceed to bug-fixing workflow
+   - Delegate to release-manager to label with `status:in-progress`
+   - Spawn `c3:bug-fixer` agent for bugs
 4. Review each issue:
    - Display issue title, number, and existing labels
    - Decide on disposition (accept, reject, needs research)
@@ -307,23 +323,36 @@ gh issue list --limit 10 --state open --json number,title,labels
 | `status:needs-research` | Needs evaluation | Keep open, research first |
 | `status:blocked` | Blocked by dependency | Keep open, note blocker |
 
-**Issue Handling Actions:**
+**Issue Handling - Delegate to release-manager:**
 
-```bash
+```
 # Accept issue → add to backlog
-gh issue edit {number} --add-label "status:backlog"
-gh issue comment {number} --body "Reviewed and accepted. Added to TODO.md."
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Add label 'status:backlog' to issue #{number} and comment 'Reviewed and accepted. Added to TODO.md.'",
+  description: "Accept issue"
+})
 
 # Reject issue → close with explanation
-gh issue edit {number} --add-label "status:wont-do"
-gh issue close {number} --comment "Closing: not in scope because..."
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Add label 'status:wont-do' to issue #{number} and close with comment 'Closing: not in scope because...'",
+  description: "Reject issue"
+})
 
 # Needs research
-gh issue edit {number} --add-label "status:needs-research"
-gh issue comment {number} --body "Needs evaluation for..."
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Add label 'status:needs-research' to issue #{number} and comment 'Needs evaluation for...'",
+  description: "Mark for research"
+})
 
 # Starting implementation
-gh issue edit {number} --add-label "status:in-progress"
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Add label 'status:in-progress' to issue #{number}",
+  description: "Mark in progress"
+})
 ```
 
 5. Continue to Phase 0B after issues are handled
@@ -545,12 +574,78 @@ Invoke security-engineer: Review security architecture (if security-related)
 
 For each task in the backlog (in order), execute the following steps:
 
-#### Step 5: Plan Mode
+#### Step 5: Create PR and Present Plan
 
-Enter plan mode and:
-- Create a detailed implementation plan for the current task
-- Present the plan for user approval
-- Store the plan in `reporting/{task-name}/plan.md`
+**CRITICAL: All decisions are handled through PR comments, not AskUserQuestion.**
+
+**All git/gh operations are delegated to release-manager.**
+
+**Step 5a: Create Feature Branch**
+
+Delegate to release-manager:
+```
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Check current branch. If on main/master, create and checkout feature branch: feature/{issue-number}-{short-description}",
+  description: "Create feature branch"
+})
+```
+
+**Step 5b: Commit Analysis Documents**
+
+Delegate to release-manager:
+```
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Stage and commit analysis documents in analysis/ and reporting/ with message: 'docs: add analysis for {task-name}'",
+  description: "Commit analysis docs"
+})
+```
+
+**Step 5c: Create PR (Draft)**
+
+Delegate to release-manager:
+```
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Create draft PR with title 'feat: {task title}' and body describing the analysis. Include links to analysis documents.",
+  description: "Create draft PR"
+})
+```
+
+**Step 5d: Post Implementation Plan as PR Comment**
+
+Delegate to release-manager to post the implementation plan:
+```
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Post PR comment with implementation plan for {task-name}. Include: approach, files to modify, implementation steps, acceptance criteria. End with 'Waiting for owner approval before proceeding.'",
+  description: "Post plan as PR comment"
+})
+```
+
+**Step 5e: Wait for Owner Approval**
+
+Delegate to release-manager to monitor PR comments:
+```
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Check PR #{number} for owner feedback. Report any comments or approval.",
+  description: "Check PR feedback"
+})
+```
+
+- **If owner requests changes:**
+  - Delegate to functional-analyst to incorporate feedback
+  - Delegate to release-manager to commit updates
+  - Delegate to release-manager to post revised plan as PR comment
+  - Wait again for approval
+- **If owner rejects entirely:**
+  - Close PR
+  - Close related issue (if applicable)
+  - Report to owner
+- **If owner approves:**
+  - Proceed to Step 6
 
 #### Step 6: Check Domain Skills
 
@@ -639,147 +734,114 @@ For tasks with user-facing changes:
 
 **CRITICAL:** In project management mode, commits NEVER go directly to master/main.
 
+**All git/gh operations are delegated to release-manager.**
+
 **Step 10a: Ensure Feature Branch**
 
-```bash
-# Check current branch
-git branch --show-current
-
-# Branch naming convention: feature/{issue-number}-{short-description}
-# Example: feature/1-async-agent
-if on master/main:
-    branch_name="feature/{issue-number}-{short-description}"
-    git checkout -b "$branch_name"
+Delegate to release-manager:
+```
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Check current branch. If on main/master, create and checkout feature branch: feature/{issue-number}-{short-description}",
+  description: "Ensure feature branch"
+})
 ```
 
 **Step 10b: Commit to Feature Branch**
 
-Invoke `git-manager` agent to commit changes:
-- Commits go to feature branch, not master
-- Use conventional commit message format
-- Include task reference in commit body
-
-**Step 10c: Push Branch**
-
-```bash
-git push -u origin feature/{issue-number}-{short-description}
+Invoke `release-manager` agent to commit changes:
+```
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Commit all staged changes with message: 'feat: {description}'",
+  description: "Commit changes"
+})
 ```
 
-**Step 10d: Create Pull Request**
+Or invoke `c3:commit` skill through release-manager.
 
-```bash
-gh pr create --title "feat: {task title}" --body "$(cat <<'EOF'
-## Summary
+**Step 10c: Push Branch and Create PR**
 
-{Brief description of what this PR implements}
-
-## Changes
-
-- {Change 1}
-- {Change 2}
-
-## Test Plan
-
-- [ ] All tests pass (`make test`)
-- [ ] Linting passes (`make lint`)
-- [ ] Manual testing completed
-- [ ] Documentation updated (if applicable)
-
-## Review Checklist
-
-- [ ] Code follows project conventions
-- [ ] Tests cover new functionality
-- [ ] No sensitive files committed
-- [ ] Commit messages follow conventional format
-
-## Related
-
-- Task: TODO.md #{task-id}
-- Closes #{issue-number}
-EOF
-)"
+Delegate to release-manager:
+```
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Push branch to origin and create PR with title 'feat: {task title}' and body describing changes. Include task reference #{task-id} and issue #{issue-number}.",
+  description: "Push and create PR"
+})
 ```
 
-**Note:** Using `Closes #{issue-number}` auto-closes the issue when PR is merged.
+**Step 10d: Update GitHub Issue**
 
-**Step 10e: Update GitHub Issue**
-
-```bash
-gh issue edit {issue-number} --add-label "status:in-progress"
-gh issue comment {issue-number} --body "PR created: {PR URL}"
+Delegate to release-manager:
+```
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Add label 'status:in-progress' to issue #{issue-number} and add comment 'PR created: {PR URL}'",
+  description: "Update issue status"
+})
 ```
 
-**Step 10f: Report to User**
+**Step 10e: Report to User**
 
 After PR creation:
-- Display PR URL
+- Display PR URL (from release-manager response)
 - Explain that user acceptance testing happens on the PR
 - Task will be marked complete after PR is merged
 
-**Step 10g: CI Follow-up (MANDATORY)**
+**Step 10f: CI Follow-up (MANDATORY)**
 
 ⚠️ **PR creation is NOT complete until CI passes.**
 
-After creating the PR, MUST:
-1. Check CI status: `gh pr checks {number}`
-2. Wait for CI to complete (poll if needed)
-3. **If CI fails:**
-   - View failure details: `gh run view {id} --log-failed`
-   - Debug and fix the issue
-   - Commit and push fixes to the same branch
-   - Repeat until CI passes
-4. **Only report PR complete when CI passes**
-
-**Step 10h: Assign and Request Review**
-
-Always do BOTH:
-```bash
-gh pr edit {number} --add-assignee {user}
-gh pr edit {number} --add-reviewer {user}
+Delegate to release-manager to check CI:
+```
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Check CI status for PR #{number}. Report if passing or failing. If failing, provide failure details.",
+  description: "Check CI status"
+})
 ```
 
-**Step 10i: Check for PR Feedback (MANDATORY)**
+**If CI fails:**
+1. Delegate to developer to fix the issue
+2. Delegate to release-manager to commit and push fixes
+3. Repeat until CI passes
+
+**Step 10g: Assign and Request Review**
+
+Delegate to release-manager:
+```
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Assign PR #{number} to {user} and request review from {user}",
+  description: "Assign and request review"
+})
+```
+
+**Step 10h: Check for PR Feedback (MANDATORY)**
 
 ⚠️ **CRITICAL: The agent does NOT merge PRs. Only the owner merges.**
 
-After CI passes, MUST check for PR feedback from TWO sources:
-
-**a) PR Issue Comments** (general comments on the PR):
-```bash
-gh pr view {number} --comments --json comments
+Delegate to release-manager to check feedback:
 ```
-
-**b) PR Review Comments** (inline comments on specific code lines):
-```bash
-gh api repos/{owner}/{repo}/pulls/{number}/reviews
-gh api repos/{owner}/{repo}/pulls/{number}/comments
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Get all comments (issue comments and review comments) for PR #{number}. Report any feedback that needs to be addressed.",
+  description: "Check PR feedback"
+})
 ```
-
-⚠️ **CRITICAL**: Review comments are often inline on specific lines of code. These contain the most detailed feedback. You MUST check both types.
 
 **Process each feedback item:**
 
-1. **Review each comment from the owner:**
-   - Parse the comment body
-   - For review comments: note the file and line number
-   - Identify what needs to be addressed
-   - Determine if it requires code changes, documentation updates, or clarification
-
+1. **Review each comment** (from release-manager's report)
 2. **Address the feedback:**
-   - Make the necessary changes
-   - Commit and push to the same branch
-   - Add a comment on the PR explaining what was done
-
+   - Delegate to developer to make changes
+   - Delegate to release-manager to commit, push, and comment on PR
 3. **Wait for CI after changes:**
-   - Check CI status again
-   - Fix any failures
-   - Repeat until CI passes
-
+   - Delegate to release-manager to check CI status
 4. **Respond to all feedback:**
    - Address every comment from the owner
    - Do NOT skip or ignore any feedback
-   - Ask for clarification if feedback is unclear
-
 5. **Report status and wait:**
    - Summarize what feedback was addressed
    - Explain that PR is ready for owner review/merge
@@ -787,19 +849,21 @@ gh api repos/{owner}/{repo}/pulls/{number}/comments
 
 **Example feedback handling:**
 
-```bash
-# Get latest comments
-gh pr view 4 --comments --json comments
+Delegate to release-manager to handle PR feedback:
+```
+# Check for feedback
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Get latest comments for PR #4",
+  description: "Check PR comments"
+})
 
-# Address feedback in code
-# (make changes, commit, push)
-
-# Comment on PR explaining changes
-gh pr comment 4 --body "## ✅ Changes Applied
-
-{Description of what was changed to address feedback}
-
-All tests pass, lint clean, typecheck clean."
+# After developer makes changes, delegate to release-manager
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Commit and push the feedback fixes, then comment on PR #4 with: '## ✅ Changes Applied - {description}. All tests pass, lint clean.'",
+  description: "Push and comment"
+})
 ```
 
 **Feedback types and responses:**
@@ -832,37 +896,51 @@ When user reports PR is merged:
 
 1. **Find the issue number:**
    - Check TODO.md task entry (includes issue reference)
-   - Or parse from PR body: `gh pr view {pr-number} --json body --jq '.body' | grep -o "Fixes #[0-9]*"`
-   - Or check commit message: `git log --oneline -1 | grep -o "#[0-9]*"`
+   - Or ask release-manager to find it from PR
 
 2. **Clean up GitHub issue labels:**
-   ```bash
-   # Remove in-progress label (issue may be auto-closed by "Fixes #N")
-   gh issue edit {issue-number} --remove-label "status:in-progress"
+
+Delegate to release-manager:
+```
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Remove 'status:in-progress' label from issue #{issue-number}. If issue is not auto-closed, close it.",
+  description: "Clean up issue"
+})
+```
+
+3. **Delegate TODO.md update to functional-analyst:**
    ```
-
-3. If issue is not auto-closed: `gh issue close {issue-number}`
-
-4. **Verify TODO.md reflects merged work:**
-   - Find task in TODO.md
-   - Add completion date if missing: `(YYYY-MM-DD)`
-   - Ensure task is in Done section
-   - Check for follow-up tasks or dependencies
+   Agent({
+     subagent_type: "c3:functional-analyst",
+     prompt: "Update TODO.md to mark task {task-id} as complete after PR merge. Add completion date (YYYY-MM-DD), move to Done section.",
+     description: "Update TODO.md"
+   })
+   ```
+   The functional-analyst owns the TODO.md lifecycle.
 
 5. **Handle untracked artifacts:**
    - Check for analysis/ and reporting/ files from merged work
-   - Ask user whether to:
-     - Commit as documentation: `git add analysis/ reporting/`
-     - Clean up: `git clean -fd analysis/ reporting/`
-     - Keep for reference
+   - These should already be committed to the PR
+   - Verify they exist in the merged branch
 
 6. **Sync to main branch:**
-   ```bash
-   git checkout main
-   git pull
-   ```
 
-7. Continue to next task from Step 5
+Delegate to release-manager:
+```
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Switch to main branch and pull latest",
+  description: "Sync to main"
+})
+```
+
+7. **Ask owner: prepare release or continue with next task?**
+   - Use PR comment or direct question (owner is present)
+   - If release: Delegate to release-manager to execute release workflow
+   - If continue: Proceed with next task from TODO.md
+
+8. Continue to next task from Step 5
 
 ---
 
@@ -942,13 +1020,15 @@ This applies to situations like:
 | API analysis | `analysis/api-{topic}.md` |
 | UX analysis | `analysis/ux-{topic}.md` |
 | Security analysis | `analysis/security-{topic}.md` |
+| Bug analysis | `analysis/bug/{bug-id}.md` |
+| Consensus summary | `analysis/reporting/{task-name}/consensus.md` |
+| Plan | `analysis/reporting/{task-name}/plan.md` |
+| Implementation review report | `analysis/reporting/{task-name}/{topic}-review.md` |
+| Task summary | `analysis/reporting/{task-name}/summary.md` |
 | Research findings | `research/{topic}.md` |
 | Technology recommendations | `research/{topic}/recommendations.md` |
-| Consensus summary | `reporting/{task-name}/consensus.md` |
-| Plan | `reporting/{task-name}/plan.md` |
-| Implementation review report | `reporting/{task-name}/{topic}-review.md` |
-| Task summary | `reporting/{task-name}/summary.md` |
-| Bug analysis | `docs/bug-analysis/{bug-id}.md` |
+
+**Note:** All analysis documents go in `analysis/` folder with sub-folders for organization.
 
 ### TODO.md Structure
 
@@ -998,7 +1078,7 @@ This applies to situations like:
 - Domain agents (api-architect, ui-ux-designer, security-engineer) contribute to TODO.md through the functional-analyst
 - Resolve conflicts between domain recommendations based on project priorities
 - Ensure all tasks have verifiable acceptance criteria before implementation
-- **For bugs**: The bug-fixing skill handles the complete workflow including TDD (test first)
+- **For bugs**: Spawn `c3:bug-fixer` agent for complete TDD workflow (keeps context clean)
 - **For features**: Follow the feature development phases with domain design reviews
 - **Research** is conditional - invoke when gaps identified or technology choices needed
 - **Security review** is scoped to security-related tasks
@@ -1029,23 +1109,33 @@ This applies to situations like:
 
 ## Publishing Releases
 
-When the user requests publishing to PyPI:
+When the user requests publishing to PyPI or preparing a release:
 
-**Invoke the `pypi-publish` skill** - it contains the complete pre-publish checklist and workflow.
+**Delegate to release-manager:**
 
-Key checks from that skill:
+```
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Execute release workflow: determine version bump, update files, run checks, build, and publish to PyPI",
+  description: "Execute release"
+})
+```
+
+The release-manager will invoke the `c3:release` skill which handles:
+- Version bump decision
+- Updating version files (pyproject.toml, __init__.py)
+- Updating changelog
+- Running pre-publish checks
+- Building and verifying package
+- Creating tag and GitHub release
+- Uploading to PyPI
+
+Key checks (handled by release-manager):
 - README image paths must use absolute GitHub URLs (not relative paths)
 - Version must be synced between `pyproject.toml` and `__init__.py`
 - Local development configuration (`[tool.uv.sources]`, `[tool.uv.workspace]`) must be removed
 - Entry points must be verified
 - Package contents must be verified after build
-
-**Workflow:**
-1. Run pre-publish checks (or `make pre-publish` if available)
-2. Build: `uv build`
-3. Verify: `unzip -l dist/*.whl | head -30`
-4. Upload: `uv run twine upload dist/*`
-5. Tag: `git tag v<VERSION> && git push --tags`
 
 ---
 

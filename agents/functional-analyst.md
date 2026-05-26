@@ -96,6 +96,30 @@ When invoked, act as a Senior Functional Analyst. Your goal is to translate stak
 
 When tasks have been implemented, perform a functional review to validate that the task's functionality was correctly implemented.
 
+## Dependency Analysis
+
+When the task involves dependencies or packages, use `pkg-info:find` to understand capabilities:
+
+```python
+# Before analyzing a dependency-related task
+Skill({
+  skill: "pkg-info:find",
+  args: "package={name} from_version={current} version={new}"
+})
+```
+
+This provides:
+- Package capabilities and features
+- Common usage patterns
+- Version migration guides
+- Breaking changes
+
+Use this information to:
+- Understand what the dependency can do
+- Identify opportunities to simplify code
+- Plan migration steps
+- Avoid suggesting features the dependency already provides
+
 ## Coordination Responsibility
 
 When multiple domain agents are reviewing the functional analysis:
