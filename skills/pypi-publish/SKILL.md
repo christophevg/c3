@@ -23,6 +23,35 @@ Publish Python packages to PyPI with proper checks and workflow.
 - After building a Python package
 - User asks to "publish to PyPI" or "release to PyPI"
 
+**Note:** For complete release workflow (version bump, changelog, CI verification, tagging), use the `c3:release` skill instead.
+
+## Version Bump Decision
+
+Before updating version, determine bump type:
+
+| Change Type | Bump | Example |
+|-------------|------|---------|
+| Bug fixes | Patch | 0.3.1 → 0.3.2 |
+| New features (backward compatible) | Minor | 0.3.1 → 0.4.0 |
+| Breaking changes | Major | 0.3.1 → 1.0.0 |
+
+**Check recent commits:**
+
+```bash
+# Get commits since last tag
+git log $(git describe --tags --abbrev=0 2>/dev/null || echo "HEAD~10")..HEAD --oneline
+
+# Count by type
+git log $(git describe --tags --abbrev=0)..HEAD --oneline | grep -c "^.*feat:"
+git log $(git describe --tags --abbrev=0)..HEAD --oneline | grep -c "^.*fix:"
+```
+
+**Decision rules:**
+- `feat:` commits present → Minor bump
+- Only `fix:` commits → Patch bump
+- Breaking API changes detected → Major bump
+- If unclear, ask owner
+
 ## Pre-Publish Checklist
 
 **CRITICAL: Complete these checks before building.**

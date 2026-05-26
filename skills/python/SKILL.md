@@ -391,6 +391,58 @@ This package provides **both async and sync APIs**:
 Both classes provide identical functionality with the same interface.
 ```
 
+## Pre-Commit Workflow
+
+Before committing Python code, run these checks:
+
+```bash
+# 1. Run tests
+make test
+
+# 2. Run linting
+make lint
+
+# 3. Format code (if not in make lint)
+ruff format src tests
+
+# 4. Run type checking
+make typecheck
+```
+
+**Combined command:**
+```bash
+make test && make lint && ruff format src tests && make typecheck
+```
+
+**Why multiple gates:** The commit skill will also run formatting checks as a final gate. Running both ensures early feedback and catches issues before the commit phase.
+
+## Security Patterns
+
+### Atomic File Creation for Sensitive Files
+
+When creating files with sensitive content (session cache, credentials, tokens), use atomic creation with secure permissions:
+
+```python
+import os
+
+# Atomic creation with secure permissions (0600)
+fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+with os.fdopen(fd, 'w') as f:
+    f.write(content)
+```
+
+**This ensures:**
+- **No race condition** — `O_EXCL` fails if file already exists
+- **Correct permissions from creation** — 0600 means only owner can read/write
+- **Atomic operation** — File either exists completely or not at all
+
+**When to use:**
+- Session cache files
+- Credential files
+- Token storage
+- Any file containing sensitive data
+
 ## Related Skills
 
 - `python-project` - Project setup, dependency management, and virtual environments with uv
+

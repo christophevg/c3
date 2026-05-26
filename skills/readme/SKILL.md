@@ -183,6 +183,7 @@ mv .github/README.md README.md
 - [ ] **How to Test** — Clear testing instructions
 - [ ] **User Acceptance Testing** — Steps for users to verify (if applicable)
 - [ ] **Badges** — Appropriate for project type (5-10 max)
+- [ ] **PACKAGE.md** — PyPI packages must have PACKAGE.md file with badge
 - [ ] **Total length** — Under 500 lines
 - [ ] **End-user can complete** — Setup without asking questions
 
@@ -248,7 +249,7 @@ See `patterns/badge-selection.md` for detailed badge configuration.
 
 | Project Type | Badges | Count |
 |--------------|--------|-------|
-| Python (PyPI) | PyPI, Python, uv, CI, Coverage, License, Agentic | 7 |
+| Python (PyPI) | PyPI, Python, uv, CI, Coverage, License, PACKAGE.md, Agentic | 8 |
 | Python (Non-PyPI) | Python, uv, CI (if exists), License, Agentic | 4-5 |
 | Web App | CI, License, Agentic | 3 |
 | Config/Tools | Platform, License, Agentic | 3 |
@@ -280,11 +281,13 @@ See `patterns/badge-selection.md` for detailed badge configuration.
 
 1. **Agentic badge is required** for all projects built using agentic workflow
 2. **uv badge is required** for all Python projects (standard package manager)
-3. **License badge only if LICENSE file exists** — check for `LICENSE`, `LICENSE.txt`, or `LICENSE.md`
-4. **CI badge only if workflow exists** — check `.github/workflows/` for actual filename
-5. **CI badge filename must match** — use `ci.yml`, `test.yml`, `test.yaml`, etc. as appropriate
-6. **Downloads badge is removed** (rate limiting causes broken badges)
-7. **Deploy badge is removed** (not using GH Actions for deployment)
+3. **PACKAGE.md is mandatory for all PyPI packages** — provides AI-optimized documentation
+4. **PACKAGE.md badge required if PACKAGE.md exists** — indicates AI-optimized docs available
+5. **License badge only if LICENSE file exists** — check for `LICENSE`, `LICENSE.txt`, or `LICENSE.md`
+6. **CI badge only if workflow exists** — check `.github/workflows/` for actual filename
+7. **CI badge filename must match** — use `ci.yml`, `test.yml`, `test.yaml`, etc. as appropriate
+8. **Downloads badge is removed** (rate limiting causes broken badges)
+9. **Deploy badge is removed** (not using GH Actions for deployment)
 
 **Badge sources:**
 - PyPI: `https://img.shields.io/pypi/v/{package}.svg`
@@ -294,6 +297,7 @@ See `patterns/badge-selection.md` for detailed badge configuration.
 - Coverage: `https://img.shields.io/coveralls/github/{user}/{repo}.svg`
 - CI: `https://img.shields.io/github/actions/workflow/status/{user}/{repo}/{workflow}.svg` (replace `{workflow}` with actual filename from `.github/workflows/`)
 - License: `https://img.shields.io/github/license/{user}/{repo}.svg`
+- PACKAGE.md: `https://img.shields.io/badge/pkgq-PACKAGE.md-blueviolet` (links to `https://github.com/christophevg/pkgq#readme`)
 - Agentic: `https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square` (links to `https://christophe.vg/about/Agentic-Workflow`)
 
 ## Template Files
@@ -326,3 +330,4 @@ See `patterns/badge-selection.md` for detailed badge configuration.
 
 - commit — For committing README changes
 - develop-skill — For updating this skill itself
+

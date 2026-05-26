@@ -1,6 +1,6 @@
 {
   "name": "c3",
-  "version": "1.1.5",
+  "version": "1.2.0",
   "description": "Christophe's Coding Crew - my personal collection of agents and skills supporting my agentic workflow.",
   "author": {
     "name": "Christophe VG",
@@ -20,3 +20,4 @@
     "plugin"
   ]
 }
+

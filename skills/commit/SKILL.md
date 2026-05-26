@@ -64,8 +64,60 @@ Before any commit, verify:
 4. **User approval** - Present analysis and wait for confirmation
 5. **Repository style** - Check recent commits for message style conventions
 6. **Attribution included** - Ensure message includes attribution line
+7. **Trailing newlines** - Verify all edited files end with newline
+8. **Code formatting** - Run `ruff format src tests` for Python projects
 
 **Note:** Test/type/lint validation should be performed by the project-manager agent before invoking this skill.
+
+## Pre-Commit Validation
+
+Before committing, verify:
+
+### 1. Trailing Newlines
+
+All edited files should end with a newline character.
+
+```bash
+# Check if file ends with newline (returns 0 if no newline)
+test "$(tail -c1 file | wc -l)" -ne 0 && echo "Missing newline"
+
+# Or check all staged files
+git diff --cached --name-only | while read file; do
+  if test "$(tail -c1 "$file" 2>/dev/null | wc -l)" -ne 0; then
+    echo "Missing newline: $file"
+  fi
+done
+```
+
+**If missing newline:**
+```bash
+# Add newline to file
+echo "" >> file
+```
+
+### 2. Code Formatting (Python Projects)
+
+Before committing Python code, run formatting:
+
+```bash
+# Format code
+ruff format src tests
+
+# Or use makefile if available
+make lint
+```
+
+**If formatting is needed:**
+1. Run `ruff format src tests`
+2. Re-stage files: `git add src tests`
+3. Proceed with commit
+
+### 3. If Validation Fails
+
+If either check fails:
+1. Fix the issue (add newline, format code)
+2. Re-stage the files
+3. Attempt commit again
 
 ## Sensitive File Detection
 
@@ -372,3 +424,4 @@ When this skill is invoked via `project-manage`:
 | User didn't review changes | Present diff, wait for explicit approval |
 | Accidentally staged sensitive file | Use `git restore --staged <file>` to unstage |
 | Missing attribution in commit | Use `git commit --amend` to add attribution line |
+

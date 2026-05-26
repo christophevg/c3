@@ -1,4 +1,5 @@
 {
+  "skillListingBudgetFraction": 0.03,
   "attribution": {
     "commit": "🤖 Implemented together with a coding agent.",
     "pr": ""
@@ -33,5 +34,8 @@
   },
   "awaySummaryEnabled": false,
   "theme": "light",
-  "skillListingBudgetFraction" : 0.03
+  "editorMode": "normal",
+  "verbose": false,
+  "terminalProgressBarEnabled": true
 }
+

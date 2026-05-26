@@ -70,11 +70,23 @@ Check the workflow file with: `ls .github/workflows/`
 
 **Usage**: Include this badge for projects built using agentic workflow (AI agents implementing architecture).
 
+### Documentation Standard Badge
+
+| Badge | URL | Purpose |
+|-------|-----|---------|
+| PACKAGE.md | `https://img.shields.io/badge/pkgq-PACKAGE.md-blueviolet` | AI-optimized documentation |
+
+**Usage**: Include this badge for projects with a PACKAGE.md file in the repository root. This indicates the package provides AI-optimized documentation for agent consumption.
+
+**Format**: `[![PACKAGE.md](https://img.shields.io/badge/pkgq-PACKAGE.md-blueviolet)](https://github.com/christophevg/pkgq#readme)`
+
 ---
 
 ## Badge Sets by Project Type
 
 ### Python (PyPI Package)
+
+**Requirement**: All PyPI packages MUST have a PACKAGE.md file in the repository root. This provides AI-optimized documentation for agent consumption.
 
 ```markdown
 [![PyPI](https://img.shields.io/pypi/v/{package}.svg)][pypi]
@@ -83,10 +95,11 @@ Check the workflow file with: `ls .github/workflows/`
 [![CI](https://img.shields.io/github/actions/workflow/status/{user}/{repo}/ci.yml.svg)][ci]
 [![Coverage](https://img.shields.io/coveralls/github/{user}/{repo}.svg)][coveralls]
 [![License](https://img.shields.io/github/license/{user}/{repo}.svg)][license]
+[![PACKAGE.md](https://img.shields.io/badge/pkgq-PACKAGE.md-blueviolet)](https://github.com/christophevg/pkgq#readme)
 [![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Agentic-Workflow)
 ```
 
-**7 badges**: PyPI, Python, uv, CI, Coverage, License, Agentic
+**8 badges**: PyPI, Python, uv, CI, Coverage, License, PACKAGE.md, Agentic
 
 ---
 
@@ -158,7 +171,7 @@ Check the workflow file with: `ls .github/workflows/`
 
 | Project Type | Badge Count |
 |--------------|-------------|
-| Python (PyPI) | 7 |
+| Python (PyPI) | 8 |
 | Python (Non-PyPI) | 5 |
 | Web Application | 3 |
 | Config/Tools | 3 |
@@ -220,3 +233,6 @@ Add link references at the bottom of README:
 - [ ] License badge only if LICENSE file exists (check for `LICENSE`, `LICENSE.txt`, or `LICENSE.md`)
 - [ ] CI badge only if workflow file exists — check `.github/workflows/` for actual filename
 - [ ] CI badge workflow filename matches actual file (e.g., `ci.yml`, `test.yml`, `test.yaml`)
+- [ ] PACKAGE.md badge present if PACKAGE.md file exists in repository root
+- [ ] PyPI packages have PACKAGE.md file (mandatory for all PyPI projects)
+
