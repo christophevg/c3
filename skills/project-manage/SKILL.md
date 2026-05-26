@@ -255,34 +255,57 @@ Agent({
 ```
 
 **If the task is a DEPENDENCY:**
-- Determine if it's a simple upgrade or upgrade with goal:
-  - **Simple upgrade**: "Upgrade yoker to 2.1.0" (no goal specified)
-  - **Upgrade with goal**: "Upgrade yoker to use their new config handling, simplify our codebase"
-- **Invoke `pkg-info:find`** to get package documentation and migration guides
-- Route based on task complexity:
 
-| Complexity | Workflow |
-|------------|----------|
-| Simple upgrade (no goal) | Spawn `c3:python-developer` with package info |
-| Upgrade with goal | Use **Feature Development Workflow** with package context |
+**⚠️ CRITICAL: Do NOT spawn researcher. pkg-info:find provides the research.**
+
+Determine task complexity:
+
+| Complexity | Example | Workflow |
+|------------|---------|----------|
+| Simple upgrade | "Upgrade yoker to 2.1.0" | python-developer with pkg-info |
+| Upgrade with goal | "Upgrade yoker to simplify our codebase" | functional-analyst with pkg-info |
+
+**Workflow:**
 
 ```python
-# Get package information first
-Skill({
-  skill: "pkg-info:find",
-  args: "package={name} from_version={current} version={new}"
-})
+# Step 1: Get package information (DO NOT spawn researcher)
+# Invoke pkg-info:find for EACH package mentioned
+for package in packages:
+  Skill({
+    skill: "pkg-info:find",
+    args: f"package={package} from_version={current} version={new}"
+  })
 
-# Simple upgrade
+# Step 2: Use gathered information directly
+
+# For simple upgrade:
 Agent({
   subagent_type: "c3:python-developer",
-  prompt: "Upgrade {package} from {current} to {new}. Use pkg-info documentation for migration guide.",
+  prompt: "Upgrade {packages}. Package info already gathered. Versions: {versions}. Migration: {migration}",
   description: "Upgrade {package}"
 })
 
-# Upgrade with goal (feature workflow with package context)
-# Continue to Phase 0 with package info already gathered
+# For upgrade with goal:
+# Invoke functional-analyst with pkg-info results as context
+Agent({
+  subagent_type: "c3:functional-analyst",
+  prompt: """
+  Task: {user_goal}
+  
+  Packages to upgrade:
+  {package_info_from_pkg_info_find}
+  
+  Analyze how to use these new features to achieve the goal.
+  Create TODO.md with implementation tasks.
+  """,
+  description: "Analyze upgrade"
+})
 ```
+
+**DO NOT:**
+- Spawn researcher (pkg-info:find already gathered information)
+- Invoke pkg-info:find again (already done in Step 1)
+- Start Feature Development Workflow from Phase 0 (skip to functional-analyst)
 
 **If the task is a FEATURE:**
 - Use the **Feature Development Workflow** (continue to Phase 0)
