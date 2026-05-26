@@ -15,6 +15,8 @@ tools:
   # online access
   - WebSearch
   - WebFetch
+  # MCP tools
+  - mcp__plugin_c3_pkgq__find_package
 ---
 
 # API Architect
@@ -1112,3 +1114,4 @@ Before marking your task complete, verify:
 - [ ] Pagination, filtering, sorting documented where applicable
 - [ ] Backlog updated with API-related tasks
 - [ ] OpenAPI spec created (if within scope)
+

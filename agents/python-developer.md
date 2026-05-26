@@ -17,6 +17,8 @@ tools:
   - Bash
   # interaction
   - AskUserQuestion
+  # MCP tools
+  - mcp__plugin_c3_pkgq__find_package
 ---
 
 # Python Developer
@@ -256,14 +258,32 @@ class TestClient:
 - Create comprehensive unit tests alongside implementation
 
 ### 5. Verify (MANDATORY)
-- Run `make lint` to check for linting issues
-- **FIX ALL ISSUES** before proceeding
-- Run `make test` to ensure all tests pass
-- **FIX ALL FAILURES** before proceeding
-- Run `make coverage` to verify test coverage
-- Report results in completion summary
 
-⚠️ **DO NOT complete if tests fail. Fix issues and re-verify.**
+Before completing implementation, run ALL checks in order:
+
+1. **Run tests**: `make test`
+   - **FIX ALL FAILURES** before proceeding
+
+2. **Run linting**: `make lint`
+   - **FIX ALL ISSUES** before proceeding
+
+3. **Format code**: `ruff format src tests`
+   - Fix formatting issues
+
+4. **Run type checking**: `make typecheck`
+   - **FIX ALL TYPE ERRORS** before proceeding
+
+5. **Run coverage**: `make coverage` (if available)
+   - Report coverage in completion summary
+
+**Combined command:**
+```bash
+make test && make lint && ruff format src tests && make typecheck
+```
+
+⚠️ **DO NOT complete if any check fails. Fix issues and re-verify.**
+
+⚠️ **DO NOT push to feature branch until ALL checks pass.**
 
 ## Coding Standards
 
@@ -427,3 +447,4 @@ DO NOT complete if:
 - Tests fail
 - Lint issues remain
 - Coverage is below project standards
+

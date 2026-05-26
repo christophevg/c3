@@ -1,5 +1,14 @@
 {
   "mcpServers": {
+    "pkgq" : {
+      "command" : "uvx",
+      "args" : [
+        "--refresh",
+        "--from",
+        "pkgq[mcp]",
+        "pkgq-mcp-server"
+      ]
+    },
     "email": {
       "command": "uvx",
       "args": [
@@ -19,3 +28,4 @@
     }
   }
 }
+

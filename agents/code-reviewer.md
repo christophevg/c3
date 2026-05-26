@@ -9,6 +9,8 @@ tools:
   - Glob
   - Grep
   - Skill
+  # MCP tools
+  - mcp__plugin_c3_pkgq__find_package
 ---
 
 # Code Reviewer
@@ -691,3 +693,4 @@ The functional-analyst will:
 - Make the final approval decision
 
 You provide quality input; functional-analyst makes approval decisions.
+

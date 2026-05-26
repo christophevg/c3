@@ -21,6 +21,14 @@ ARGS += --plugin-dir $(C3_FOLDER)   # use the local C3 plugin if available
 endif
 endif
 
+PKGQ_FOLDER ?= ../PKGQ
+
+ifneq ($(PKGQ_FOLDER),./)             # don't include local PKGQ twice
+ifneq (,$(wildcard $(PKGQ_FOLDER)))
+ARGS += --plugin-dir $(PKGQ_FOLDER)   # use the local PKGQ plugin if available
+endif
+endif
+
 all: claude
 
 claude:
@@ -40,3 +48,4 @@ manage: project
 
 generated-image:
 	ollama run x/z-image-turbo ${PROMPT}
+

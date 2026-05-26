@@ -15,6 +15,8 @@ tools:
   # interaction
   - AskUserQuestion
   - PushNotification
+  # MCP tools
+  - mcp__plugin_c3_pkgq__find_package
 ---
 
 # Functional Analyst
@@ -385,3 +387,4 @@ Create functional analysis in docs/specs/
 Switch to structured approach for remaining work
 Reorganize TODO.md from agile to structured
 ```
+

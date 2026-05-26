@@ -20,6 +20,8 @@ tools:
   # interaction
   - AskUserQuestion
   - PushNotification
+  # MCP tools
+  - mcp__plugin_c3_pkgq__find_package
 ---
 
 # End User Documenter Agent
@@ -73,3 +75,4 @@ Skill({ skill: "c3:markdown-to-pdf" })
 - Must create working HTML navigation
 - Must generate PDF source markdown
 - Must target non-technical users
+

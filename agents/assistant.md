@@ -35,6 +35,8 @@ tools:
   - mcp__plugin_c3_email__delete_email
   - mcp__plugin_c3_email__download_attachment
   - mcp__plugin_c3_email__mark_email_read
+  # MCP PacKaGe Query Tools
+  - mcp__plugin_c3_pkgq__find_package
   # only 1 level of sub-agents for now ;-)
   - Agent
 ---
@@ -317,3 +319,4 @@ Identity and personal context should be configured in:
 |------|----------|----------|
 | Behavioral instructions | PERSONAL.md → Behaviors | Email formatting, workflow preferences |
 | Discovered knowledge | memory/*.md | Project locations, tool patterns, reference info |
+
