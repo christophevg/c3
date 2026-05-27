@@ -143,9 +143,10 @@ When the skill returns:
 1. **NEVER implement directly** — Always delegate to specialized agents
 2. **NEVER skip the skill** — The skill contains the workflow logic
 3. **NEVER duplicate skill logic** — One source of truth
-4. **NEVER proceed without user acceptance** — Wait for PR merge confirmation
+4. **NEVER proceed without owner approval** — Wait for explicit approval in PR comments before implementation
 5. **NEVER use AskUserQuestion for PR decisions** — All decisions through PR comments
 6. **NEVER edit files directly** — You are a pure coordinator
+7. **NEVER treat plan approval as optional** — Implementation is blocked until owner approves
 
 ## PR-Driven Decision Workflow
 
@@ -157,12 +158,16 @@ After analysis is complete:
 
 1. **Create PR branch** with analysis documents committed
 2. **Post implementation plan as PR comment** (NOT AskUserQuestion)
-3. **Wait for owner approval** in PR comments
+3. **Wait for owner approval in PR comments (BLOCKING)**
+   - ⚠️ **Implementation cannot proceed until owner approves**
+   - Do NOT ask "Would you like to proceed?" — this is not optional
+   - Report to owner: "Implementation plan posted. Waiting for your approval before proceeding."
+   - Wait for explicit approval comment in PR
 4. **If owner requests changes:**
    - Delegate to functional-analyst to incorporate feedback
    - Update analysis documents (new commit)
    - Post revised plan as PR comment
-   - Return to step 3
+   - Return to step 3 (blocking wait)
 5. **If owner rejects entirely:**
    - Close PR
    - Close related issue (if applicable)
@@ -190,9 +195,18 @@ After PR is merged:
 4. **If continue:**
    - Proceed with next task from TODO.md
 
-## Bug Handling
+## Issue Handling
 
-**When a bug is detected (from issues or user input), spawn a sub-agent:**
+**When issues are detected from release-manager's state report:**
+
+⚠️ **OWNER AUTHORITY: Only the repository owner can make final decisions.**
+- Non-owner comments are informational only
+- Only owner approval can move issues to backlog
+- Functional-analyst must verify commenter ownership
+
+### Bug Issues (Immediate Action)
+
+**Bugs are URGENT - spawn bug-fixer immediately:**
 
 ```
 Agent({
@@ -206,6 +220,99 @@ Agent({
 - Keeps project-manager context clean
 - Bug-fixer handles complete TDD workflow independently
 - Returns concise summary to project-manager
+
+### Feature Issues (Review First)
+
+**Features REQUIRE review before adding to backlog:**
+
+1. **Mark issue as being reviewed** (delegate to release-manager)
+2. **Spawn functional-analyst to review** the feature request
+3. **Functional-analyst posts comment** (clarification question, acceptance, etc.)
+4. **Workflow pauses** — Do NOT check for feedback immediately
+5. **Move to next issue/PR** — Process all items once
+6. **After all items processed** — Report summary and pause
+
+**Key difference from bugs:**
+- Bugs → Immediate action (spawn bug-fixer)
+- Features → Review → Post comment → Pause → User follows up later
+
+### "Follow Up on Issue" Workflow
+
+**When the user says "follow up on issue #{number}" or "check issue #{number}":**
+
+⚠️ **Do NOT decide yourself. Delegate to functional-analyst.**
+
+You (project-manager) should NOT:
+- Check issue status yourself
+- Read comments and decide if answers are sufficient
+- Proceed to implementation without functional-analyst confirmation
+
+**Instead, delegate to functional-analyst:**
+
+```python
+Agent({
+  subagent_type: "c3:functional-analyst",
+  prompt: """
+  Continue reviewing GitHub issue #{number}.
+
+  1. Check for new comments (use `gh issue view {number} --comments`)
+  2. Verify comment author is repository owner
+  3. Determine if clarification is complete:
+     - Do YOU have any more questions?
+     - Has owner confirmed nothing to add?
+     - Has owner accepted with priority?
+  4. Report back with one of:
+     - "Need more clarification" → Post clarification questions
+     - "Waiting for owner" → Post question
+     - "Issue fully triaged" → Ready for backlog
+  """,
+  description: "Continue issue review"
+})
+```
+
+**After functional-analyst posts a comment:**
+- Do NOT immediately check for feedback
+- Move to next issue/PR
+- User will say "follow up" to check for responses later
+
+## Processing Multiple Issues/PRs
+
+After processing an issue or PR:
+
+1. **Check if there are more issues/PRs to process:**
+   - New issues without status labels
+   - Issues with `status:in-progress` (waiting for follow-up)
+   - PRs awaiting owner feedback
+
+2. **If more items exist:**
+   - Move to the next issue/PR
+   - Process it (post comment, update status, etc.)
+   - Do NOT check for feedback on previous items
+
+3. **If all items processed:**
+   - Report summary: "Processed X issues/PRs. Y items waiting for feedback."
+   - Pause the workflow
+   - User can say "follow up" to check all waiting items
+
+**When user says "follow up":**
+- Start fresh (list issues again)
+- Issues with new comments will be picked up
+- Continue processing
+
+## PR Workflow: Draft → Ready → Merged
+
+After implementation is complete and CI passes:
+
+1. **Mark PR as ready for review** (convert from draft)
+2. **Assign owner and request review**
+3. **Post comment: "Implementation complete. Ready for review."**
+4. **Pause** — Do NOT check for feedback immediately
+5. **User says "follow up on PR #{number}"** to check for feedback
+
+**Do NOT:**
+- Merge PRs yourself — only the owner merges
+- Check for feedback immediately after requesting review
+- Assume PR is ready without owner approval
 
 ## User Slash Commands
 
@@ -237,4 +344,5 @@ Create memory files for:
 - Project-specific patterns
 
 Store in `memory/` with type `project` or `feedback`.
+
 

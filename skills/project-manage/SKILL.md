@@ -329,56 +329,195 @@ Based on the issues reported by release-manager:
 1. **Review reported issues** (from release-manager's state report)
 2. **Filter out issues with status labels** (already reviewed):
    - Issues without status labels are new and need triage
-3. **If unreviewed issues exist (no status label):**
-   - **Issues are URGENT** - Do NOT ask for confirmation
-   - Automatically add to backlog and start working on them
-   - Delegate to release-manager to label with `status:in-progress`
-   - Spawn `c3:bug-fixer` agent for bugs
-4. Review each issue:
-   - Display issue title, number, and existing labels
-   - Decide on disposition (accept, reject, needs research)
+3. **Classify each new issue by type:**
 
-**Issue Status Labels:**
+| Issue Type | Indicators | Workflow |
+|------------|------------|----------|
+| **Bug** | Labels: `bug`, `error`, `crash`, `broken`, `fix` | Immediate → Bug Fixer |
+| **Feature** | Labels: `enhancement`, `feature`, `new`, `add` | Review → Clarify → Backlog |
+| **Question** | Labels: `question`, `help`, `discussion` | Research or close |
+| **Dependencies** | Labels: `dependencies`, `upgrade` | Research → Backlog |
 
-| Label | Meaning | Action |
-|-------|---------|--------|
-| `status:backlog` | Reviewed, added to TODO.md | Keep open, implement later |
-| `status:in-progress` | Currently implementing | Keep open, track progress |
-| `status:wont-do` | Decision: won't implement | Close with explanation |
-| `status:needs-research` | Needs evaluation | Keep open, research first |
-| `status:blocked` | Blocked by dependency | Keep open, note blocker |
+4. **Handle each issue type appropriately:**
 
-**Issue Handling - Delegate to release-manager:**
+#### Bug Issues (URGENT - Immediate Action)
 
+For bugs, do NOT ask for confirmation - spawn bug-fixer immediately:
+
+```python
+# Mark as in-progress
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Add label 'status:in-progress' to issue #{number}",
+  description: "Mark bug in progress"
+})
+
+# Spawn bug-fixer
+Agent({
+  subagent_type: "c3:bug-fixer",
+  prompt: "Fix {issue-number}: {issue-title}\n\n{issue-body}",
+  description: "Fix bug {issue-number}"
+})
 ```
+
+#### Feature Issues (REQUIRE REVIEW - Clarify First)
+
+**CRITICAL: Feature issues must be reviewed by functional-analyst before adding to backlog.**
+
+⚠️ **OWNER AUTHORITY: Only the repository owner can make final decisions.**
+- Non-owner comments are informational only
+- Only owner approval can move issue to backlog
+- Functional-analyst must verify commenter ownership
+
+For each feature issue without a status label:
+
+**Step 1: Mark as being reviewed**
+
+```python
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Add label 'status:in-progress' to issue #{number} and comment '🔍 Reviewing this feature request...'",
+  description: "Mark issue as being reviewed"
+})
+```
+
+**Step 2: Delegate to functional-analyst for review**
+
+```python
+Agent({
+  subagent_type: "c3:functional-analyst",
+  prompt: """
+  Review GitHub issue #{number} for acceptance into the backlog.
+  
+  Issue: {issue-title}
+  Description: {issue-body}
+  Labels: {issue-labels}
+  
+  Follow the GitHub Issue Review Workflow:
+  1. Assess if the issue is well-defined
+  2. Identify missing information or ambiguities
+  3. Ask clarifying questions via GitHub issue comments if needed (use `gh issue comment`)
+  4. CRITICAL: Only the repository owner can approve. Verify commenter ownership.
+  5. Only after full agreement with the OWNER, report back with:
+     - Acceptance recommendation
+     - Refined acceptance criteria
+     - Suggested priority
+     - Confirmation that owner agreement was reached
+  """,
+  description: "Review feature issue #{number}"
+})
+```
+
+**Step 3: After functional-analyst reports OWNER agreement**
+
+When the functional-analyst reports that **repository owner** agreement is reached:
+
+```python
 # Accept issue → add to backlog
 Agent({
   subagent_type: "c3:release-manager",
-  prompt: "Add label 'status:backlog' to issue #{number} and comment 'Reviewed and accepted. Added to TODO.md.'",
-  description: "Accept issue"
+  prompt: "Remove label 'status:in-progress' and add label 'status:backlog' to issue #{number}. Comment: '✅ Reviewed and accepted by owner. Added to TODO.md with priority {priority}.'",
+  description: "Accept issue into backlog"
 })
 
-# Reject issue → close with explanation
+# Delegate to functional-analyst to update TODO.md
 Agent({
-  subagent_type: "c3:release-manager",
-  prompt: "Add label 'status:wont-do' to issue #{number} and close with comment 'Closing: not in scope because...'",
-  description: "Reject issue"
+  subagent_type: "c3:functional-analyst",
+  prompt: "Add issue #{number} to TODO.md backlog with agreed acceptance criteria.",
+  description: "Update TODO.md"
 })
+```
 
-# Needs research
+**If non-owner attempts to approve:**
+
+The functional-analyst should respond: "Thank you for your input! However, only the repository owner can approve this issue for the backlog. I'll wait for @owner to confirm."
+
+#### Question/Discussion Issues
+
+```python
+# Research first, then decide
 Agent({
   subagent_type: "c3:release-manager",
   prompt: "Add label 'status:needs-research' to issue #{number} and comment 'Needs evaluation for...'",
   description: "Mark for research"
 })
+```
 
-# Starting implementation
+#### Rejecting Issues
+
+```python
 Agent({
   subagent_type: "c3:release-manager",
-  prompt: "Add label 'status:in-progress' to issue #{number}",
-  description: "Mark in progress"
+  prompt: "Add label 'status:wont-do' to issue #{number} and close with comment 'Closing: not in scope because...'",
+  description: "Reject issue"
 })
 ```
+
+**Issue Status Labels:**
+
+| Label | Meaning | Action |
+|-------|---------|--------|
+| `status:backlog` | Reviewed, accepted, added to TODO.md | Keep open, implement later |
+| `status:in-progress` | Currently being reviewed or implemented | Keep open, track progress |
+| `status:wont-do` | Decision: won't implement | Close with explanation |
+| `status:needs-research` | Needs evaluation | Keep open, research first |
+| `status:blocked` | Blocked by dependency | Keep open, note blocker |
+
+---
+
+### "Follow Up on Issue" Handling
+
+**When the user says "follow up on issue #{number}" or "check issue #{number}":**
+
+⚠️ **CRITICAL: Do NOT decide yourself. Delegate to functional-analyst.**
+
+The project-manager should NOT:
+- Check issue status directly
+- Read comments and decide if answers are sufficient
+- Proceed to implementation without functional-analyst confirmation
+
+**Instead, delegate to functional-analyst:**
+
+```python
+Agent({
+  subagent_type: "c3:functional-analyst",
+  prompt: """
+  Continue reviewing GitHub issue #{number}.
+
+  1. Check for new comments (use `gh issue view {number} --comments`)
+  2. Verify comment author is repository owner
+  3. Follow the Triage Completion process:
+     - Step 1: Do YOU have any more questions?
+     - Step 2: Has owner confirmed nothing to add?
+     - Step 3: Has owner accepted with priority?
+     - Step 4: Confirm triage complete
+  4. Report back with one of:
+     - "Need more clarification: [what's missing]" → Post clarification questions
+     - "Waiting for owner to confirm nothing to add" → Post "Is there anything else?"
+     - "Waiting for owner to specify priority" → Post priority question
+     - "Issue fully triaged: accepted by owner with priority X" → Ready for backlog
+  """,
+  description: "Continue issue review"
+})
+```
+
+**Wait for functional-analyst to report.**
+
+| Functional-analyst Reports | Action |
+|---------------------------|--------|
+| "Need more clarification" | Functional-analyst posts questions, workflow pauses |
+| "Waiting for owner" | Functional-analyst posts question, workflow pauses |
+| "Issue fully triaged" | Add to backlog, move to next issue |
+
+**After functional-analyst posts a comment:**
+- Do NOT immediately check for feedback
+- Move to next issue/PR
+- User will say "follow up" to check for responses later
+
+If functional-analyst reports triage complete:
+1. Delegate to release-manager to update labels (`status:backlog`)
+2. Delegate to functional-analyst to update TODO.md
+3. Move to next issue/PR (do not pause)
 
 5. Continue to Phase 0B after issues are handled
 
@@ -649,7 +788,11 @@ Agent({
 })
 ```
 
-**Step 5e: Wait for Owner Approval**
+**Step 5e: Wait for Owner Approval (BLOCKING)**
+
+⚠️ **CRITICAL: Implementation cannot proceed until the repository owner approves the plan.**
+
+This is a **mandatory blocking step**, not optional. The workflow must pause until owner approval is received in the PR comments.
 
 Delegate to release-manager to monitor PR comments:
 ```
@@ -660,17 +803,35 @@ Agent({
 })
 ```
 
+**Report to owner:**
+```
+Implementation plan posted as PR comment. Waiting for your approval before proceeding with implementation.
+
+PR: {PR URL}
+
+Please review and either:
+- Approve: Comment "approved" or "looks good, proceed"
+- Request changes: Comment with specific feedback
+
+Implementation is blocked until you approve.
+```
+
+**Do NOT ask "Would you like to proceed?" — this is not optional.**
+
+**Wait for owner response in PR comments:**
 - **If owner requests changes:**
   - Delegate to functional-analyst to incorporate feedback
   - Delegate to release-manager to commit updates
   - Delegate to release-manager to post revised plan as PR comment
-  - Wait again for approval
+  - Wait again for approval (this is blocking)
 - **If owner rejects entirely:**
   - Close PR
   - Close related issue (if applicable)
   - Report to owner
 - **If owner approves:**
   - Proceed to Step 6
+
+**Only proceed to Step 6 after explicit owner approval in PR comments.**
 
 #### Step 6: Check Domain Skills
 
@@ -832,88 +993,109 @@ Agent({
 2. Delegate to release-manager to commit and push fixes
 3. Repeat until CI passes
 
-**Step 10g: Assign and Request Review**
+**Step 10g: Mark PR Ready for Review**
+
+⚠️ **CRITICAL: PR must be marked ready before owner can merge.**
+
+After CI passes, the PR is still in draft state. Mark it ready for review:
 
 Delegate to release-manager:
 ```
 Agent({
   subagent_type: "c3:release-manager",
-  prompt: "Assign PR #{number} to {user} and request review from {user}",
+  prompt: "Mark PR #{number} as ready for review (convert from draft).",
+  description: "Mark PR ready"
+})
+```
+
+**Step 10h: Assign and Request Review**
+
+Delegate to release-manager:
+```
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Assign PR #{number} to {owner} and request review from {owner}. Post comment: 'Implementation complete. Ready for review.'",
   description: "Assign and request review"
 })
 ```
 
-**Step 10h: Check for PR Feedback (MANDATORY)**
+**Step 10i: Pause and Report**
 
-⚠️ **CRITICAL: The agent does NOT merge PRs. Only the owner merges.**
+⚠️ **CRITICAL: Do NOT check for feedback immediately. The workflow pauses here.**
 
-Delegate to release-manager to check feedback:
+Report to owner:
 ```
-Agent({
-  subagent_type: "c3:release-manager",
-  prompt: "Get all comments (issue comments and review comments) for PR #{number}. Report any feedback that needs to be addressed.",
-  description: "Check PR feedback"
-})
+PR #{number} is ready for review.
+
+URL: {PR URL}
+
+Status:
+- Implementation: Complete
+- CI: Passing
+- Review: Requested from {owner}
+
+The PR is ready for your review. Say "follow up on PR #{number}" to check for feedback.
 ```
-
-**Process each feedback item:**
-
-1. **Review each comment** (from release-manager's report)
-2. **Address the feedback:**
-   - Delegate to developer to make changes
-   - Delegate to release-manager to commit, push, and comment on PR
-3. **Wait for CI after changes:**
-   - Delegate to release-manager to check CI status
-4. **Respond to all feedback:**
-   - Address every comment from the owner
-   - Do NOT skip or ignore any feedback
-5. **Report status and wait:**
-   - Summarize what feedback was addressed
-   - Explain that PR is ready for owner review/merge
-   - **DO NOT propose merging** - that's the owner's decision
-
-**Example feedback handling:**
-
-Delegate to release-manager to handle PR feedback:
-```
-# Check for feedback
-Agent({
-  subagent_type: "c3:release-manager",
-  prompt: "Get latest comments for PR #4",
-  description: "Check PR comments"
-})
-
-# After developer makes changes, delegate to release-manager
-Agent({
-  subagent_type: "c3:release-manager",
-  prompt: "Commit and push the feedback fixes, then comment on PR #4 with: '## ✅ Changes Applied - {description}. All tests pass, lint clean.'",
-  description: "Push and comment"
-})
-```
-
-**Feedback types and responses:**
-
-| Feedback Type | Response |
-|---------------|----------|
-| Code change request | Make the change, push, comment |
-| Documentation request | Update docs, push, comment |
-| Question | Answer in PR comment |
-| Clarification needed | Ask for more details |
-| Rejection with reason | Fix the issue, push, comment |
 
 **Do NOT:**
-- Propose merging the PR
-- Assume PR is ready without checking comments
-- Skip addressing any feedback
-- Merge without owner approval
+- Check for PR feedback immediately
+- Wait for owner response
+- Block on feedback
 
-#### Step 11: Exit Plan Mode
+**The workflow ends here for this issue.** Move to the next issue/PR or pause if all processed.
 
-Exit plan mode and report:
-- PR URL for user review
-- What was implemented
-- Status of PR feedback (pending/addressed)
-- Awaiting owner to merge PR
+---
+
+### Processing Multiple Issues/PRs
+
+After processing an issue or PR:
+
+1. **Check if there are more issues/PRs to process:**
+   - New issues without status labels
+   - Issues with `status:in-progress` (waiting for follow-up)
+   - PRs awaiting owner feedback
+
+2. **If more items exist:**
+   - Move to the next issue/PR
+   - Process it (post comment, update status, etc.)
+   - Do NOT check for feedback on previous items
+
+3. **If all items processed:**
+   - Report summary: "Processed X issues/PRs. Y items waiting for feedback."
+   - Pause the workflow
+   - User can say "follow up" to check all waiting items
+
+**When user says "follow up":**
+- Start from Phase 0A (list issues)
+- Issues with new comments will be picked up
+- Continue processing
+
+#### Step 11: Exit Plan Mode (When User Requests)
+
+When user says "follow up on PR #{number}" or the workflow restarts:
+
+1. **Check for new comments on PR:**
+   ```
+   Agent({
+     subagent_type: "c3:release-manager",
+     prompt: "Get all comments for PR #{number}. Report any new feedback from owner.",
+     description: "Check PR feedback"
+   })
+   ```
+
+2. **Process each feedback item:**
+   - Review each comment from owner
+   - Address feedback by delegating to developer
+   - Commit and push fixes
+   - Post comment explaining changes
+
+3. **If owner approves:**
+   - Wait for owner to merge (do NOT merge yourself)
+   - After merge, proceed to Step 12 (Post-Merge)
+
+4. **If no new feedback:**
+   - Report: "No new feedback on PR #{number}. Waiting for owner review."
+   - Pause
 
 #### Step 12: Post-Merge (After User Merges PR)
 

@@ -146,6 +146,78 @@ After refining topics, provide:
 2. {next step 2}
 ```
 
+### Phase 4: Sync with GitHub Issues
+
+After refining the backlog, update related GitHub issues:
+
+**Step 1: Identify affected issues**
+
+Check TODO.md entries for issue references (e.g., `#14`, `issue #42`, `Closes #123`).
+
+**Step 2: Determine if update is valuable**
+
+| Situation | Update? |
+|-----------|---------|
+| New tasks added related to issue | ✅ Yes |
+| Priority changed | ✅ Yes |
+| Scope refined or clarified | ✅ Yes |
+| Implementation decisions made | ✅ Yes |
+| Minor formatting changes | ❌ No |
+| No new information | ❌ No |
+
+**Step 3: Post summary comment**
+
+Use `gh issue comment` to post updates:
+
+```bash
+gh issue comment {number} --body "## 📋 Backlog Update
+
+{summary of changes}
+
+**Scope:** {which tasks, what's included}
+**Priority:** {priority} ({reasoning})
+**Estimate:** {if known}
+
+**Key Decisions:**
+- {decision 1}
+- {decision 2}
+
+**Details:** See TODO.md and analysis/ for full breakdown."
+```
+
+**Example:**
+
+```bash
+gh issue comment 14 --body "## 📋 Backlog Update
+
+This issue has been refined and prioritized.
+
+**Scope:** Tasks 2.1-2.3 (MVP implementation)
+- Task 2.1: Skill Infrastructure (2-3h)
+- Task 2.2: Package Plugin System (2-3h)
+- Task 2.3: CLI --with Argument (1-2h)
+
+**Priority:** P2 (after current P1 items: plugin-migration, mcp-server-refactor)
+**Reasoning:** Foundation work must complete first; this builds on plugin infrastructure.
+
+**Estimate:** 5-8 hours total
+
+**Key Decisions:**
+- Skills use user-level message injection (not tool wrapper)
+- Namespace format: {package}:{tool|skill|agent}
+- Graceful failure for non-yoker packages
+
+**Details:** See TODO.md and analysis/backlog-refinement-2026-05-27.md"
+```
+
+**Step 4: Verify**
+
+After posting, verify the comment was added:
+
+```bash
+gh issue view {number} --comments
+```
+
 ## Topic Status Indicators
 
 When analyzing topics, look for:

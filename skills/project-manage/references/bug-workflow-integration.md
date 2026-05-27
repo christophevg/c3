@@ -2,6 +2,17 @@
 
 This document explains how the bug-fixing workflow integrates with project management.
 
+## Issue Processing Overview
+
+Issues are processed differently based on type:
+
+| Issue Type | Workflow | Reference |
+|------------|----------|------------|
+| **Bug** | Immediate → Bug Fixer | This document |
+| **Feature** | Review → Clarify → Agree → Backlog | [issue-review-workflow.md](issue-review-workflow.md) |
+| **Question** | Research or close | - |
+| **Dependency** | Research → Backlog | - |
+
 ## When Bugs Are Detected
 
 When the project-manage skill detects a bug (via task type detection), it delegates to the bug-fixing skill for the specialized workflow.
