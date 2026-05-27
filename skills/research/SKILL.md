@@ -16,12 +16,12 @@ Performs comprehensive research on any topic with full provenance tracking.
 - Technology investigations
 - Literature reviews
 - Finding information with source citations
-- General research (not Python packages - use pkg-info:find for those)
+- General research (not Python packages - use mcp__plugin_c3_pkgq__find_package for those)
 
 ## When NOT to Use
 
-- Python package research → use `pkg-info:find` instead
-- Researching specific Python libraries → use `pkg-info:find` instead
+- Python package research → use `mcp__plugin_c3_pkgq__find_package` instead
+- Researching specific Python libraries → use `mcp__plugin_c3_pkgq__find_package` instead
 
 ## Research Process
 
@@ -318,3 +318,4 @@ Before completing, verify:
 - If you batched multiple searches/fetches before recording, you have FAILED the task
 - If README.md contains information from a WebFetch that is NOT in fetched/, you have FAILED the task
 - If the number of WebFetch tool calls does not equal the number of files in fetched/, you have FAILED the task
+
