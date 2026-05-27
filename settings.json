@@ -21,17 +21,6 @@
     "type": "command",
     "command": "uv run python ~/.claude/bin/statusline.py"
   },
-  "enabledPlugins": {
-    "c3@christophe.vg": true
-  },
-  "extraKnownMarketplaces": {
-    "christophe.vg": {
-      "source": {
-        "source": "github",
-        "repo": "christophevg/marketplace"
-      }
-    }
-  },
   "awaySummaryEnabled": false,
   "theme": "light",
   "editorMode": "normal",
