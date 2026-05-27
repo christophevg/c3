@@ -322,6 +322,17 @@ Run `git status` and `git log -1 --format=%B` to verify commit success, then:
 - Show commit hash
 - Remind about push (don't auto-push)
 
+## Attribution Scope
+
+**Attribution is for COMMITS only, NOT for comments.**
+
+| Context | Add Attribution? |
+|---------|------------------|
+| Git commits | ✅ Yes - Required |
+| PR comments | ❌ No - Do NOT add |
+| Issue comments | ❌ No - Do NOT add |
+| PR body (description) | Optional - via PR template |
+
 ## User Verification Requirement
 
 **CRITICAL:** Never commit without user verification.
@@ -424,4 +435,5 @@ When this skill is invoked via `project-manage`:
 | User didn't review changes | Present diff, wait for explicit approval |
 | Accidentally staged sensitive file | Use `git restore --staged <file>` to unstage |
 | Missing attribution in commit | Use `git commit --amend` to add attribution line |
+
 

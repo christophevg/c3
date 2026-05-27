@@ -4,6 +4,58 @@ These instructions are mandatory for all agents!
 
 ## Best Practices to Strictly Follow
 
+### Python Standards
+
+The goal is that all of our Python projects adhere to our standards as defined in the following skills. Use these to make sure the project you work on is following our standards. If we make changes to these files in the context of the project, evaluate them together with the user to see if the changes are useful to be integrated in the standards.
+
+- c3:python-project
+- c3:readme
+
+### Makefile Usage
+
+**Prefer Makefile targets over constructing custom Bash commands.**
+
+When a project has a `Makefile`, check it first and use its targets:
+
+| Instead of | Use |
+|------------|-----|
+| `pytest tests/` | `make test` |
+| `pip install -e .` | `make install` |
+| Custom build commands | `make build` |
+
+If the project follows our standards, the Makefile also provides a `help` target, which lists the available targets. These are standardized across all projects:
+
+```
+% make help
+Usage: make [target]
+
+Targets:
+  build           Build distribution packages
+  check           Run all quality checks
+  clean-all       Remove virtualenv and lock file
+  clean           Remove build artifacts
+  env-dev         Install all dependencies (dev + docs)
+  env-run         Install runtime dependencies only
+  format          Format code and fix linting issues
+  help            Show this help message
+  lint            Check code for linting issues
+  pre-publish     Pre-publication checks (run before publishing)
+  publish         Publish to PyPI (runs pre-publish checks)
+  run             Run the CLI
+  test-all        Run tests on all Python versions
+  test-cov        Run tests with coverage
+  test            Run tests (usage: make test / optional: TEST=file|file:test_name)
+  typecheck       Run type checking
+```
+
+**Why**: Makefile targets encapsulate project-specific knowledge, ensure consistent execution, and are already documented for the project. Constructing Bash calls bypasses this and risks missing setup steps.
+
+### uv
+
+If a project contains a `pyproject.toml` file, it is managed using `uv`. This means that everything is done inside a `uv`-managed virtual environment. All executed commands should therefore be run using `uv`.
+
+**Important**: The Makefile targets also activate the correct virtual environment! So use the Makefile targets.
+
 ### Tool Selection
 
 **NEVER use Bash for file operations when a dedicated tool exists** — this is not negotiable:
@@ -19,20 +71,6 @@ These instructions are mandatory for all agents!
 | Search the web | WebSearch | manual browser lookup |
 
 **Why**: Dedicated tools provide structured output, proper permission handling, and make your actions transparent and reviewable. Bash commands bypass these controls.
-
-### Makefile Usage
-
-**Prefer Makefile targets over constructing Bash commands.**
-
-When a project has a `Makefile`, check it first and use its targets:
-
-| Instead of | Use |
-|------------|-----|
-| `pytest tests/` | `make test` |
-| `pip install -e .` | `make install` |
-| Custom build commands | `make build` |
-
-**Why**: Makefile targets encapsulate project-specific knowledge, ensure consistent execution, and are already documented for the project. Constructing Bash calls bypasses this and risks missing setup steps.
 
 ### Research
 
@@ -62,16 +100,18 @@ When a project has a `Makefile`, check it first and use its targets:
 
 ### Task → Skill/Agent Mapping
 
-When the user asks you to work on a task, select the appropriate tool:
+When the user asks you to work on a task, select the appropriate skill or delegate to the best agent:
+
+**Important**: prefer to use agents. Agents have their own context and don't fill your context with redundant information. They report back to you with the actual information needed.
 
 | Task Type | Use |
 |-----------|-----|
 | Analyze requirements, gather requirements, interview user | functional-analyst agent |
-| Research a topic, investigate, gather information | researcher agent |
-| Review code for quality, best practices | code-reviewer agent |
-| Create Python code | python-developer agent |
-| Learn from session, improve skills | lessons-learned skill |
-| Commit changes | commit skill (/commit) |
+| Research a topic, investigate, gather information | c3:researcher agent |
+| Review code for quality, best practices | c3:code-reviewer agent |
+| Create Python code | c3:python-developer agent |
+| Learn from session, improve skills | lessons-learned skill (/c3:lessons-learned) |
+| Commit changes | commit skill (/c3:commit) |
 
 ### Asking Questions
 
@@ -96,8 +136,4 @@ When the user asks you to work on a task, select the appropriate tool:
 
 * Ignore the `local` folder
 * Ignore files with `.local` extension
-* Ignore the `notes` folder
 
-### Project Workflow
-
-For project management tasks, use the `/project` dispatcher skill which routes to specialized workflows. See the `project` skill for details.

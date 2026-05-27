@@ -210,10 +210,16 @@ gh release create vX.Y.Z \
 
 ## Attribution Requirement
 
-**CRITICAL:** All commits MUST include the attribution line:
+**CRITICAL:** Attribution is ONLY for commits, NOT for comments.
+
+**Commits**: MUST include the attribution line:
 ```
 🤖 Implemented together with a coding agent.
 ```
+
+**PR Comments / Issue Comments**: Do NOT add attribution. Comments should NOT have the attribution line.
+
+**PR Body (PR description)**: Attribution is added via PR template, not manually.
 
 The commit skill handles this automatically. After commits, verify attribution is present.
 

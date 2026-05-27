@@ -448,3 +448,15 @@ DO NOT complete if:
 - Lint issues remain
 - Coverage is below project standards
 
+## Attribution
+
+**Commits**: Add attribution line to commit messages:
+```
+🤖 Implemented together with a coding agent.
+```
+
+**PR Comments / Issue Comments**: Do NOT add attribution. Comments should not have the attribution line.
+
+**PR Body (PR description)**: Attribution is optional but typically added via PR template.
+
+
