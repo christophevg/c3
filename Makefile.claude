@@ -37,14 +37,28 @@ claude:
 resume: ARGS += --resume
 resume: claude
 
+# the following targets activate a specific agent
+
 assistant: ARGS += --agent "c3:assistant"
-assistant: all
+assistant: claude
 
 project: ARGS += --agent c3:project-manager
 project: claude
 
+analyst: ARGS += --agent "c3:functional-analyst"
+analyst: claude
+
+# the following targets select an agent and inject also an initial prompt to start
+
 manage: PROMPT = "manage the project!"
 manage: project
+
+review: PROMPT = "I want to review the project. The goal is to update the requirements, functional analysis and backlog/TODO.md to match my intentions. Let's do this interactively and discuss each of the requirements and proposed features to evaluate if I still want them, and in what form, along with possibly other features I might want. Interview me until everything is clear, is consistent and I have confirmed everything."
+review: analyst
+
+refine: PROMPT = "I want to review the project. The goal is to refine the backlog, to ensure it's optimally organized to deliver value."
+refine: analyst
+
 
 generated-image:
 	ollama run x/z-image-turbo ${PROMPT}
