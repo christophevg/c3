@@ -1,4 +1,10 @@
-#!/usr/bin/env python3
+# /// script
+# dependencies = [
+#  "markdown-it-py>=3.0.0",
+#  "weasyprint>=68.0"
+# ]
+# ///
+
 """
 Convert Markdown file(s) to a single PDF document using WeasyPrint.
 

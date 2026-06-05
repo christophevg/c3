@@ -4,7 +4,7 @@ A Claude Code skill for converting folders of Markdown files to a single PDF doc
 
 ## Research
 
-See [research/2026-03-31-markdown-to-pdf/](../../research/2026-03-31-markdown-to-pdf/) for initial research on Python libraries.
+See [research/2026-03-31-](../../research/2026-03-31-) for initial research on Python libraries.
 
 See [research/2026-04-02-markdown-pdf-python-libraries/](../../research/2026-04-02-markdown-pdf-python-libraries/) for comparison of WeasyPrint vs alternatives.
 
@@ -13,12 +13,12 @@ See [research/2026-04-02-markdown-pdf-python-libraries/](../../research/2026-04-
 ### Files
 
 ```
-skills/markdown-to-pdf/
+skills/
 ├── SKILL.md           # Main skill instructions
 ├── REFERENCE.md       # WeasyPrint API reference
 └── README.md          # This file
 
-scripts/markdown-to-pdf/
+scripts/
 ├── md_to_pdf.py       # Conversion utility script
 ├── pyproject.toml     # minimal project setup
 └── templates/
@@ -29,10 +29,10 @@ scripts/markdown-to-pdf/
 
 ```bash
 # Basic usage
-uv run ${CLAUDE_PLUGIN_ROOT}/scripts/markdown-to-pdf/md_to_pdf.py <folder> <output.pdf>
+uv run ${CLAUDE_PLUGIN_ROOT}/scripts/md_to_pdf.py <folder> <output.pdf>
 
 # With options
-uv run ${CLAUDE_PLUGIN_ROOT}/scripts/markdown-to-pdf/md_to_pdf.py docs/ output.pdf \
+uv run ${CLAUDE_PLUGIN_ROOT}/scripts/md_to_pdf.py docs/ output.pdf \
   --title "Documentation" \
   --author "Team" \
   --css templates/default.css \

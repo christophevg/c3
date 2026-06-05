@@ -63,7 +63,7 @@ The default stylesheet is automatically applied from the script's templates/ fol
 The script is in the C3 scripts folder and can be executed using `uv`:
 
 ```bash
-uv run ${CLAUDE_PLUGIN_ROOT}/scripts/markdown-to-pdf/md_to_pdf.py <folder> <output.pdf> --title "Title"
+uv run ${CLAUDE_PLUGIN_ROOT}/scripts/md_to_pdf.py <folder> <output.pdf> --title "Title"
 ```
 
 **Step 4: Verify output**
@@ -80,7 +80,7 @@ ls -la <output.pdf>
 To override the default stylesheet with a custom one:
 
 ```bash
-uv run ${CLAUDE_PLUGIN_ROOT}/scripts/markdown-to-pdf/md_to_pdf.py docs/ output.pdf --css custom.css
+uv run ${CLAUDE_PLUGIN_ROOT}/scripts/md_to_pdf.py docs/ output.pdf --css custom.css
 ```
 
 WeasyPrint provides full CSS3 support including:
@@ -92,13 +92,13 @@ WeasyPrint provides full CSS3 support including:
 ### Single File Mode
 
 ```bash
-uv run ${CLAUDE_PLUGIN_ROOT}/scripts/markdown-to-pdf/md_to_pdf.py document.md output.pdf
+uv run ${CLAUDE_PLUGIN_ROOT}/scripts/md_to_pdf.py document.md output.pdf
 ```
 
 ### Date-based Ordering
 
 ```bash
-uv run ${CLAUDE_PLUGIN_ROOT}/scripts/markdown-to-pdf/md_to_pdf.py docs/ output.pdf --sort-by date
+uv run ${CLAUDE_PLUGIN_ROOT}/scripts/md_to_pdf.py docs/ output.pdf --sort-by date
 ```
 
 ## Troubleshooting
@@ -121,5 +121,5 @@ Ensure the script uses `.enable('table')` on the Markdown parser. This is includ
 ## Reference
 
 - [REFERENCE.md](REFERENCE.md) — WeasyPrint API documentation
-- [templates/default.css](../../scripts/markdown-to-pdf/templates/default.css) — Default compact styling
-- [pyproject.toml](../../scripts/markdown-to-pdf/pyproject.toml) — Python dependencies
+- [templates/default.css](../../scripts/templates/default.css) — Default compact styling
+- [pyproject.toml](../../scripts/pyproject.toml) — Python dependencies

@@ -1,21 +1,17 @@
 # C3 Scripts
 
-All scripts in these folders can be run using
-
-```console
-uv --directory script-folder-name run script.py
-```
+All scripts in these folders can be run using: `uv run ${CLAUDE_PLUGIN_ROOT}/scripts/{script-name}.py`
 
 ## The Scripts
 
-# markdown-to-pdf
+# md-to-pdf - converts Markdown to PDF
 
 **script**: md_to_pdf.py
 
 Takes a Markdown file and produces a PDF.
 
 ```console
-% uv --directory markdown-to-pdf run md_to_pdf.py --help
+% uv run ${CLAUDE_PLUGIN_ROOT}/scripts/md_to_pdf.py --help
 usage: md_to_pdf.py [-h] [--title TITLE] [--author AUTHOR] [--subject SUBJECT]
                     [--css CSS] [--paper {A4,Letter,Legal}] [--sort-by {name,date}]
                     [--no-recursive]
