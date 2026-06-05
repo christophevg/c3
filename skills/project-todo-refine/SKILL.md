@@ -24,17 +24,20 @@ Use this skill when:
 - User asks to review backlog items
 - User wants to iterate through topics and update scope/priority
 - Topics need refinement before functional analysis
+- User says "review the backlog", "refine the TODO", "organize the backlog"
 
 **Do NOT use for:**
 - New feature intake (use `/project-feature`)
 - Full implementation workflow (use `/project-manage`)
 - Quick status overview (use `/project-status`)
 
+**IMPORTANT:** Always invoke this skill explicitly when backlog refinement is requested. Do not proceed without proper skill invocation.
+
 ## Workflow
 
 ### Phase 1: TODO Overview
 
-Read TODO.md and present:
+Read TODO.md from the current working folder and present:
 
 ```markdown
 ## TODO.md Overview
@@ -252,6 +255,37 @@ For each topic, gather context from:
 | Mark complete | Work finished, no longer needed |
 | Add dependency | Discovered blocking relationship |
 | Remove dependency | Blocker resolved or irrelevant |
+
+## Documentation Update Ordering
+
+When refining the backlog, update files in this order for proper traceability:
+
+1. **REQUIREMENTS.md first** — Source of truth for all requirements
+   - Add new requirements with unique IDs (R1, R2, ...)
+   - Mark completed requirements with [x]
+   - Update the "Completed" section for traceability
+
+2. **TODO.md second** — Task breakdown and priorities
+   - Add/update tasks with requirement references (Satisfies: R1, R2)
+   - Organize by phase/priority
+   - Mark completed tasks in "Done" section
+
+3. **analysis/functional.md third** — Architecture details
+   - Update with new patterns/components
+   - Document design decisions
+   - Note code quality issues
+
+4. **User documentation (docs/usage.rst)** — User-facing docs
+   - Add new use cases
+   - Update API examples
+
+5. **API documentation (docs/api.rst)** — Reference docs
+   - Add new public functions
+   - Update type signatures
+
+6. **GitHub issues last** — Synchronization
+   - Post updates on affected issues
+   - Note scope/priority changes
 
 ## Writing to TODO.md
 
