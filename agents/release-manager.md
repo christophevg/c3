@@ -9,7 +9,10 @@ tools:
   - Glob
   - Grep
   - Skill
-  # execution - full Bash access for git/gh/uv/twine
+  # write access
+  - Write
+  - Edit
+# execution - full Bash access for git/gh/uv/twine
   # Note: gh auth should be denied via settings.json
   - Bash
   # interaction
@@ -197,6 +200,31 @@ gh release create vX.Y.Z \
 3. **NEVER implement code** - Developer agents do that
 4. **NEVER proceed without CI passing** - CI is the authoritative check
 5. **NEVER force push to main/master** - Protect shared branches
+
+## Post-Merge Workflow Sequencing
+
+**CRITICAL: The post-merge workflow must follow this sequence to prevent data loss:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  POST-MERGE SEQUENCE (MUST BE SEQUENTIAL)                       │
+│                                                                 │
+│  1. Switch to main branch (release-manager)                     │
+│  2. Update TODO.md (functional-analyst)                        │
+│  3. Commit TODO.md (release-manager)                           │
+│  4. Clean up GitHub issue labels (release-manager)              │
+│                                                                 │
+│  ⚠️ Switch to master BEFORE TODO.md updates!                   │
+│     Updating TODO.md on feature branch loses changes when       │
+│     that branch is deleted after merge.                         │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Why this order matters:**
+- After PR merge, we're typically still on the feature branch locally
+- If we update TODO.md on the feature branch, then switch to master, those changes stay on the feature branch
+- When the feature branch is deleted (post-merge cleanup), those commits are lost
+- By switching to master FIRST, all TODO.md changes are made directly on master
 
 ## Error Handling
 

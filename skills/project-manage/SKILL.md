@@ -428,6 +428,27 @@ Agent({
 })
 ```
 
+**Step 4: Commit and Push TODO.md Updates**
+
+After the issue is accepted into the backlog, commit and push the TODO.md changes immediately:
+
+```python
+# Commit and push TODO.md updates
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Commit TODO.md and REQUIREMENTS.md changes with message: 'docs: add task {task-id} to TODO.md after issue #{number} triage'",
+  description: "Commit triage updates"
+})
+
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Push commit to remote",
+  description: "Push triage updates"
+})
+```
+
+This prevents accumulating uncommitted changes during triage.
+
 **If non-owner attempts to approve:**
 
 The functional-analyst should respond: "Thank you for your input! However, only the repository owner can approve this issue for the backlog. I'll wait for @owner to confirm."
@@ -475,6 +496,10 @@ The project-manager should NOT:
 - Check issue status directly
 - Read comments and decide if answers are sufficient
 - Proceed to implementation without functional-analyst confirmation
+
+**Agent Session Continuity:**
+
+When continuing a conversation with the same functional-analyst (e.g., after asking "follow up"), use `SendMessage` with the agent ID to preserve context from previous iterations. This avoids re-asking questions the agent already knows the answer to.
 
 **Instead, delegate to functional-analyst:**
 
@@ -1099,39 +1124,17 @@ When user says "follow up on PR #{number}" or the workflow restarts:
 
 #### Step 12: Post-Merge (After User Merges PR)
 
+**⚠️ CRITICAL: Execute steps in SEQUENCE to prevent data loss.**
+
+**Why sequencing matters:** After the PR is merged, we're typically still on the feature branch. TODO.md updates must be made on master AFTER switching, otherwise they stay on the feature branch and may be lost when the branch is deleted.
+
 When user reports PR is merged:
 
 1. **Find the issue number:**
    - Check TODO.md task entry (includes issue reference)
    - Or ask release-manager to find it from PR
 
-2. **Clean up GitHub issue labels:**
-
-Delegate to release-manager:
-```
-Agent({
-  subagent_type: "c3:release-manager",
-  prompt: "Remove 'status:in-progress' label from issue #{issue-number}. If issue is not auto-closed, close it.",
-  description: "Clean up issue"
-})
-```
-
-3. **Delegate TODO.md update to functional-analyst:**
-   ```
-   Agent({
-     subagent_type: "c3:functional-analyst",
-     prompt: "Update TODO.md to mark task {task-id} as complete after PR merge. Add completion date (YYYY-MM-DD), move to Done section.",
-     description: "Update TODO.md"
-   })
-   ```
-   The functional-analyst owns the TODO.md lifecycle.
-
-5. **Handle untracked artifacts:**
-   - Check for analysis/ and reporting/ files from merged work
-   - These should already be committed to the PR
-   - Verify they exist in the merged branch
-
-6. **Sync to main branch:**
+2. **Sync to main branch FIRST (before any TODO.md updates):**
 
 Delegate to release-manager:
 ```
@@ -1142,12 +1145,53 @@ Agent({
 })
 ```
 
-7. **Ask owner: prepare release or continue with next task?**
+**IMPORTANT:** This must happen before TODO.md updates. Otherwise changes are made on the feature branch and lost when it's deleted.
+
+3. **Update TODO.md on master (AFTER switching branches):**
+
+   **Step 3a: Delegate TODO.md update to functional-analyst:**
+   ```
+   Agent({
+     subagent_type: "c3:functional-analyst",
+     prompt: "Update TODO.md to mark task {task-id} as complete after PR merge. Add completion date (YYYY-MM-DD), move to Done section.",
+     description: "Update TODO.md"
+   })
+   ```
+   The functional-analyst owns the TODO.md lifecycle.
+
+   **Step 3b: Commit TODO.md changes:**
+
+   Delegate to release-manager:
+   ```
+   Agent({
+     subagent_type: "c3:release-manager",
+     prompt: "Commit TODO.md changes with message: 'docs: mark task {task-id} as complete'",
+     description: "Commit TODO.md"
+   })
+   ```
+
+4. **Handle untracked artifacts:**
+   - Check for analysis/ and reporting/ files from merged work
+   - These should already be committed to the PR
+   - Verify they exist in the merged branch
+
+5. **Clean up GitHub issue labels:**
+
+Delegate to release-manager:
+```
+Agent({
+  subagent_type: "c3:release-manager",
+  prompt: "Remove 'status:in-progress' label from issue #{issue-number}. If issue is not auto-closed, close it.",
+  description: "Clean up issue"
+})
+```
+
+6. **Ask owner: prepare release or continue with next task?**
    - Use PR comment or direct question (owner is present)
    - If release: Delegate to release-manager to execute release workflow
    - If continue: Proceed with next task from TODO.md
 
-8. Continue to next task from Step 5
+7. Continue to next task from Step 5
 
 ---
 
