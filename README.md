@@ -25,7 +25,7 @@ flowchart LR
     A --> C(["/develop-agent"])
     B --> D[skills/]
     C --> E[agents/]
-    D --> F["make local"]
+    D --> F["claude --plugin-dir ./"]
     E --> F
     F --> G[Use in Sessions]
     G --> H(["/lessons-learned"])
@@ -36,7 +36,7 @@ flowchart LR
 ```
 
 - **Create**: Use `/develop-skill` or `/develop-agent` to design new skills/agents
-- **Test locally**: `make local` runs with `--plugin-dir ./`
+- **Test locally**: `claude --plugin-dir ./` loads skills/agents from current directory
 - **Use/Refine loop**: Use in sessions, run `/lessons-learned` to capture improvements
 - **Distribute**: Push to GitHub when stable
 
@@ -66,11 +66,15 @@ To develop or test the latest version locally:
 # Clone the repository
 git clone https://github.com/christophevg/c3.git
 cd c3
-make install
+
+# Use in Claude Code session
+claude --plugin-dir ./
 ```
 
-> [!NOTE]  
-> `make install` copies `Makefile.clause` to your personal `~/.claude` folder and allows your project Makefiles to include it using `-include ~/.claude/Makefile`. Now you can use several utility targets to work with claude and use C3 as a harness configuration. For example `make` basically runs Claude Code using Ollama. If you do this from the C3 folder, it will also include that folder as a plugin.
+This loads all skills and agents from the current directory into your Claude Code session.
+
+> [!NOTE]
+> For project-specific Makefile integration, you can still use `make install` to copy `Makefile.claude` to `~/.claude/`. This provides utility targets for working with Claude Code (e.g., `make` runs Claude Code using Ollama). However, for local development of C3 itself, `--plugin-dir` is the recommended approach.
 
 ---
 
@@ -232,65 +236,79 @@ The `/project` skill dispatcher handles one-off operations, while the `project-m
 
 ```mermaid
 flowchart TB
-    subgraph Phase0["Phase 0: Project State"]
-        A[Start] --> B{State?}
-        B -->|New Project| C[Phase 1A: Initial Analysis]
-        B -->|Incomplete Setup| D[Phase 1B: Review & Backlog]
-        B -->|Ready for Work| E[Check Unsorted Items]
-        E --> F{Unsorted?}
-        F -->|Yes| G[Sort or Skip?]
-        F -->|No| H[Propose Next Task]
+    subgraph Phase0["Phase 0: Task Detection"]
+        A[User Request] --> B{Task Type?}
+        B -->|Bug| C[Bug-Fixer Agent]
+        B -->|Dependency| D[Researcher]
+        B -->|Feature| E[GitHub Issue Check]
+        C --> F[Done]
+        D --> E
+        E --> G{Has Issues?}
+        G -->|Yes| H[Process Issues]
+        G -->|No| I[Project State Detection]
     end
 
     subgraph Phase1["Phase 1: Analysis"]
-        C --> I[Functional Analyst]
-        D --> I
-        I -->|Optional| J[Researcher]
-        J -->|Tech recommendations| I
-        I -->|functional.md, TODO.md| K[Task Scope Classification]
-        G -->|Sort| I
-        G -->|Skip| H
+        I --> J{State?}
+        J -->|New Project| K[Phase 1A: Initial Analysis]
+        J -->|Incomplete Setup| L[Phase 1B: Review]
+        J -->|Ready for Work| M[Check Unsorted Items]
+        K --> N[Functional Analyst]
+        L --> N
+        N -->|Optional| O[Researcher]
+        O --> N
+        N -->|functional.md, TODO.md| P[Task Scope Classification]
+        M --> Q{Unsorted?}
+        Q -->|Yes| R[Sort or Skip?]
+        Q -->|No| S[Propose Next Task]
+        R -->|Sort| N
+        R -->|Skip| S
     end
 
     subgraph Phase2["Phase 2: Domain Review"]
-        K --> L{Scope?}
-        L -->|Backend| M[API Architect]
-        L -->|Frontend| N[UI/UX Designer]
-        L -->|Full Stack| M
-        L -->|Full Stack| N
-        L -->|Security-related| O[Security Engineer]
-        M --> P[Phase 3: Consensus]
-        N --> P
-        O --> P
+        P --> T{Scope?}
+        T -->|Backend| U[API Architect]
+        T -->|Frontend| V[UI/UX Designer]
+        T -->|Full Stack| U
+        T -->|Full Stack| V
+        T -->|Security| W[Security Engineer]
+        U --> X[Consensus]
+        V --> X
+        W --> X
     end
 
-    subgraph Phase4["Phase 4: Implementation (per task)"]
-        H --> Q[Plan]
-        Q --> R[Python Developer]
-        R --> S{Review Cycle}
-        S -->|Functional Review| T[Functional Analyst]
-        T -->|Pass| U{Domain Reviews}
-        U -->|Parallel| M2[API Architect]
-        U -->|Parallel| N2[UI/UX Designer]
-        U -->|Parallel| O2[Security Engineer]
-        M2 --> V{Quality Reviews}
-        N2 --> V
-        O2 --> V
-        V -->|Parallel| W[Code Reviewer]
-        V -->|Parallel| X[Testing Engineer]
-        W --> Y{User-facing?}
+    subgraph Phase4["Phase 4: Implementation"]
+        S --> Y[Plan]
         X --> Y
-        Y -->|Yes| Z[End-User Documenter]
-        Y -->|No| AA{All Approve?}
-        Z --> AA
-        AA -->|No| R
-        AA -->|Yes| AB[Complete Task]
-        AB --> AC{More Tasks?}
+        Y --> Z[Python Developer]
+        Z --> AA{Review Cycle}
+        AA -->|Functional| AB[Functional Analyst]
+        AB --> AC{Domain Reviews}
+        AC -->|Parallel| AD[API Architect]
+        AC -->|Parallel| AE[UI/UX Designer]
+        AC -->|Parallel| AF[Security Engineer]
+        AD --> AG{Quality Reviews}
+        AE --> AG
+        AF --> AG
+        AG -->|Parallel| AH[Code Reviewer]
+        AG -->|Parallel| AI[Testing Engineer]
+        AH --> AJ{User-facing?}
+        AI --> AJ
+        AJ -->|Yes| AK[End-User Documenter]
+        AJ -->|No| AL{All Approve?}
+        AK --> AL
+        AL -->|No| Z
+        AL -->|Yes| AM[Create Feature Branch]
+        AM --> AN[Commit & Push]
+        AN --> AO[Create PR]
+        AO --> AP{PR Feedback?}
+        AP -->|Changes Requested| Z
+        AP -->|Approved| AQ[Owner Merges]
+        AQ --> AR[Mark Task Complete]
+        AR --> AS{More Tasks?}
+        AS -->|Yes| Y
+        AS -->|No| AT[Project Complete]
     end
-
-    P --> Q
-    AC -->|Yes| Q
-    AC -->|No| AD[Project Complete]
 ```
 
 ---
