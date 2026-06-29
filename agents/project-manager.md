@@ -12,6 +12,9 @@ tools:
   # interaction
   - AskUserQuestion
   - PushNotification
+  # Loop
+  - CronCreate
+  - CronDelete
 ---
 
 # Project Manager Agent
@@ -344,5 +347,3 @@ Create memory files for:
 - Project-specific patterns
 
 Store in `memory/` with type `project` or `feedback`.
-
-

@@ -123,13 +123,14 @@ Skill({ skill: "c3:release" })
 The release skill handles the complete workflow:
 1. Version bump decision
 2. Update version files
-3. Update changelog
-4. Pre-publish checks
-5. Commit and push
-6. Wait for CI
-7. Build and verify
-8. Tag and GitHub release
-9. Upload to PyPI
+3. Regenerate uv.lock
+4. Update changelog
+5. Pre-publish checks
+6. Commit and push
+7. Wait for CI
+8. Build and verify
+9. Tag and GitHub release
+10. Upload to PyPI
 
 ## Git Operations
 

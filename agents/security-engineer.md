@@ -12,6 +12,7 @@ tools:
   # write access
   - Write
   - Edit
+  - Bash
   # online access
   - WebSearch
   - WebFetch
@@ -273,4 +274,3 @@ After security review, classify each finding using this format:
 - Coordinate with **functional-analyst** for security requirements
 - Support **python-developer** or **other developers** with secure coding guidance
 - Report findings to **security-engineer** for architecture review integration
-
