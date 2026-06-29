@@ -11,11 +11,13 @@ Convert a folder of Markdown files into a single, professionally formatted PDF d
 
 ### System Dependencies (macOS)
 
-WeasyPrint requires Pango:
+WeasyPrint requires Pango and gobject-introspection:
 
 ```bash
-brew install pango
+brew install pango gobject-introspection
 ```
+
+**Important:** On macOS with Homebrew, the library path must be set for WeasyPrint to find the required libraries. The commands below include this fix.
 
 ### System Dependencies (Linux)
 
@@ -60,9 +62,13 @@ The default stylesheet is automatically applied from the script's templates/ fol
 
 **Step 3: Generate PDF**
 
-The script is in the C3 scripts folder and can be executed using `uv`:
+The script is in the C3 scripts folder and can be executed using `uv`. On macOS, set the library path for Homebrew:
 
 ```bash
+# On macOS:
+DYLD_LIBRARY_PATH=/opt/homebrew/lib:$DYLD_LIBRARY_PATH uv run ${CLAUDE_PLUGIN_ROOT}/scripts/md_to_pdf.py <folder> <output.pdf> --title "Title"
+
+# On Linux:
 uv run ${CLAUDE_PLUGIN_ROOT}/scripts/md_to_pdf.py <folder> <output.pdf> --title "Title"
 ```
 
@@ -80,6 +86,10 @@ ls -la <output.pdf>
 To override the default stylesheet with a custom one:
 
 ```bash
+# On macOS:
+DYLD_LIBRARY_PATH=/opt/homebrew/lib:$DYLD_LIBRARY_PATH uv run ${CLAUDE_PLUGIN_ROOT}/scripts/md_to_pdf.py docs/ output.pdf --css custom.css
+
+# On Linux:
 uv run ${CLAUDE_PLUGIN_ROOT}/scripts/md_to_pdf.py docs/ output.pdf --css custom.css
 ```
 
@@ -92,12 +102,20 @@ WeasyPrint provides full CSS3 support including:
 ### Single File Mode
 
 ```bash
+# On macOS:
+DYLD_LIBRARY_PATH=/opt/homebrew/lib:$DYLD_LIBRARY_PATH uv run ${CLAUDE_PLUGIN_ROOT}/scripts/md_to_pdf.py document.md output.pdf
+
+# On Linux:
 uv run ${CLAUDE_PLUGIN_ROOT}/scripts/md_to_pdf.py document.md output.pdf
 ```
 
 ### Date-based Ordering
 
 ```bash
+# On macOS:
+DYLD_LIBRARY_PATH=/opt/homebrew/lib:$DYLD_LIBRARY_PATH uv run ${CLAUDE_PLUGIN_ROOT}/scripts/md_to_pdf.py docs/ output.pdf --sort-by date
+
+# On Linux:
 uv run ${CLAUDE_PLUGIN_ROOT}/scripts/md_to_pdf.py docs/ output.pdf --sort-by date
 ```
 
@@ -107,11 +125,12 @@ uv run ${CLAUDE_PLUGIN_ROOT}/scripts/md_to_pdf.py docs/ output.pdf --sort-by dat
 
 Images must use relative paths from the markdown file location.
 
-**Problem: Installation fails on macOS**
+**Problem: "cannot load library 'libgobject-2.0-0'" on macOS**
+
+This error occurs when WeasyPrint can't find Homebrew libraries. The fix is already included in the commands above (`DYLD_LIBRARY_PATH=/opt/homebrew/lib:$DYLD_LIBRARY_PATH`). If issues persist, ensure pango and gobject-introspection are installed:
 
 ```bash
-brew install pango
-pip install weasyprint
+brew install pango gobject-introspection
 ```
 
 **Problem: Tables not rendering correctly**
@@ -121,5 +140,4 @@ Ensure the script uses `.enable('table')` on the Markdown parser. This is includ
 ## Reference
 
 - [REFERENCE.md](REFERENCE.md) — WeasyPrint API documentation
-- [templates/default.css](../../scripts/templates/default.css) — Default compact styling
-- [pyproject.toml](../../scripts/pyproject.toml) — Python dependencies
+- [default.css](../../scripts/default.css) — Default compact styling
