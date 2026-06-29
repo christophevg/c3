@@ -14,7 +14,7 @@
       "args": [
         "--refresh",
         "--from",
-        "simple-email-gw",
+        "simple-email-gw@latest",
         "email-gw-mcp-server"
       ],
       "env": {
@@ -28,4 +28,3 @@
     }
   }
 }
-

@@ -25,6 +25,11 @@
   "theme": "light",
   "editorMode": "normal",
   "verbose": false,
-  "terminalProgressBarEnabled": true
+  "terminalProgressBarEnabled": true,
+  "env": {
+    "API_TIMEOUT_MS": "1200000",
+    "BASH_DEFAULT_TIMEOUT_MS": "300000",
+    "CLAUDE_CODE_DISABLE_AUTO_MEMORY" : "1"
+  },
+  "autoMemoryEnabled": false
 }
-
