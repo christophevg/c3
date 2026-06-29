@@ -30,26 +30,6 @@ Topics for cross-project standardization:
 
 ### P2 - High
 
-- [x] **MBI Intake Layer Implementation** — 2026-06-12
-  - Approved by Christophe after research on MBI/Intake Backlog best practices
-  - Research stored in: c3/research/2026-06-12-mbi-intake-backlog/
-  - Memory: memory/c3-intake-backlog-mbi.md
-  - Tasks:
-    - [x] Create PLAN.md template in C3 (templates/PLAN.md)
-    - [x] Update functional-analyst agent to ask "MBI or linear task?" during feature intake
-    - [x] Create /wsjf skill for interactive WSJF scoring
-    - [x] Update project-manage skill to check for PLAN.md and prioritize MBI tasks
-  - Acceptance: ✅ functional-analyst can create MBIs in PLAN.md, MBI tasks scheduled at top of TODO.md
-
-- [x] **Review end-user-documenter agent** — 2026-04-30
-  - Root cause: Agent had too many conflicting instructions causing it to describe actions instead of executing tools
-  - Fixed by:
-    1. Simplifying instructions to "execute tools immediately"
-    2. Reducing "CRITICAL REQUIREMENT" sections that created confusion
-    3. Matching functional-analyst's direct tool execution pattern
-  - Note: Session caches agent definitions - start new session to verify fix
-  - Acceptance: Agent uses tools and creates documentation files
-
 - [ ] **AI Overview skill**
   - Create skill for browser-based Google search with AI Overview extraction
   - Enables research workflows with synthesized answers
@@ -63,21 +43,27 @@ Topics for cross-project standardization:
   - Blocks: AI Overview skill
   - Research and compare to other solutions, e.g. Agent Browser (https://github.com/vercel-labs/agent-browser)
 
+- [ ] **C3 agents async communication pattern**
+  - Enable all C3 agents to communicate asynchronously with users
+  - Interaction pattern: user <- email -> assistant <--> agents
+  - Typical workflow:
+    - User emails assistant with feature request
+    - Agent adds to TODO, spawns project-management agent
+    - Project manager spawns functional analyst
+    - Functional analyst has questions → assistant emails user
+    - User replies → assistant provides answers to agents
+  - Pattern must be generic for all agents requiring input during project-management
+  - Acceptance: Documented async pattern with implementation guide
+  - Depends on: pa-email update, CronCreate/ScheduleWakeup tools
+
+- [ ] **CronCreate, ScheduleWakeup tools for c3:assistant**
+  - Add CronCreate tool to create scheduled tasks/cron jobs
+  - Add ScheduleWakeup tool to schedule agent reactivation at specific times
+  - Enable assistant to handle time-based automation and follow-ups
+  - Acceptance: Tool definitions integrated into assistant agent
+  - Blocks: Async communication pattern follow-up handling
+
 ### P3 - Medium
-
-- [x] **Email MCP: auto-save sent messages to Sent folder** — 2026-06-17
-  - The MCP `reply_email` and `send_email` tools send via SMTP but don't save a copy to the IMAP Sent folder
-  - No `copy_email` tool exists to archive sent messages manually
-  - Submitted feature request to `christophevg/simple-email-gw`: https://github.com/christophevg/simple-email-gw/issues/1
-  - Until implemented, use the workaround: `send_email` with BCC to self, then move the copy to the Sent folder
-  - **Source:** Christophe's email, 2026-06-17
-  - **Acceptance:** Feature request submitted ✓
-
-- [x] **Extract email MCP into standalone package: simple-email-gw** — 2026-05-07
-  - Package published to PyPI as `simple-email-gw`
-  - C3 now uses `uvx --from simple-email-gw mcp-server`
-  - Local `email/` directory removed from repository
-  - Acceptance: ✓ Package on PyPI, C3 uses uvx, email/ removed
 
 - [ ] **Document scripts centralization pattern in C3 documentation**
   - Explain distinction between:
@@ -94,38 +80,11 @@ Topics for cross-project standardization:
   - Establish workflow guidelines for README updates
   - Acceptance: Templates created, guidelines documented, READMEs reviewed
 
-- [ ] **C3 agents async communication pattern**
-  - Enable all C3 agents to communicate asynchronously with users
-  - Interaction pattern: user <- email -> assistant <--> agents
-  - Typical workflow:
-    - User emails assistant with feature request
-    - Agent adds to TODO, spawns project-management agent
-    - Project manager spawns functional analyst
-    - Functional analyst has questions → assistant emails user
-    - User replies → assistant provides answers to agents
-  - Pattern must be generic for all agents requiring input during project-management
-  - Acceptance: Documented async pattern with implementation guide
-  - Depends on: pa-email update (P2), CronCreate/ScheduleWakeup tools
-
-- [ ] **CronCreate, ScheduleWakeup tools for c3:assistant**
-  - Add CronCreate tool to create scheduled tasks/cron jobs
-  - Add ScheduleWakeup tool to schedule agent reactivation at specific times
-  - Enable assistant to handle time-based automation and follow-ups
-  - Acceptance: Tool definitions integrated into assistant agent
-  - Blocks: Async communication pattern follow-up handling
-
 - [ ] **Researcher agent improvement**
   - Agent should always ask user where to store new research
   - Only skip prompt if location explicitly provided in startup prompt
   - Prevents research from being lost or misplaced
   - Acceptance: Updated agent definition with location prompt behavior
-
-- [ ] **Python style guidelines enhancement**
-  - Add function length limits to python skill
-  - Add guidance: avoid comments that rephrase next function call (e.g., "# start a session" before `start_session()`)
-  - Create automated check workflow (integrate with ruff?)
-  - Acceptance: Updated python/SKILL.md with new patterns
-  - Reference: analysis/python-coding-guidelines-reference.md
 
 - [ ] **Brainstorming agent research**
   - Research https://mcpmarket.com/tools/skills/brainstorming-design-specifier
@@ -138,6 +97,11 @@ Topics for cross-project standardization:
   - Design dedicated PA agent (or enhance existing assistant agent)
   - Acceptance: Design document or updated agent definition
 
+- [ ] **Research: agentskills.io**
+  - Investigate skill design patterns and best practices
+  - May inform future skill development
+  - Acceptance: Research report in research/
+
 ### P4 - Low
 
 - [ ] **Create plugin-script skill**
@@ -146,31 +110,48 @@ Topics for cross-project standardization:
   - Enable other projects to follow the same pattern
   - Acceptance: Skill created with template and guidelines
 
-- [ ] **Research: agentskills.io**
-  - Investigate skill design patterns and best practices
-  - May inform future skill development
-  - Acceptance: Research report in research/
-
-- [ ] **Research: Claude Code ecosystem**
-  - Investigate claude-code-system-prompts (understanding internals)
-  - Investigate claude-toolshed and claude-marketplace (MCP ecosystem)
-  - Batch these related research items together
-  - Acceptance: Research report comparing approaches
-
-- [ ] **Research: markitdown**
-  - Evaluate Microsoft's markitdown tool
-  - Potential utility for markdown processing workflows
-  - Acceptance: Research report with recommendation
-
-- [ ] **Curate python-coding-guidelines-reference.md**
-  - Review and filter reference document
-  - Extract actionable patterns for python skill
-  - Acceptance: Updated reference or removed if not needed
-
-- [ ] **Set up MkDocs Material documentation site for C3**
-  - Already in backlog, valuable but not urgent
-
 ## Done
+
+- [x] **MBI Intake Layer Implementation** — 2026-06-12
+  - Approved by Christophe after research on MBI/Intake Backlog best practices
+  - Research stored in: c3/research/2026-06-12-mbi-intake-backlog/
+  - Memory: memory/c3-intake-backlog-mbi.md
+  - Tasks:
+    - [x] Create PLAN.md template in C3 (templates/PLAN.md)
+    - [x] Update functional-analyst agent to ask "MBI or linear task?" during feature intake
+    - [x] Create /wsjf skill for interactive WSJF scoring
+    - [x] Update project-manage skill to check for PLAN.md and prioritize MBI tasks
+  - Acceptance: ✅ functional-analyst can create MBIs in PLAN.md, MBI tasks scheduled at top of TODO.md
+
+- [x] **Python style guidelines enhancement** — 2026-06-29
+  - Addressed by tight-python integration into python skill
+  - Added function length limits, tight code philosophy
+  - Added library-first check (NIH principle)
+  - Added deletion test for abstractions
+  - Acceptance: ✅ Updated python/SKILL.md with new patterns
+
+- [x] **Review end-user-documenter agent** — 2026-04-30
+  - Root cause: Agent had too many conflicting instructions causing it to describe actions instead of executing tools
+  - Fixed by:
+    1. Simplifying instructions to "execute tools immediately"
+    2. Reducing "CRITICAL REQUIREMENT" sections that created confusion
+    3. Matching functional-analyst's direct tool execution pattern
+  - Note: Session caches agent definitions - start new session to verify fix
+  - Acceptance: Agent uses tools and creates documentation files
+
+- [x] **Email MCP: auto-save sent messages to Sent folder** — 2026-06-17
+  - The MCP `reply_email` and `send_email` tools send via SMTP but don't save a copy to the IMAP Sent folder
+  - No `copy_email` tool exists to archive sent messages manually
+  - Submitted feature request to `christophevg/simple-email-gw`: https://github.com/christophevg/simple-email-gw/issues/1
+  - Until implemented, use the workaround: `send_email` with BCC to self, then move the copy to the Sent folder
+  - **Source:** Christophe's email, 2026-06-17
+  - **Acceptance:** Feature request submitted ✓
+
+- [x] **Extract email MCP into standalone package: simple-email-gw** — 2026-05-07
+  - Package published to PyPI as `simple-email-gw`
+  - C3 now uses `uvx --from simple-email-gw mcp-server`
+  - Local `email/` directory removed from repository
+  - Acceptance: ✓ Package on PyPI, C3 uses uvx, email/ removed
 
 - [x] **pa-email skill update for MCP server features** — 2026-05-04
   - Added "Simplified Inbox Handling" section
@@ -191,11 +172,6 @@ Topics for cross-project standardization:
   - Acceptance: ✓ Feedback provided, documentation fixed
 
 - [x] Ensure that C3 skills and agents reference each other with the c3: plugin prefix — 2026-04-28
-- [x] **Business Analyst Agent** (processed 2026-04-29) — moved to P3 backlog
-- [x] **CronCreate/ScheduleWakeup tools** (processed 2026-04-29) — moved to P3 backlog
-- [x] **Researcher agent improvement** (processed 2026-04-29) — moved to P3 backlog
-- [x] **pa-email update for MCP features** (processed 2026-04-29) — moved to P2 backlog
-- [x] **Async communication pattern** (processed 2026-04-29) — moved to P3 backlog
 - [x] **Business Analyst Agent development** — 2026-04-29 (created agents/business-analyst.md with BRD templates, user journey maps, process models)
 - [x] **c3: convert symlink installation to plugin(s)** — 2026-04-20
 - [x] **c3: develop "develop-plugin" skill** — 2026-04-20 (created `plugin-development` skill)

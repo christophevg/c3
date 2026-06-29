@@ -74,7 +74,7 @@ make install
 
 ---
 
-## Skills (42)
+## Skills (54)
 
 Skills provide focused guidance for specific technologies and workflows.
 
@@ -85,16 +85,25 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/mcp-server` | Guide for designing and building MCP servers (FastMCP, security, deployment). |
 | `/plugin-development` | Guide for creating Claude Code plugins (structure, manifest, distribution). |
 
-### Project Management (6)
+### Project Management (7)
 
 | Skill | Description |
 |-------|-------------|
 | `/project` | Dispatcher for project management skills. |
-| `/project-feature` | Capture and scope new features. |
+| `/project-feature` | Capture and scope new features with MBI support. |
 | `/project-manage` | Full implementation workflow with specialized agents. |
 | `/project-status` | Generate STATUS.md with executive summary, metrics, dependencies, blockers, risks. |
 | `/project-todo-refine` | Iteratively refine TODO.md topics by reviewing state, scope, and priority. |
+| `/project-migrate` | Migrate projects between versions or frameworks. |
 | `/website-manage` | Manage content websites with conversational workflow. No PRs, no agents. |
+
+### Planning & Prioritization (3)
+
+| Skill | Description |
+|-------|-------------|
+| `/plan` | Structured feature planning with PLAN.md templates. |
+| `/wsjf` | Interactive WSJF (Weighted Shortest Job First) scoring for prioritization. |
+| `/bug-hunting` | Systematic debugging with patterns, templates, and integration guides. |
 
 ### Personal Assistant (4)
 
@@ -109,7 +118,7 @@ Skills provide focused guidance for specific technologies and workflows.
 
 | Skill | Description |
 |-------|-------------|
-| `/python` | Python coding standards and testing patterns. |
+| `/python` | Python coding standards, tight code philosophy, and testing patterns. |
 | `/pymongo` | MongoDB/PyMongo patterns and security. |
 | `/baseweb` | Baseweb/Vue/Vuetify best practices. |
 | `/fire` | Python Fire CLI patterns. |
@@ -126,7 +135,7 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/develop-skill` | Create and refine Claude Code skills. |
 | `/develop-agent` | Develop Claude Code agents. |
 
-### Utility (18)
+### Utility (21)
 
 | Skill | Description |
 |-------|-------------|
@@ -143,32 +152,48 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/transcribe-session` | Curated session transcripts. |
 | `/api2mod` | Convert API docs to Python modules. |
 | `/spec2mod` | Generate Python from OpenAPI specs. |
-| `/start-baseweb-project` | Start new Baseweb projects. |
 | `/vue-form-generator` | Schema-based Vue.js forms. |
 | `/ollama` | Python ollama library for LLM integration. |
 | `/pyenv` | Manage Python versions. |
 | `/pypi-publish` | Publish packages to PyPI. |
 | `/mcp-tools` | Work with MCP tools: discovery, naming, sub-agent config. |
+| `/release` | Release workflow and version management. |
+| `/github` | GitHub operations and PR management. |
+| `/research` | Comprehensive research with provenance tracking and source citations. |
+
+### Framework-Specific (6)
+
+| Skill | Description |
+|-------|-------------|
+| `/vue` | Vue.js framework patterns. |
+| `/vuetify-v4` | Vuetify V4 components and patterns. |
+| `/quart-webapp` | Quart web application patterns. |
+| `/python-project` | Python project setup with uv. |
+| `/copy-writer` | Content writing and copy editing. |
+| `/prepare-for-exam` | Interactive study material generation. |
 
 ---
 
-## Agents (13)
+## Agents (16)
 
 | Agent | Description |
 |-------|-------------|
-| `assistant` | Personal assistant for inbox processing. |
+| `assistant` | Personal assistant for inbox processing and workflow coordination. |
 | `project-manager` | Project workflow orchestration with multi-task execution. |
 | `git-manager` | Git operations via c3:commit skill. |
-| `functional-analyst` | Requirements extraction and task planning. |
-| `researcher` | Comprehensive research with provenance. |
+| `functional-analyst` | Requirements extraction, task planning, and MBI intake. |
+| `business-analyst` | Business requirements documents and stakeholder analysis. |
+| `researcher` | Comprehensive research with provenance tracking. |
 | `api-architect` | API design and architecture. |
 | `ui-ux-designer` | User experience and interface design. |
-| `python-developer` | Python implementation. |
-| `code-reviewer` | Code quality review. |
-| `testing-engineer` | Test planning and coverage. |
+| `python-developer` | Python implementation with tight code philosophy. |
+| `code-reviewer` | Code quality review with tight code checklist. |
+| `testing-engineer` | Test planning and coverage with tight tests philosophy. |
 | `security-engineer` | Security vulnerability assessment. |
-| `end-user-documenter` | Documentation generation. |
+| `end-user-documenter` | End-user documentation generation. |
 | `knowledge-agent` | Knowledge base querying and evolution. |
+| `bug-fixer` | Bug fixing workflow with TDD approach. |
+| `release-manager` | Release workflow and GitHub operations. |
 
 ---
 

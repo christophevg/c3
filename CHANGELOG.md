@@ -7,16 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-
-- Email MCP server now uses PyPI package `simple-email-gw` instead of local `email/` directory
-  - Updated `.mcp.json` to use `uvx --from simple-email-gw mcp-server`
-  - Removed `email/` directory from repository
-  - Simplified setup: no local build required
-
 ### Added
 
-*Nothing yet*
+- **bug-hunting skill** — Systematic debugging with patterns, templates, and integration guides
+- **plan skill** — Structured feature planning with PLAN.md templates for MBI workflow
+- **wsjf skill** — Interactive WSJF (Weighted Shortest Job First) scoring for prioritization
+- **MBI intake workflow** — Functional-analyst now asks "MBI or linear task?" during feature intake
+- **Tight code philosophy** — Integrated into python skill, python-developer agent, code-reviewer agent, and testing-engineer agent
+- **Library-First Check** — Added NIH (Not Invented Here) principle to prevent reimplementing existing libraries
+
+### Changed
+
+- **python skill** — Merged tight-python content, replaced threading-based async pattern with asyncio.run approach
+- **python-developer agent** — Added library-first check, references tight code philosophy
+- **code-reviewer agent** — Added Tight Code Philosophy as primary checklist
+- **testing-engineer agent** — Added Tight Tests Philosophy, test anti-patterns, library-first check
+- **researcher agent** — Fixed to properly reference c3:research skill
+- **functional-analyst agent** — Added MBI intake workflow with PLAN.md creation
+- **project-feature skill** — Enhanced with MBI detection and workflow
+- **project-manage skill** — Enhanced with MBI support
+- **Email MCP server** — Now uses PyPI package `simple-email-gw` instead of local `email/` directory
+
+### Fixed
+
+- **research skill** — Restored skill that was incorrectly removed (was "consolidated into c3:research" but that skill never existed)
+
+### Removed
+
+- **tight-python skill** — Merged into python skill (consolidated for single source of truth)
 
 ## [1.1.5] - 2026-04-21
 
