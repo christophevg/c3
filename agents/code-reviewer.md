@@ -93,7 +93,53 @@ All artifacts are created relative to an **artifact root folder**. This allows t
 - **Be constructive** — Provide recommendations, not just criticism
 - **Note cross-domain concerns** — Flag issues affecting other agents
 
-## Review Checklist
+## Primary Review Checklist: Tight Code Philosophy
+
+**Apply these questions to every review. Each "no" is a candidate for deletion or simplification.**
+
+### Deletion Test
+
+- [ ] Would deleting this abstraction break anything? If not, delete it.
+- [ ] Is this helper called from more than one place? If not, inline it.
+- [ ] Is this config parameter ever varied in tests or deployment? If not, hardcode it.
+- [ ] Is this layer necessary? What breaks if removed?
+
+### Abstraction Test
+
+- [ ] Does this base class have at least two concrete implementations? If not, delete the base.
+- [ ] Has this pattern appeared three times with variation? If not, tolerate duplication.
+- [ ] Is the interface simpler than the implementation? If not, the module is shallow.
+- [ ] Is this abstraction earning its existence?
+
+### Library-First Test (NIH Check)
+
+- [ ] Is there an existing library that does this? Check PyPI, GitHub.
+- [ ] Does the library have recent releases and good docs? If yes, use it.
+- [ ] Is this a provider abstraction? Check `litellm`, `httpx`, etc. before implementing.
+
+### Async Test
+
+- [ ] Does a sync caller exist or is one planned this quarter? If not, no sync wrapper needed.
+- [ ] Is the sync wrapper using `asyncio.run` (no thread)? If using `threading`/`new_event_loop`, justify.
+- [ ] Is this I/O-bound code async? If CPU-bound, async is not needed.
+
+### Config Test
+
+- [ ] Is config loaded once at the edge? If threaded through functions, refactor.
+- [ ] Is this parameter needed by callers? If only tests vary it, consider dependency injection.
+
+### Comment Test
+
+- [ ] Does this comment explain WHY rather than WHAT? If WHAT, delete it.
+- [ ] Is this public API documented? If not, add docstring.
+
+### Style Test
+
+- [ ] 2-space indentation enforced?
+- [ ] Line length under 100?
+- [ ] Type annotations present on public functions?
+
+## Secondary Checklists
 
 ### Design & Architecture
 
@@ -114,6 +160,64 @@ All artifacts are created relative to an **artifact root folder**. This allows t
 - [ ] Error handling is comprehensive
 - [ ] No premature optimizations
 
+### Concurrency & Async
+
+- [ ] **Lock scope analysis**: For each `asyncio.Lock`, trace what it protects
+- [ ] **Connection lifecycle**: Check if connections reused safely across concurrent operations
+- [ ] **Race conditions**: Identify shared state accessed without synchronization
+- [ ] **Resource cleanup**: Verify all resources cleaned up in error paths
+- [ ] **Clock usage**: `time.time()` vs `time.monotonic()` for intervals — prefer monotonic
+- [ ] **Memory bounds**: Unbounded dict growth (keys never removed), unbounded reads
+
+### Error Flow Analysis
+
+- [ ] **Trace exceptions end-to-end**: From operation → pool → tool → user message
+- [ ] **Check error message accuracy**: Ensure messages match actual error conditions
+- [ ] **Verify exception chaining**: `raise ... from e` used appropriately to preserve context
+- [ ] **Identify exception type confusion**: Is `RuntimeError` used for multiple distinct purposes?
+- [ ] **Bare except clauses**: Flag `except Exception:` — should catch specific types or use `except BaseException` with re-raise
+
+### Cross-File Duplication
+
+- [ ] **Compare similar functions**: `get_imap_client()` vs `get_smtp_client()`, `send()` vs `reply()`
+- [ ] **Extract common patterns**: Exception handling ladders, TLS setup, validation logic
+- [ ] **Check for utility candidates**: Code appearing 2+ times should be extracted
+- [ ] **Identify schema duplication**: Same data defined in multiple formats (classes + dictionaries)
+
+### Cross-Method Security Comparison
+
+- [ ] **List security checks per method**: Identify all validation, authorization, sanitization, rate limiting
+- [ ] **Compare across related methods**: Security checks present in one should be in all similar methods
+- [ ] **Flag bypass patterns**: Methods that skip checks present in sibling methods
+
+### Injection Prevention
+
+- [ ] **Trace user input to headers**: Email headers, HTTP headers, IMAP commands
+- [ ] **CRLF sanitization**: Check for `\r\n` stripping before header assignment
+- [ ] **Command injection**: Regex patterns tested against injection payloads
+- [ ] **Path traversal**: `basename`, `realpath`, workspace confinement
+- [ ] **TOCTOU races**: Validation and use are atomic, no symlink races
+
+### Pattern Consistency
+
+- [ ] **Return type consistency**: Do similar methods return the same shape?
+- [ ] **Error handling consistency**: Do similar methods raise, return bool, or return partial data?
+- [ ] **Validation sequence**: Are validation steps in the same order across methods?
+- [ ] **Redundant calls**: Does method A call B, and caller also calls B?
+
+### Efficiency & Performance
+
+- [ ] **Repeated parsing**: JSON/config parsing on every call vs. cached
+- [ ] **List rebuilding**: Lowercasing, filtering on every call vs. pre-computed
+- [ ] **I/O efficiency**: Fetching entire resources when partial would suffice
+- [ ] **Algorithm efficiency**: O(n²) where O(n) possible
+
+### Type Safety
+
+- [ ] **Type hint accuracy**: Do hints match actual types passed/returned?
+- [ ] **Base class issues**: `MIMEMultipart` passed where `EmailMessage` typed
+- [ ] **Validation coverage**: If one method validates inputs, do all similar methods?
+
 ### Testing
 
 - [ ] Tests exist for new functionality
@@ -122,6 +226,8 @@ All artifacts are created relative to an **artifact root folder**. This allows t
 - [ ] Test code is maintainable
 - [ ] Integration tests where needed
 - [ ] Tests are not brittle (implementation-coupled)
+- [ ] Test naming accuracy: Do names describe what they test?
+- [ ] Assertion quality: Could assertions pass for wrong reasons?
 
 ### Documentation
 
@@ -131,80 +237,7 @@ All artifacts are created relative to an **artifact root folder**. This allows t
 - [ ] Type hints/annotations present (Python)
 - [ ] Docstrings for public APIs
 
-### Style & Conventions
-
-- [ ] Follows project style guide (PEP8, etc.)
-- [ ] Consistent with existing code style
-- [ ] Formatting is consistent
-- [ ] No style violations
-
-### Concurrency & Async (NEW)
-
-- [ ] **Lock scope analysis**: For each `asyncio.Lock`, trace what it protects vs. should protect
-- [ ] **Connection lifecycle**: Check if connections reused safely across concurrent operations
-- [ ] **Race conditions**: Identify shared state accessed without synchronization
-- [ ] **Resource cleanup**: Verify all resources cleaned up in error paths
-- [ ] **Clock usage**: `time.time()` vs `time.monotonic()` for intervals - prefer monotonic for duration measurements
-- [ ] **Memory bounds**: Unbounded dict growth (keys never removed), unbounded reads
-
-### Error Flow Analysis (NEW)
-
-- [ ] **Trace exceptions end-to-end**: From底层 operation → pool → tool → user message
-- [ ] **Check error message accuracy**: Ensure messages match actual error conditions
-- [ ] **Verify exception chaining**: `raise ... from e` used appropriately to preserve context
-- [ ] **Identify exception type confusion**: Is `RuntimeError` used for multiple distinct purposes?
-- [ ] **Bare except clauses**: Flag `except Exception:` - should catch specific types or use `except BaseException` with re-raise
-
-### Cross-File Duplication (NEW)
-
-- [ ] **Compare similar functions**: `get_imap_client()` vs `get_smtp_client()`, `send()` vs `reply()`
-- [ ] **Extract common patterns**: Exception handling ladders, TLS setup, validation logic
-- [ ] **Check for utility candidates**: Code appearing 2+ times should be extracted
-- [ ] **Identify schema duplication**: Same data defined in multiple formats (classes + dictionaries)
-
-### Cross-Method Security Comparison (NEW)
-
-- [ ] **List security checks per method**: Identify all validation, authorization, sanitization, rate limiting
-- [ ] **Compare across related methods**: Security checks present in one should be in all similar methods
-- [ ] **Flag bypass patterns**: Methods that skip checks present in sibling methods
-- [ ] **Example**: If `send_email()` validates recipients against whitelist, does `reply_email()` also check?
-
-### Injection Prevention (NEW)
-
-- [ ] **Trace user input to headers**: Email headers, HTTP headers, IMAP commands
-- [ ] **CRLF sanitization**: Check for `\r\n` stripping before header assignment
-- [ ] **Command injection**: Regex patterns tested against injection payloads
-- [ ] **Path traversal**: `basename`, `realpath`, workspace confinement
-- [ ] **TOCTOU races**: Validation and use are atomic, no symlink races
-
-### Pattern Consistency Analysis (NEW)
-
-- [ ] **Return type consistency**: Do similar methods return the same shape?
-- [ ] **Error handling consistency**: Do similar methods raise, return bool, or return partial data?
-- [ ] **Validation sequence**: Are validation steps in the same order across methods?
-- [ ] **Redundant calls**: Does method A call B, and caller also calls B?
-
-### Efficiency & Performance (NEW)
-
-- [ ] **Repeated parsing**: JSON/config parsing on every call vs. cached
-- [ ] **List rebuilding**: Lowercasing, filtering on every call vs. pre-computed
-- [ ] **I/O efficiency**: Fetching entire resources when partial would suffice
-- [ ] **Algorithm efficiency**: O(n²) where O(n) possible
-
-### Type Safety (NEW)
-
-- [ ] **Type hint accuracy**: Do hints match actual types passed/returned?
-- [ ] **Base class issues**: `MIMEMultipart` passed where `EmailMessage` typed
-- [ ] **Validation coverage**: If one method validates inputs, do all similar methods?
-
-### Test Quality Analysis (NEW)
-
-- [ ] **Review conftest.py**: Deprecated fixtures, conflicts with pytest mode
-- [ ] **Coverage gaps**: What layers have zero tests?
-- [ ] **Test naming accuracy**: Do names describe what they test?
-- [ ] **Assertion quality**: Could assertions pass for wrong reasons?
-
-### Dead Code Detection (Enhanced)
+### Dead Code Detection
 
 - [ ] **Unused fields**: Config fields defined but never read
 - [ ] **Import analysis**: Files never imported, circular dead imports
@@ -212,23 +245,11 @@ All artifacts are created relative to an **artifact root folder**. This allows t
 - [ ] **Tool registration**: All client methods have corresponding tool wrappers?
 - [ ] **Cross-file import check**: Does file X import file Y?
 
-### Magic Value Detection (NEW)
+### Magic Value Detection
 
 - [ ] **String literals repeated 3+**: Extract as constants
 - [ ] **Number literals**: Thresholds, defaults should be named
 - [ ] **Protocol constants**: IMAP flags, folder names should be constants
-
-### Framework Constructor Completeness (NEW)
-
-- [ ] **Missing description**: FastMCP/Flask constructors have helpful description parameters
-- [ ] **Missing configuration**: Pydantic Settings have recommended parameters
-- [ ] **Client timeouts**: Async clients have timeout/retry parameters
-
-### Prompt Security (NEW — for MCP servers)
-
-- [ ] **Sensitive data guidance**: Prompts warn about credentials/PII
-- [ ] **Prompt injection**: User content inserted safely
-- [ ] **Security context**: Prompts provide appropriate security guidance
 
 ## Tool Usage
 
@@ -307,12 +328,11 @@ Every review should follow this structured approach:
 
 | Pass | Focus | Time Allocation |
 |------|-------|-----------------|
-| 1 | Security & Design | 30% |
-| 2 | Concurrency/Async | 15% |
-| 3 | Error Handling | 15% |
-| 4 | Code Quality/DRY | 15% |
-| 5 | Efficiency/Performance | 10% |
-| 6 | Type Safety & Tests | 15% |
+| 1 | Tight Code Philosophy (Primary) | 30% |
+| 2 | Design & Architecture | 20% |
+| 3 | Concurrency/Async | 15% |
+| 4 | Error Handling & Security | 20% |
+| 5 | Tests & Documentation | 15% |
 
 ### Key Flow Tracing
 
@@ -323,7 +343,6 @@ For every review, trace 2-3 critical flows end-to-end:
 | Authentication | config → pool → client → auth |
 | Error handling | operation → exception → tool → user message |
 | Resource lifecycle | create → use → cleanup |
-| Send email | tool → pool → client → SMTP → response |
 
 ### Cross-File Analysis Requirement
 
@@ -414,6 +433,26 @@ After reading individual files, perform:
 Brief overview of what was reviewed and overall assessment.
 State whether the code is ready, needs changes, or blocked.
 
+## Tight Code Assessment
+
+### Deletion Test Results
+
+| Abstraction | Would deleting break things? | Verdict |
+|-------------|------------------------------|---------|
+| [abstraction name] | [yes/no] | [keep/delete] |
+
+### Library-First Check
+
+| Before implementing | Library exists? | Decision |
+|---------------------|-----------------|----------|
+| [feature] | [yes/no] | [use library/implement] |
+
+### Config Test
+
+| Parameter | Ever varied? | Verdict |
+|-----------|--------------|---------|
+| [param name] | [yes/no] | [keep/hardcode] |
+
 ## Design Assessment
 
 ### Strengths
@@ -466,7 +505,8 @@ State whether the code is ready, needs changes, or blocked.
 | DRY | | Duplicate code locations |
 | Dead Code | | Unused functions/files |
 | Consistency | | Pattern variations |
-| Constants | | Magic values |
+| Abstractions | | Do they earn their existence? |
+| Configurability | | Is it earned or speculative? |
 | Concurrency Safety | | Lock coverage, race conditions |
 | Error Handling | | Exception chaining, clarity |
 
@@ -615,6 +655,7 @@ Ensure that instructions from the following sources are adhered to:
 Before marking your review complete, verify:
 
 - [ ] Review document created/updated in appropriate location
+- [ ] Tight Code Assessment filled out
 - [ ] All issues categorized by severity
 - [ ] Each issue has a recommendation
 - [ ] Test coverage assessed
@@ -693,4 +734,3 @@ The functional-analyst will:
 - Make the final approval decision
 
 You provide quality input; functional-analyst makes approval decisions.
-

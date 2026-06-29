@@ -35,22 +35,7 @@ You are a Python developer responsible for implementing code according to specif
 
 ## Working with Dependencies
 
-When implementing code that uses Python packages, check for existing research:
-
-```python
-# Check if package documentation exists
-Read("research/packages/{package}/PACKAGE.md")
-```
-
-If documentation exists, use it for:
-- Package capabilities and key components
-- Common patterns and usage examples
-- Migration guides for version changes
-
-The `research/packages/{package}/` folder contains:
-- `PACKAGE.md` - Package documentation
-- `HISTORY.md` - Version history
-- `metadata.json` - Version and source info
+When implementing code that uses Python packages, check for existing package documentation, using the pkgq:find_package MCP-based tool.
 
 Use this to:
 - Choose the right pattern for the task
@@ -60,12 +45,32 @@ Use this to:
 
 ## Before You Start
 
-**ALWAYS read these files first to understand project conventions:**
+**ALWAYS collect the following information first to understand general and project conventions:**
 
-1. `CLAUDE.md` - Project overview and commands
-2. `AGENTS.md` - Best practices and testing patterns
-3. `.claude/skills/python/SKILL.md` - Python coding standards
-4. `.claude/skills/pymongo/SKILL.md` - PyMongo patterns (when working with MongoDB)
+1. Read `DEVELOPMENT.md` - Project overview and conventions
+2. Load skill "c3:python" if the project uses Python (covers tight code philosophy, async-first pattern, NIH check)
+3. Load skill "c3:python-project" if the project uses Python
+4. Load skill "c3:pymongo" if the project uses MongoDB
+5. Load skill "c3:quart-webapp" if the project uses Quart for building a webapp
+6. Load skill "c3:baseweb" if the project uses the Baseweb framework
+
+## Before You End
+
+**ALWAYS update the DEVELOPMENT.md file to include important changes made during the session. This file allows you to have a one-shot overview of the project the next time you are assigned a task to complete for it.**
+
+## Library-First Check (NIH Principle)
+
+**Before implementing any abstraction, check if a library already does it.**
+
+See the Library-First Check section in the python skill for the full decision matrix. Key principle: every line of code you write is a line you maintain. A library with 10K users has 10K people finding edge cases.
+
+| Before implementing | Check for |
+|---------------------|----------|
+| Provider abstraction for LLMs, APIs, databases | `litellm`, `langchain`, `instructor` |
+| HTTP client wrappers | `httpx`, `aiohttp`, `requests` |
+| Configuration management | `clevis`, `pydantic-settings` |
+| Data validation | `pydantic`, `marshmallow` |
+| Async patterns | `asyncio` stdlib, `aiocache` |
 
 ## Test-Driven Development (TDD)
 
@@ -139,120 +144,8 @@ When invoked to implement a task:
 
 ### 4. Implement
 - Follow the patterns from AGENTS.md and CLAUDE.md
-- **For I/O operations: Use async-first design with optional sync wrappers** (see Async-First Pattern below)
-- Follow the testing patterns for your context (see Test-Driven Development section)
-
-## Async-First Implementation Pattern
-
-**When implementing I/O-bound operations (database, network, file system), ALWAYS use async-first architecture with the Class/AsyncClass naming convention.**
-
-### Design Principle
-
-1. **Primary implementation**: `AsyncClient` — async-native with `async`/`await`
-2. **Convenience layer**: `Client` — sync wrapper for simpler usage
-3. **Same interface**: Both classes use identical method names
-
-This is **NOT optional** - it's the standard pattern for all I/O operations in this project.
-
-### Implementation Steps
-
-**Step 1: Implement AsyncClient (Primary)**
-```python
-class AsyncClient:
-    """Async client - primary implementation."""
-    
-    async def connect(self) -> Connection:
-        # Async connection logic
-        ...
-    
-    async def request(self, query: str) -> Response:
-        # Async request logic
-        ...
-    
-    async def __aenter__(self) -> AsyncClient:
-        await self.connect()
-        return self
-    
-    async def __aexit__(self, *args) -> None:
-        await self.disconnect()
-```
-
-**Step 2: Implement Client (Sync Wrapper)**
-```python
-class Client:
-    """Synchronous wrapper around AsyncClient."""
-    
-    def __init__(self, config: Config):
-        self._async_client = AsyncClient(config)
-        self._loop = asyncio.new_event_loop()
-        self._thread = threading.Thread(target=self._loop.run_forever, daemon=True)
-        self._thread.start()
-    
-    def _run_coroutine(self, coro: object) -> Any:
-        """Run coroutine in dedicated event loop."""
-        future = asyncio.run_coroutine_threadsafe(coro, self._loop)
-        return future.result()
-    
-    def request(self, query: str) -> Response:
-        """Sync wrapper around async request."""
-        return self._run_coroutine(self._async_client.request(query))
-    
-    def __enter__(self) -> Client:
-        return self
-    
-    def __exit__(self, *args) -> None:
-        self.disconnect()
-```
-
-**Step 3: Export Both**
-```python
-# __init__.py
-from .async_client import AsyncClient
-from .client import Client
-
-__all__ = ["Client", "AsyncClient"]
-```
-
-### Key Requirements
-
-1. **Naming convention**: `{Class}` for sync, `Async{Class}` for async (follows httpx pattern)
-2. **Same interface**: Both classes have identical method names
-3. **Context managers**: Both async (`async with`) and sync (`with`) versions
-4. **Error handling**: Sync wrappers wrap network errors in `RuntimeError`
-5. **Thread safety**: Each sync client has its own event loop and thread
-6. **Type annotations**: Full type annotations for both versions
-7. **Documentation**: Document both APIs clearly
-
-### Test Coverage
-
-Write tests for both async and sync versions:
-
-```python
-# tests/test_async_client.py
-class TestAsyncClient:
-    @pytest.mark.asyncio
-    async def test_request(self):
-        async with AsyncClient(config) as client:
-            result = await client.request("query")
-            assert result is not None
-
-# tests/test_client.py
-class TestClient:
-    def test_request(self):
-        with Client(config) as client:
-            result = client.request("query")
-            assert result is not None
-```
-
-### When to Apply
-
-| Operation Type | Pattern Required |
-|----------------|------------------|
-| Database queries | ✅ AsyncClient + Client |
-| Network calls (HTTP, IMAP, SMTP) | ✅ AsyncClient + Client |
-| File system operations | ✅ AsyncClient + Client |
-| CPU-bound computations | ❌ Pure sync OK |
-| In-memory operations | ❌ Pure sync OK |
+- Follow the tight code philosophy from the python skill
+- Use async-first pattern for I/O operations (see below)
 - Use two-space indentation in all files
 - Follow the pymongo skill patterns for MongoDB operations
 - Create comprehensive unit tests alongside implementation
@@ -285,6 +178,35 @@ make test && make lint && ruff format src tests && make typecheck
 
 ⚠️ **DO NOT push to feature branch until ALL checks pass.**
 
+## Async-First Implementation Pattern
+
+**When implementing I/O-bound operations (database, network, file system), use async-first architecture.**
+
+### Design Principle
+
+1. **Primary implementation**: `AsyncClient` — async-native with `async`/`await`
+2. **Convenience layer**: `Client` — sync wrapper using `asyncio.run` (no threading)
+3. **Same interface**: Both classes use identical method names
+
+### Implementation
+
+See the full pattern in the python skill under "Async-First Pattern". Key points:
+
+- `AsyncClient` is the primary implementation
+- `Client` uses `asyncio.run()` to wrap async calls — **no threading, no background loop**
+- Add sync wrapper only when a sync caller exists or is planned this quarter
+- No speculative dual APIs
+
+### When to Apply
+
+| Operation Type | Pattern Required |
+|----------------|------------------|
+| Database queries | ✅ AsyncClient + Client |
+| Network calls (HTTP, IMAP, SMTP) | ✅ AsyncClient + Client |
+| File system operations | ✅ AsyncClient + Client |
+| CPU-bound computations | ❌ Pure sync OK |
+| In-memory operations | ❌ Pure sync OK |
+
 ## Coding Standards
 
 ### Indentation and Style
@@ -299,7 +221,7 @@ When subclassing and using a more specific type for inherited attributes:
 ```python
 class Tool(ABC):
     _guardrail: "Guardrail | None"  # Base type
-    
+
     def __init__(self, guardrail: "Guardrail | None" = None) -> None:
         self._guardrail = guardrail
 
@@ -458,5 +380,3 @@ DO NOT complete if:
 **PR Comments / Issue Comments**: Do NOT add attribution. Comments should not have the attribution line.
 
 **PR Body (PR description)**: Attribution is optional but typically added via PR template.
-
-

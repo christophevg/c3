@@ -7,24 +7,85 @@ description: Use this skill any time when editing Python code
 
 When creating Python code, ALWAYS use the best practices in the sections below.
 
-## Always use 2 space indentation
+## Core Philosophy: Tight Code
 
-Always use 2 space indentation!
+**Duplication is cheaper than the wrong abstraction.** Wait for three proven cases before extracting. A module should earn its existence; a layer should survive deletion-testing. When in doubt, inline.
 
-## All Imports on Top
+**Deep modules, not many modules.** (Ousterhout) A module's interface should be simpler than its implementation. If the interface is nearly as complex as the body, the module isn't hiding anything — it's shallow. Prefer fewer, deeper modules over many shallow ones.
 
-Always put all imports at the top of the module.
+**Deletion is the default question.** For any abstraction, helper, or layer, ask: "What breaks if I delete this?" If nothing, delete it. Code that doesn't exist has zero maintenance cost.
 
-Don't use imports inside functions!
+## Library-First Check (NIH Principle)
 
-## Use Fully Qualified Module Names when Importing
+**Before implementing any abstraction, check if a library already does it.** This prevents reinventing solutions that already exist.
 
-Don't use relative module paths when its possible to use the fully qualified module name.
+### When to Check
+
+| Before implementing | Check for |
+|---------------------|----------|
+| Provider abstraction for LLMs, APIs, databases | `litellm`, `langchain`, `instructor`, `haystack` |
+| HTTP client wrappers | `httpx`, `aiohttp`, `requests` |
+| Configuration management | `clevis`, `pydantic-settings`, `dynaconf` |
+| CLI argument parsing | `clevis` (if already using), `click`, `argparse` |
+| Logging/observability | `structlog`, `loguru`, `opentelemetry` |
+| Data validation | `pydantic`, `marshmallow`, `msgspec` |
+| Async patterns (caching, rate limiting) | `asyncio` stdlib, `aiocache`, `asyncio-throttle` |
+| Data processing pipelines | `pandas`, `polars`, `dask` |
+| Task queues | `celery`, `arq`, `dramatiq` |
+
+### How to Check
+
+1. **Search PyPI**: `pip search <keyword>` or `https://pypi.org/search/?q=<keyword>`
+2. **Search GitHub**: `<keyword> python library`
+3. **Check dependency lists**: If you already depend on a framework, use its built-in patterns
+
+### Decision Matrix
+
+| Library exists? | Maintenance quality | Decision |
+|-----------------|-------------------|----------|
+| No library | N/A | Implement yourself |
+| Library exists, unmaintained | No releases in 2+ years | Implement yourself or contribute |
+| Library exists, active | Recent releases, good docs | **Use the library** |
+| Library exists, but wrong abstraction | Active but doesn't fit | Consider contributing upstream or implementing |
+
+### Why This Matters
+
+- **Every line of code you write is a line you maintain.** A library with 10K users has 10K people finding edge cases.
+- **Edge cases multiply.** Provider abstraction sounds simple until you hit streaming, tool calls, thinking/reasoning, token counting, rate limits, retry logic, error mapping, and version drift.
+
+## Indentation and Style
+
+**2-space indentation** is the house style. This is non-standard for Python (PEP 8 specifies 4) but consistent across this project's JS/Vue/CSS.
+
+**Ruff config to enforce:**
+
+```toml
+# pyproject.toml
+[tool.ruff.format]
+indent-style = "space"
+indent-width = 2
+```
+
+**Other style:**
+- Line length: 100 characters
+- Imports: standard library, third-party, local — separated, alphabetized
+- Fully qualified imports preferred over relative: `from myproject.mymodule import func`
+- Type annotations on all public functions
+
+## Imports
+
+### All Imports on Top
+
+Always put all imports at the top of the module. Don't use imports inside functions!
+
+### Use Fully Qualified Module Names
+
+Don't use relative module paths when possible. Use the fully qualified module name.
 
 * 🛑 Don't use `from ..my_module.my_submodule import function_name`
 * ✅ Use: `from my_project.my_module.my_submodule import function_name`
 
-## Import Organization for Packages
+### Import Organization for Packages
 
 When creating Python packages with multiple modules, organize imports correctly in `__init__.py`:
 
@@ -44,12 +105,9 @@ __all__ = ["Token", "OAuth2Auth", "User", "Config", "Client"]
 from .models import Token  # Token is defined in auth.py, not models.py
 ```
 
-3. **Common mistake**: Importing a class from the wrong module causes `ImportError`
-4. **Pattern**: Define class in its logical module, import in `__init__.py`, list in `__all__`
-
 ## Function Parameters
 
-Always expose configurable variables, as function parameters. Add sensible defaults, using environment variables if possibly available.
+Always expose configurable variables as function parameters. Add sensible defaults, using environment variables if available.
 
 ### Example
 
@@ -60,9 +118,150 @@ def a_command(an_argument=None):
   # perform logic using `an_argument`
 ```
 
-## Use Classes to group Functions with common Configuration
+## Use Classes to Group Functions with Common Configuration
 
 If a module contains several functions that share common configuration parameters, create a class grouping those functions, adding properties for those common parameters.
+
+## Abstraction Timing
+
+**Rule of three:** Tolerate near-duplication until the same shape appears three times. Then extract — but keep the abstraction shallow until more use cases clarify the right interface.
+
+**Don't:**
+- Extract a base class for one implementation
+- Create a "generic" factory for one concrete type
+- Add a config parameter "just in case"
+- Build a plugin system for one plugin
+
+**Do:**
+- Inline code until duplication is proven painful
+- Wait for the third instance to reveal the right abstraction
+- Keep extracted helpers small and focused
+
+## Async-First Pattern
+
+For I/O-bound operations (database, network, filesystem), default to async:
+
+1. **Write `AsyncClient` as the primary implementation.** This is the source of truth.
+2. **Sync wrapper via `asyncio.run`, not a background thread.**
+
+```python
+# sync.py
+import asyncio
+
+def _run(coro):
+  return asyncio.run(coro)
+
+class Client:
+  """Thin sync facade over AsyncClient. No threads, no resident loop."""
+
+  def __init__(self, *args, **kwargs):
+    self._args, self._kwargs = args, kwargs
+
+  def __enter__(self):
+    self._async = AsyncClient(*self._args, **self._kwargs)
+    _run(self._async.__aenter__())
+    return self
+
+  def __exit__(self, *exc):
+    _run(self._async.__aexit__(*exc))
+
+  def request(self, query):
+    return _run(self._async.request(query))
+```
+
+**When to add the sync facade:** Only when a sync caller exists or is planned this quarter. No speculative dual APIs.
+
+**What this removes:** No `threading`, no `new_event_loop`, no `run_coroutine_threadsafe`, no per-client thread management. `asyncio.run` creates and tears down a fresh loop per call — appropriate for the sync path, which by definition isn't latency-sensitive.
+
+### Package Exports
+
+```python
+# __init__.py
+from .async_client import AsyncClient  # Primary async implementation
+from .client import Client             # Sync wrapper
+
+__all__ = ["Client", "AsyncClient"]
+```
+
+## Configurability: Clevis Pattern
+
+**Configuration lives at the edge, not threaded through every function.**
+
+Use `clevis` to load a dataclass-based config from TOML + env + CLI. Functions receive a config object or specific extracted values — never param+env+default pyramids.
+
+```python
+# config.py
+from dataclasses import dataclass
+import clevis
+
+@dataclass
+class AppConfig:
+  database_url: str
+  pool_size: int = 10
+
+def load_config():
+  return clevis.load(AppConfig)  # TOML + env + CLI merge
+
+# client.py
+class AsyncClient:
+  def __init__(self, config: AppConfig):  # receives config object
+    self._config = config
+```
+
+**Rule:** Add a parameter only when a caller needs to vary it. Add an env var only when ops/deployment overrides it. Configurability is earned, not default.
+
+## Comments and Docstrings
+
+**Why-only.** Comments explain intent, not mechanics. Delete any comment that restates what the code says.
+
+```python
+# WRONG: restates the code
+# Increment the counter
+counter += 1
+
+# RIGHT: explains why
+# Retry on transient failures; the upstream service has brief outages.
+for _ in range(3):
+  try:
+    return await client.fetch()
+  except TransientError:
+    await asyncio.sleep(0.5)
+```
+
+**Docstrings:** Required on public module-level functions and classes. Private helpers (prefixed `_`) need no docstring unless the logic is non-obvious.
+
+Docstring format: one-line summary, then `Args:`, `Returns:`, `Raises:` if non-empty. No redundant "This function does..." preamble.
+
+```python
+def fetch_user(user_id: str) -> User:
+  """Fetch a user by ID from the database.
+
+  Args:
+    user_id: The user's unique identifier.
+
+  Returns:
+    The User object.
+
+  Raises:
+    NotFoundError: If the user does not exist.
+    DatabaseError: If the query fails.
+  """
+```
+
+## Anti-Patterns to Avoid
+
+| Anti-pattern | Why it's bloat | Instead |
+|--------------|----------------|---------|
+| **Reimplementing existing libraries** | NIH — maintenance burden, missing edge cases | Use `litellm`, `httpx`, `pydantic`, etc. |
+| Sync + async parallel APIs for everything | Maintenance cost for callers that don't exist | Add sync facade only when needed |
+| Parameter + env var + default for every variable | Config pyramid nobody varies | Hardcode sensible defaults; add config when proven |
+| Base class for one subclass | Indirection with no payoff | Delete the base; keep the concrete class |
+| `try/except` around code that can't throw | Hides real errors | Catch only what can actually fail |
+| Comments restating code | Noise; rots when code changes | Delete the comment |
+| Helper called once | Layer with no caller diversity | Inline it |
+| Defensive type-checking inside typed code | Protects against nothing | Trust the type system |
+| Config object for one value | Over-engineering | Pass the value directly |
+| Abstract factory returning one concrete | Factory with no variation | Return the concrete directly |
 
 ## Testing Patterns
 
@@ -74,35 +273,6 @@ Tests use `pytest` with the following patterns:
 - Group related tests in classes (e.g., `TestMongoDBConnection`, `TestMongoDBOperations`)
 - Use descriptive test names that explain what is being tested
 - Test both success and error paths
-
-### AsyncServer Testing Note
-
-**SocketIO AsyncServer does NOT support `test_client()`**
-
-The `test_client()` method only exists on sync `Server`, not `AsyncServer`. When testing async SocketIO applications:
-
-```python
-# ❌ WRONG: AsyncServer doesn't have test_client()
-client = server.socketio.test_client(server)  # AttributeError!
-
-# ✅ CORRECT: Unit test handler logic separately
-def test_session_validation():
-    # Test handler logic directly without SocketIO
-    result = validate_session_for_connection(cookies, session_manager)
-    assert result is not None
-
-# ✅ CORRECT: Integration test with running server
-# tests/integration/test_websocket.py
-@pytest.mark.integration
-async def test_websocket_flow():
-    client = socketio.AsyncClient()
-    await client.connect("http://localhost:8000", headers={...})
-    # Test actual WebSocket communication
-```
-
-**Testing Strategy for Async SocketIO:**
-1. **Unit tests**: Extract handler logic to pure functions, test directly
-2. **Integration tests**: Start server subprocess, connect real `AsyncClient`
 
 ### Example Test Structure
 
@@ -153,7 +323,7 @@ When working with databases or external services:
 - **Escape regex in search** - Use `re.escape()` before passing user input to MongoDB `$regex` to prevent ReDoS attacks
 - **Configurable pool sizes** - Use environment variables for connection pool sizes instead of hardcoding
 
-## Error Handling Security
+### Error Handling Security
 
 Never expose internal error details to clients:
 
@@ -173,57 +343,29 @@ This applies to all exception types that could expose internal implementation de
 - NotFoundError
 - Any third-party library exceptions
 
-## Authentication Testing Patterns
+### Atomic File Creation for Sensitive Files
 
-When testing authenticated endpoints, mock at the middleware level:
+When creating files with sensitive content (session cache, credentials, tokens), use atomic creation with secure permissions:
 
 ```python
-# tests/conftest.py should provide shared fixtures
-def create_mock_session(session_id=None, user_id=None, token='session-token'):
-  """Create a mock session for authentication testing."""
-  from bson.objectid import ObjectId
-  from datetime import datetime, timedelta
+import os
 
-  if session_id is None:
-    session_id = ObjectId()
-  if user_id is None:
-    user_id = ObjectId()
-
-  now = datetime.utcnow()
-  expires_at = now + timedelta(days=30)
-
-  return {
-    'id': str(session_id),
-    'user_id': str(user_id),
-    'token': token,
-    'created_at': now.isoformat(),
-    'expires_at': expires_at.isoformat()
-  }
-
-# In test files:
-@pytest.fixture
-def mock_db():
-  with patch('kookiecooky.auth_middleware.get_valid_session') as mock_get_session:
-    yield {'auth_middleware_get_valid_session': mock_get_session}
-
-def test_authenticated_endpoint(self, client):
-  user_id = ObjectId()
-  session = create_mock_session(user_id=user_id)
-
-  # Mock authentication
-  self.mock_db['auth_middleware_get_valid_session'].return_value = session
-
-  # Include Authorization header
-  response = client.get(
-    '/api/protected',
-    headers={'Authorization': f'Bearer {session["token"]}'}
-  )
+# Atomic creation with secure permissions (0600)
+fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+with os.fdopen(fd, 'w') as f:
+  f.write(content)
 ```
 
-**Key Points:**
-1. Mock `kookiecooky.auth_middleware.get_valid_session`, not `kookiecooky.pages.auth.get_valid_session`
-2. Use Bearer token authentication in tests (more reliable than cookies)
-3. Always include the Authorization header in authenticated requests
+**This ensures:**
+- **No race condition** — `O_EXCL` fails if file already exists
+- **Correct permissions from creation** — 0600 means only owner can read/write
+- **Atomic operation** — File either exists completely or not at all
+
+**When to use:**
+- Session cache files
+- Credential files
+- Token storage
+- Any file containing sensitive data
 
 ## Extending Third-Party Frameworks
 
@@ -259,138 +401,6 @@ class App(TextualApp):
 | FastAPI | `get`, `post`, `router` | Names are usually fine (decorator methods) |
 | Pydantic | `model_`, `schema_` | Avoid underscore prefixes in field names |
 
-## Async-First Design Pattern
-
-When designing Python modules that involve I/O operations (database, network, file system), **use async-first architecture with the Class/AsyncClass naming convention**.
-
-### Design Principle
-
-**Default approach:** Async-first architecture is the default for all I/O-bound operations.
-**Naming convention:** Follow the httpx pattern with `{Class}` (sync) and `Async{Class}` (async).
-
-```
-Primary: AsyncClient (async-native implementation)
-  └── Convenience: Client (sync wrapper)
-```
-
-This approach provides:
-- **Maximum flexibility**: Async clients for async applications (FastAPI, Quart, asyncio)
-- **Simplicity**: Sync wrappers for scripts, CLI tools, synchronous applications
-- **Performance**: No thread overhead in async contexts
-- **Consistency**: Same API surface for both async and sync users
-
-### Implementation Pattern
-
-```python
-# 1. Primary async implementation (AsyncClient, AsyncDatabase, etc.)
-class AsyncClient:
-    """Async client - primary implementation."""
-    
-    async def connect(self) -> Connection:
-        """Async connection establishment."""
-        ...
-    
-    async def request(self, query: str) -> Response:
-        """Async request operation."""
-        ...
-    
-    async def __aenter__(self) -> AsyncClient:
-        await self.connect()
-        return self
-    
-    async def __aexit__(self, *args) -> None:
-        await self.disconnect()
-
-# 2. Sync wrapper (Client, Database, etc.)
-class Client:
-    """Synchronous wrapper around AsyncClient.
-    
-    Uses dedicated event loop in background thread.
-    """
-    
-    def __init__(self, config: Config):
-        self._async_client = AsyncClient(config)
-        self._loop = asyncio.new_event_loop()
-        self._thread = threading.Thread(target=self._loop.run_forever, daemon=True)
-        self._thread.start()
-    
-    def __enter__(self) -> Client:
-        return self
-    
-    def __exit__(self, *args) -> None:
-        self.disconnect()
-    
-    def _run_coroutine(self, coro: object) -> Any:
-        """Run coroutine in dedicated event loop."""
-        future = asyncio.run_coroutine_threadsafe(coro, self._loop)
-        return future.result()
-    
-    def connect(self) -> Connection:
-        """Sync wrapper around async connect."""
-        return self._run_coroutine(self._async_client.connect())
-    
-    def request(self, query: str) -> Response:
-        """Sync wrapper around async request."""
-        return self._run_coroutine(self._async_client.request(query))
-```
-
-### Key Implementation Details
-
-1. **Naming Convention**: `{Class}` for sync, `Async{Class}` for async (following httpx: Client/AsyncClient)
-2. **Same Interface**: Both classes have identical method names (e.g., `.request()`, `.connect()`)
-3. **Context Manager Support**: Both async and sync versions support context managers
-4. **Error Handling**: Sync wrappers should wrap network errors in `RuntimeError`
-5. **Thread Safety**: Each sync client has its own event loop and thread
-6. **Type Annotations**: Full type annotations for both async and sync versions
-
-### Package Exports
-
-```python
-# __init__.py
-from .async_client import AsyncClient  # Primary async implementation
-from .client import Client             # Sync wrapper
-
-__all__ = ["Client", "AsyncClient", ...]
-```
-
-### When to Use Which
-
-| Use AsyncClass | Use Class |
-|----------------|-----------|
-| FastAPI, Quart, etc. | Scripts, CLI tools |
-| asyncio-based apps | Synchronous applications |
-| Need max performance | Simplicity is priority |
-| Already using async/await | No existing async context |
-
-### What NOT to Do
-
-```python
-# ❌ WRONG: Using sync Client in async context
-async def my_async_function():
-    with Client(config) as client:  # Error: nested event loop
-        response = client.request("query")
-
-# ✅ CORRECT: Use AsyncClient in async context
-async def my_async_function():
-    async with AsyncClient(config) as client:
-        response = await client.request("query")
-```
-
-### Documentation Pattern
-
-When documenting both APIs:
-
-```markdown
-## Choosing Client or AsyncClient
-
-This package provides **both async and sync APIs**:
-
-- **AsyncClient**: For async applications (FastAPI, Quart, asyncio) — primary implementation
-- **Client**: For synchronous applications (scripts, CLI tools) — convenience wrapper
-
-Both classes provide identical functionality with the same interface.
-```
-
 ## Pre-Commit Workflow
 
 Before committing Python code, run these checks:
@@ -416,33 +426,43 @@ make test && make lint && ruff format src tests && make typecheck
 
 **Why multiple gates:** The commit skill will also run formatting checks as a final gate. Running both ensures early feedback and catches issues before the commit phase.
 
-## Security Patterns
+## Review Checklist
 
-### Atomic File Creation for Sensitive Files
+Use these questions when reviewing code. Each "no" is a candidate for deletion or simplification.
 
-When creating files with sensitive content (session cache, credentials, tokens), use atomic creation with secure permissions:
+**Deletion test:**
+- [ ] Would deleting this abstraction break anything? If not, delete it.
+- [ ] Is this helper called from more than one place? If not, inline it.
+- [ ] Is this config parameter ever varied in tests or deployment? If not, hardcode it.
 
-```python
-import os
+**Abstraction test:**
+- [ ] Does this base class have at least two concrete implementations? If not, delete the base.
+- [ ] Has this pattern appeared three times with variation? If not, tolerate duplication.
+- [ ] Is the interface simpler than the implementation? If not, the module is shallow.
 
-# Atomic creation with secure permissions (0600)
-fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-with os.fdopen(fd, 'w') as f:
-    f.write(content)
-```
+**Async test:**
+- [ ] Does a sync caller exist or is one planned this quarter? If not, no sync wrapper needed.
+- [ ] Is the sync wrapper using `asyncio.run` (no thread)? If using `threading`/`new_event_loop`, justify.
 
-**This ensures:**
-- **No race condition** — `O_EXCL` fails if file already exists
-- **Correct permissions from creation** — 0600 means only owner can read/write
-- **Atomic operation** — File either exists completely or not at all
+**Config test:**
+- [ ] Is config loaded once at the edge (clevis)? If threaded through functions, refactor.
+- [ ] Is this parameter needed by callers? If only tests vary it, consider dependency injection instead.
 
-**When to use:**
-- Session cache files
-- Credential files
-- Token storage
-- Any file containing sensitive data
+**Comment test:**
+- [ ] Does this comment explain WHY rather than WHAT? If WHAT, delete it.
+- [ ] Is this public API documented? If not, add docstring.
+
+**Style test:**
+- [ ] 2-space indentation enforced?
+- [ ] Line length under 100?
+- [ ] Type annotations present on public functions?
+
+## References
+
+- John Ousterhout, *A Philosophy of Software Design* — deep modules, classitis, information hiding
+- Sandi Metz, "The Wrong Abstraction" — duplication vs. wrong abstraction, rule of three
+- `clevis` — configuration loading from TOML + env + CLI
 
 ## Related Skills
 
 - `python-project` - Project setup, dependency management, and virtual environments with uv
-
