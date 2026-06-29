@@ -638,31 +638,69 @@ When both `analysis/functional.md` and `TODO.md` exist:
 
 Read `TODO.md` and check for an `## Unsorted` section at the top. Unsorted items are quick ideas the user captured but haven't been analyzed and integrated into the prioritized backlog.
 
-**Step 2: Determine Next Action**
+**Step 2: Check for Unsorted MBIs**
+
+If `PLAN.md` exists, check for an `## Unsorted MBIs` section. These are raw MBI ideas that haven't been analyzed yet.
+
+**Step 3: Determine Next Action**
 
 | Condition | Action |
 |-----------|--------|
-| No unsorted items | Proceed directly to proposing next backlog task |
+| No unsorted items or MBIs | Proceed directly to proposing next task |
 | Unsorted items exist | Ask user whether to sort unsorted items first |
+| Unsorted MBIs exist | Ask user whether to analyze MBIs first |
 
 **If unsorted items exist, use AskUserQuestion tool:**
 
 ```
-Question: "Found {count} unsorted item(s) in TODO.md. These are quick ideas not yet analyzed. How would you like to proceed?"
+Question: "Found {count} unsorted item(s) in TODO.md and/or {mbi_count} unsorted MBI(s) in PLAN.md. These need analysis. How would you like to proceed?"
 
 Options:
 - "Sort unsorted items first" — Run functional analysis to integrate them into backlog
+- "Analyze unsorted MBIs" — Process raw MBI ideas into proper MBIs
 - "Show next backlog task" — Proceed with existing prioritized tasks
-- "Show all tasks" — Display both unsorted and backlog items
+- "Show all items" — Display both unsorted and backlog items
 ```
 
-**Step 3: Handle User Choice**
+**Step 4: Handle User Choice**
 
 - **"Sort unsorted items first"**: Invoke functional-analyst to analyze each unsorted item and integrate into prioritized backlog, then propose next task
+- **"Analyze unsorted MBIs"**: Invoke functional-analyst to analyze each unsorted MBI and create proper MBI entries in PLAN.md
 - **"Show next backlog task"**: Proceed to propose task selection (below)
-- **"Show all tasks"**: Display full TODO.md and ask again
+- **"Show all items"**: Display full TODO.md and PLAN.md and ask again
 
-**Step 4: Verify Task Completion Status (CRITICAL)**
+**Step 5: Check for Active MBI**
+
+Before proposing a task from the backlog, check for PLAN.md:
+
+1. **Read PLAN.md** (if it exists in project root)
+2. **Check for Active MBI** (section: `## Active MBI`)
+3. **If Active MBI exists:**
+   - Active MBI tasks take priority over non-MBI tasks
+   - Propose the first incomplete task from the Active MBI
+   - Report MBI context to user
+
+**MBI Priority Rule:**
+
+| Priority | Task Source |
+|----------|-------------|
+| 1 | Active MBI tasks (marked with `[MBI-XXX]` in TODO.md) |
+| 2 | Fix issues (critical bugs) |
+| 3 | Linear TODO.md backlog |
+
+**Example MBI Context:**
+
+```
+Found Active MBI: MBI-001 - Bootstrap & Python API
+Status: In Progress
+
+Next task: [MBI-001] Implement bootstrap procedure
+Goal: Users can start Yoker without pre-existing Ollama configuration
+
+This task is part of an active MBI and takes priority.
+```
+
+**Step 5: Verify Task Completion Status (CRITICAL)**
 
 Before proposing a task from the backlog, verify whether its acceptance criteria are already satisfied by existing code. This prevents proposing already-implemented work.
 
@@ -676,7 +714,7 @@ If the task appears already implemented:
 - Move to the next task
 - Report to the user: "Task {task-id} appears already implemented. Marked as done. Next task: {next-task-id}"
 
-**Step 5: Propose Next Task**
+**Step 6: Propose Next Task**
 
 **Use AskUserQuestion tool to propose next task:**
 

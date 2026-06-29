@@ -30,6 +30,17 @@ Topics for cross-project standardization:
 
 ### P2 - High
 
+- [x] **MBI Intake Layer Implementation** — 2026-06-12
+  - Approved by Christophe after research on MBI/Intake Backlog best practices
+  - Research stored in: c3/research/2026-06-12-mbi-intake-backlog/
+  - Memory: memory/c3-intake-backlog-mbi.md
+  - Tasks:
+    - [x] Create PLAN.md template in C3 (templates/PLAN.md)
+    - [x] Update functional-analyst agent to ask "MBI or linear task?" during feature intake
+    - [x] Create /wsjf skill for interactive WSJF scoring
+    - [x] Update project-manage skill to check for PLAN.md and prioritize MBI tasks
+  - Acceptance: ✅ functional-analyst can create MBIs in PLAN.md, MBI tasks scheduled at top of TODO.md
+
 - [x] **Review end-user-documenter agent** — 2026-04-30
   - Root cause: Agent had too many conflicting instructions causing it to describe actions instead of executing tools
   - Fixed by:
@@ -53,6 +64,14 @@ Topics for cross-project standardization:
   - Research and compare to other solutions, e.g. Agent Browser (https://github.com/vercel-labs/agent-browser)
 
 ### P3 - Medium
+
+- [x] **Email MCP: auto-save sent messages to Sent folder** — 2026-06-17
+  - The MCP `reply_email` and `send_email` tools send via SMTP but don't save a copy to the IMAP Sent folder
+  - No `copy_email` tool exists to archive sent messages manually
+  - Submitted feature request to `christophevg/simple-email-gw`: https://github.com/christophevg/simple-email-gw/issues/1
+  - Until implemented, use the workaround: `send_email` with BCC to self, then move the copy to the Sent folder
+  - **Source:** Christophe's email, 2026-06-17
+  - **Acceptance:** Feature request submitted ✓
 
 - [x] **Extract email MCP into standalone package: simple-email-gw** — 2026-05-07
   - Package published to PyPI as `simple-email-gw`

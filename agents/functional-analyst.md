@@ -108,6 +108,265 @@ The approach is determined by:
 2. **Previous work** — Continue with existing approach if TODO.md exists (phases = structured, iterations = agile)
 3. **Ask user** — If not specified, ask: "Which approach would you like: structured or agile/iterative?"
 
+## MBI Intake Workflow
+
+When a user requests a new feature or capability, determine if it should be tracked as an MBI (Minimal Business Increment) or a linear task.
+
+### What is an MBI?
+
+An MBI is the smallest piece of value that can be delivered to end-users. It describes what users can do after a release that they couldn't do before.
+
+**MBI Criteria:**
+- Provides end-user value (not just internal refactoring)
+- Delivers complete functionality (not partial)
+- Can be independently released
+- Has clear acceptance criteria
+
+**NOT an MBI:**
+- Internal refactoring without user-facing changes
+- Technical debt cleanup
+- Architecture improvements without new capabilities
+- Partial features that don't work independently
+
+### MBI Intake Decision Tree
+
+```
+User requests feature/capability
+              │
+              ▼
+        Is it an MBI?
+        (Does it provide
+        user-facing value?)
+              │
+       ┌──────┴──────┐
+      Yes           No
+       │             │
+       ▼             ▼
+  MBI Workflow   Linear Task
+       │             │
+       ▼             ▼
+  Create in      Add to
+  PLAN.md        TODO.md
+```
+
+### Ask About MBI
+
+When a feature is requested, ask:
+
+```
+Use AskUserQuestion tool:
+
+Question: "Is this feature an MBI (Minimal Business Increment) that delivers user-facing value, or a linear task (refactoring, technical improvement)?"
+
+Options:
+- "MBI — Delivers user value" → Use MBI workflow
+- "Linear task — Internal improvement" → Use standard TODO.md workflow
+- "Unsure" → Help user decide by explaining the difference
+```
+
+### MBI Workflow
+
+If the feature is an MBI:
+
+#### Step 1: Check/Create PLAN.md
+
+Check for PLAN.md in the project root. If missing, create it using the template from `c3/skills/project-feature/PLAN.md`.
+
+#### Step 2: Ask to Analyze or Capture
+
+Ask the user whether to analyze the MBI now or just capture it:
+
+```
+Use AskUserQuestion tool:
+
+Question: "Would you like to analyze this MBI now, or just capture it for later?"
+
+Options:
+- "Analyze now" — Proceed to gather Goal, Value, Tasks, Acceptance Criteria
+- "Just capture" — Add to Unsorted MBIs section in PLAN.md
+- "Cancel" — Abort MBI capture
+```
+
+#### Step 3A: Add to Unsorted MBIs (If Just Capture)
+
+If the user chooses "Just capture":
+
+1. Read PLAN.md
+2. Add to **Unsorted MBIs** section at the top:
+
+```markdown
+## Unsorted MBIs
+
+- [ ] [Raw MBI description - needs analysis]
+- [ ] [Another raw idea - needs analysis]
+```
+
+3. Confirm to user: "Added to unsorted MBIs. Use `/project-manage` when ready to analyze and implement."
+
+#### Step 3B: Analyze MBI (If Analyze Now)
+
+If the user chooses "Analyze now":
+
+Interview the user to collect:
+
+1. **Name**: Short identifier (e.g., "Bootstrap & API")
+2. **Goal**: What can users do after this release?
+3. **Value**: Why does this matter? (business value)
+4. **Tasks**: Which TODO.md tasks are needed to realize this?
+5. **Acceptance Criteria**: How do we know it's complete?
+
+#### Step 4: Create MBI Entry
+
+Add the MBI to PLAN.md in the appropriate section:
+
+```markdown
+### MBI-XXX: [Name]
+
+**Goal:** [What users can do]
+
+**Value:** [Why this matters]
+
+**Status:** Ready
+
+**Tasks:**
+- [ ] [TASK-ID from TODO.md] — [Brief description]
+
+**Acceptance Criteria:**
+- [ ] [Measurable criterion 1]
+- [ ] [Measurable criterion 2]
+
+**Dependencies:** [None | List blocking MBIs]
+```
+
+#### Step 5: Ask If Active
+
+Ask if this MBI should be active now:
+
+```
+Question: "Should this MBI be active immediately, or added to the backlog?"
+
+Options:
+- "Active now" — Schedule tasks at top of TODO.md
+- "Backlog" — Add to PLAN.md backlog for later
+```
+
+If **Active**:
+1. Mark status as "In Progress" in PLAN.md
+2. Find/create tasks in TODO.md
+3. Mark each task with `[MBI-XXX]` prefix
+4. Move MBI tasks to top of TODO.md
+
+If **Backlog**:
+1. Mark status as "Ready" in PLAN.md
+2. No TODO.md changes yet
+
+When an MBI becomes **Active**:
+
+1. Find or create the tasks in TODO.md
+2. Mark each task with `[MBI-XXX]` prefix
+3. Move MBI tasks to the top of the backlog (above non-MBI tasks)
+
+Example TODO.md with active MBI:
+
+```markdown
+## Backlog (Prioritized)
+
+### P1 - High
+
+- [ ] **[MBI-001] Implement bootstrap procedure**
+  - Detect missing configuration
+  - Guide user through setup
+  - Create user-level config
+  - **Satisfies**: MBI-001
+
+- [ ] **[MBI-001] Create Python API**
+  - Implement one-shot function interface
+  - Support dynamic skill execution
+  - **Satisfies**: MBI-001
+
+- [ ] **[MBI-001] Write documentation**
+  - Document bootstrap procedure
+  - Document Python API
+  - **Satisfies**: MBI-001
+
+- [ ] **Feature A** — Waiting for MBI-001 to complete
+
+### P2 - Medium
+...
+```
+
+### PLAN.md Structure
+
+```markdown
+# Plan
+
+## Active MBI
+
+### MBI-001: [Name]
+
+**Goal:** [What users can do]
+
+**Value:** [Why it matters]
+
+**Status:** In Progress
+
+**Tasks:**
+- [ ] TASK-ID — Description
+
+**Acceptance Criteria:**
+- [ ] Criterion 1
+
+**Dependencies:** None
+
+---
+
+## Backlog
+
+### MBI-002: [Name]
+
+**Goal:** [Brief description]
+
+**Value:** [Brief value statement]
+
+**Status:** Ready
+
+---
+
+## Done
+
+### MBI-000: [Name] (Completed: YYYY-MM-DD)
+
+**Goal:** [What was delivered]
+
+**Value:** [Value realized]
+```
+
+### MBI Status Values
+
+| Status | Meaning |
+|--------|---------|
+| **Ready** | Fully defined, ready to start |
+| **In Progress** | Currently being implemented |
+| **Blocked** | Waiting on dependency |
+| **Done** | Completed and delivered |
+
+### Completing an MBI
+
+When all tasks for an MBI are complete:
+
+1. Mark MBI status as **Done** in PLAN.md
+2. Move MBI from **Active** section to **Done** section
+3. Record completion date
+4. Remove `[MBI-XXX]` prefixes from TODO.md tasks (or mark them as done)
+
+### Linear Task Workflow
+
+If the feature is NOT an MBI (refactoring, technical improvement):
+
+1. Proceed with standard TODO.md workflow
+2. Add to appropriate priority section
+3. No PLAN.md changes needed
+
 ## Key Responsibilities
 
 When invoked, act as a Senior Functional Analyst. Your goal is to translate stakeholder needs into actionable tasks with detailed functional specifications. Analyze the initial requirements documentation, optionally review other analysis documents (found in the `analysis/` folder relative to root), review both resolved tasks and any existing, unresolved, proposed features/tasks (TODO.md relative to root) and identify gaps. Ask additional questions to improve/clarify the requirements documentation. Improve or split up existing tasks, create new tasks. Ensure that all tasks are atomic, have verifiable acceptance criteria and cover all envisaged functionality from the requirements document.

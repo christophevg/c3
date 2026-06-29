@@ -29,35 +29,167 @@ This skill is for **feature intake**, not implementation. It:
 User provides feature description
         │
         ▼
-   Is description
-   detailed enough?
+   Is it an MBI?
+   (user-facing value?)
         │
    ┌────┴────┐
    No         Yes
    │          │
    ▼          ▼
-Ask user   Proceed to
-to detail   scoping
-now?        │
+Linear     MBI
+Task       │
    │          │
-   ┌─┴─┐      │
-   No Yes     │
-   │  │       │
-   ▼  ▼       ▼
-Add to   Invoke
-unsorted functional-
-section  analyst
-of       │
-TODO.md  ▼
-         Full scope
-         & prioritize
-         │
-         ▼
-         Add to
-         TODO.md
+   ▼          ▼
+Is       Ask about
+description MBI scope
+detailed  │
+enough?   ▼
+   │      Create PLAN.md
+   ▼      (if missing)
+Proceed   │
+with      ▼
+standard  Gather Goal,
+workflow  Value, Tasks,
+   │      Acceptance Criteria
+   ▼      │
+[Original Ask if
+workflow] MBI is
+   │      Active
+   │      │
+   └──────┴──────┐
+                  │
+                  ▼
+           Add to TODO.md
+           (with [MBI-XXX] prefix
+           if MBI is Active)
 ```
 
 ## Behavior
+
+### Step 0: Determine MBI vs Linear Task
+
+Before processing the feature, determine if it's an MBI:
+
+**Ask the user:**
+
+```
+Use AskUserQuestion tool:
+
+Question: "Is this feature an MBI (Minimal Business Increment) that delivers user-facing value, or a linear task (internal improvement)?"
+
+Options:
+- "MBI — Delivers user value" → Proceed to MBI workflow
+- "Linear task — Internal improvement" → Proceed to Step 1 (standard workflow)
+- "Unsure — Help me decide" → Explain the difference
+```
+
+**MBI Criteria:**
+- Provides end-user value (not just internal refactoring)
+- Delivers complete functionality
+- Can be independently released
+- Has clear acceptance criteria
+
+**NOT an MBI:**
+- Internal refactoring without user-facing changes
+- Technical debt cleanup
+- Architecture improvements
+
+If the feature is an MBI, proceed to **MBI Workflow** below. If it's a linear task, proceed to **Step 1**.
+
+---
+
+### MBI Workflow
+
+If the feature is an MBI:
+
+#### MBI Step 1: Check/Create PLAN.md
+
+Check for PLAN.md in the project root. If missing, offer to create it:
+
+```markdown
+# Plan
+
+This file contains the Intake Backlog with Minimal Business Increments (MBIs).
+
+## What is an MBI?
+
+An MBI (Minimal Business Increment) is the smallest piece of value that can be delivered to end-users.
+
+---
+
+## Active MBI
+
+[None yet]
+
+---
+
+## Backlog
+
+[None yet]
+
+---
+
+## Done
+
+[None yet]
+```
+
+#### MBI Step 2: Gather MBI Information
+
+Ask the user for:
+
+1. **Name**: Short identifier (e.g., "Bootstrap & API")
+2. **Goal**: What can users do after this release?
+3. **Value**: Why does this matter?
+4. **Tasks**: Which TODO.md tasks support this MBI?
+5. **Acceptance Criteria**: How do we know it's complete?
+
+#### MBI Step 3: Create MBI Entry
+
+Add the MBI to PLAN.md:
+
+```markdown
+### MBI-XXX: [Name]
+
+**Goal:** [What users can do]
+
+**Value:** [Why this matters]
+
+**Status:** Ready
+
+**Tasks:**
+- [ ] [TASK-ID from TODO.md] — [Brief description]
+
+**Acceptance Criteria:**
+- [ ] [Measurable criterion 1]
+- [ ] [Measurable criterion 2]
+
+**Dependencies:** [None | List blocking MBIs]
+```
+
+#### MBI Step 4: Ask If Active
+
+Ask if this MBI should be active now:
+
+```
+Question: "Should this MBI be active immediately, or added to the backlog?"
+
+Options:
+- "Active now — Schedule tasks at top of TODO.md"
+- "Backlog — Add to PLAN.md backlog for later"
+```
+
+If **Active**:
+1. Mark status as "In Progress" in PLAN.md
+2. Find/create tasks in TODO.md
+3. Mark each task with `[MBI-XXX]` prefix
+4. Move MBI tasks to top of TODO.md
+
+If **Backlog**:
+1. Mark status as "Ready" in PLAN.md
+2. No TODO.md changes yet
+
+---
 
 ### Step 1: Receive Feature Description
 
