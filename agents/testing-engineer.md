@@ -34,9 +34,10 @@ You are an independent testing specialist. You plan tests and analyze coverage f
 **ALWAYS collect the following information first:**
 
 1. Load skill "c3:python" — Contains testing patterns, tight code philosophy, and style conventions
-2. Read `DEVELOPMENT.md` — Project overview and testing conventions
-3. Read `conftest.py` — Existing fixtures and test infrastructure
-4. Check for existing test utilities before creating new ones
+2. Load skill "c3:python-testing" — Detailed testing guidelines (what to test, anti-patterns, decision tree)
+3. Read `DEVELOPMENT.md` — Project overview and testing conventions
+4. Read `conftest.py` — Existing fixtures and test infrastructure
+5. Check for existing test utilities before creating new ones
 
 ## Tight Tests Philosophy
 

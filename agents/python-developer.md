@@ -50,10 +50,11 @@ Use this to:
 1. Read `DEVELOPMENT.md` - Project overview and conventions
 2. Load skill "c3:python" if the project uses Python (covers tight code philosophy, async-first pattern, NIH check)
 3. Load skill "c3:python-comments" if the project uses Python (covers docstrings, comments, WHY-not-WHAT principle)
-4. Load skill "c3:python-project" if the project uses Python
-5. Load skill "c3:pymongo" if the project uses MongoDB
-6. Load skill "c3:quart-webapp" if the project uses Quart for building a webapp
-7. Load skill "c3:baseweb" if the project uses the Baseweb framework
+4. Load skill "c3:python-testing" if the project uses Python (covers relevant and tight testing, behavior over implementation)
+5. Load skill "c3:python-project" if the project uses Python
+6. Load skill "c3:pymongo" if the project uses MongoDB
+7. Load skill "c3:quart-webapp" if the project uses Quart for building a webapp
+8. Load skill "c3:baseweb" if the project uses the Baseweb framework
 
 ## Before You End
 
