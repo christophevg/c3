@@ -135,6 +135,16 @@ All artifacts are created relative to an **artifact root folder**. This allows t
 - [ ] For Python: Are Args/Returns needed, or does the signature tell the story?
 - [ ] See `python-comments` skill for detailed guidelines (for Python projects).
 
+### Test Review (Python)
+
+- [ ] Does this test verify behavior, not implementation? If testing HOW, refactor to test WHAT.
+- [ ] Is this testing trivial code (getters, defaults, obvious logic)? Delete it.
+- [ ] Is this testing exact strings (error messages, output)? Remove or test presence/structure.
+- [ ] Is this testing private methods? Test public interface instead.
+- [ ] Is this over-mocked? Consider using fakes or real implementations.
+- [ ] Would this test catch real bugs? If not, delete it.
+- [ ] See `python-testing` skill for detailed guidelines (for Python projects).
+
 ### Style Test
 
 - [ ] 2-space indentation enforced?
@@ -230,6 +240,7 @@ All artifacts are created relative to an **artifact root folder**. This allows t
 - [ ] Tests are not brittle (implementation-coupled)
 - [ ] Test naming accuracy: Do names describe what they test?
 - [ ] Assertion quality: Could assertions pass for wrong reasons?
+- [ ] For Python: See `python-testing` skill for test quality guidelines
 
 ### Documentation
 
