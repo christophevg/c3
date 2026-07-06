@@ -32,7 +32,7 @@ def find_claude_dir() -> Path:
 
 
 def find_log_files(claude_dir: Path, project: Optional[str] = None, last_days: Optional[int] = None) -> list[Path]:
-  """Find all JSONL log files."""
+  """Find all JSONL log files (main sessions and subagents)."""
   projects_dir = claude_dir / "projects"
   if not projects_dir.exists():
     return []
@@ -53,7 +53,8 @@ def find_log_files(claude_dir: Path, project: Optional[str] = None, last_days: O
     if project and project.lower() not in project_name.lower():
       continue
 
-    for log_file in project_dir.glob("*.jsonl"):
+    # Find all .jsonl files recursively (includes main session and subagents)
+    for log_file in project_dir.rglob("*.jsonl"):
       if cutoff_date:
         # Check file modification time
         mtime = datetime.fromtimestamp(log_file.stat().st_mtime)
