@@ -132,6 +132,8 @@ All artifacts are created relative to an **artifact root folder**. This allows t
 
 - [ ] Does this comment explain WHY rather than WHAT? If WHAT, delete it.
 - [ ] Is this public API documented? If not, add docstring.
+- [ ] For Python: Are Args/Returns needed, or does the signature tell the story?
+- [ ] See `python-comments` skill for detailed guidelines (for Python projects).
 
 ### Style Test
 
@@ -233,9 +235,10 @@ All artifacts are created relative to an **artifact root folder**. This allows t
 
 - [ ] API documentation exists (if applicable)
 - [ ] README updated if behavior changed
-- [ ] Inline comments for complex logic
+- [ ] Inline comments for complex logic (WHY not WHAT)
 - [ ] Type hints/annotations present (Python)
 - [ ] Docstrings for public APIs
+- [ ] For Python: Follow `python-comments` skill (tight, relevant, WHY-not-WHAT)
 
 ### Dead Code Detection
 

@@ -262,41 +262,12 @@ class AsyncClient:
 
 ## Comments and Docstrings
 
-**Why-only.** Comments explain intent, not mechanics. Delete any comment that restates what the code says.
+**Use the `python-comments` skill** for detailed commenting guidelines. Key principles:
 
-```python
-# WRONG: restates the code
-# Increment the counter
-counter += 1
-
-# RIGHT: explains why
-# Retry on transient failures; the upstream service has brief outages.
-for _ in range(3):
-  try:
-    return await client.fetch()
-  except TransientError:
-    await asyncio.sleep(0.5)
-```
-
-**Docstrings:** Required on public module-level functions and classes. Private helpers (prefixed `_`) need no docstring unless the logic is non-obvious.
-
-Docstring format: one-line summary, then `Args:`, `Returns:`, `Raises:` if non-empty. No redundant "This function does..." preamble.
-
-```python
-def fetch_user(user_id: str) -> User:
-  """Fetch a user by ID from the database.
-
-  Args:
-    user_id: The user's unique identifier.
-
-  Returns:
-    The User object.
-
-  Raises:
-    NotFoundError: If the user does not exist.
-    DatabaseError: If the query fails.
-  """
-```
+- **Why-only.** Comments explain intent, not mechanics. Delete any comment that restates what the code says.
+- **Docstrings** required on public APIs (modules, classes, public methods).
+- **Args/Returns** only when signature doesn't tell the full story (type hints handle types).
+- **Private helpers** (prefixed `_`) need no docstring unless logic is non-obvious.
 
 ## Anti-Patterns to Avoid
 
@@ -307,11 +278,12 @@ def fetch_user(user_id: str) -> User:
 | Parameter + env var + default for every variable | Config pyramid nobody varies | Hardcode sensible defaults; add config when proven |
 | Base class for one subclass | Indirection with no payoff | Delete the base; keep the concrete class |
 | `try/except` around code that can't throw | Hides real errors | Catch only what can actually fail |
-| Comments restating code | Noise; rots when code changes | Delete the comment |
 | Helper called once | Layer with no caller diversity | Inline it |
 | Defensive type-checking inside typed code | Protects against nothing | Trust the type system |
 | Config object for one value | Over-engineering | Pass the value directly |
 | Abstract factory returning one concrete | Factory with no variation | Return the concrete directly |
+
+For comment-specific anti-patterns, see the `python-comments` skill.
 
 ## Testing Patterns
 
@@ -501,6 +473,8 @@ Use these questions when reviewing code. Each "no" is a candidate for deletion o
 **Comment test:**
 - [ ] Does this comment explain WHY rather than WHAT? If WHAT, delete it.
 - [ ] Is this public API documented? If not, add docstring.
+- [ ] For docstrings: Are Args/Returns needed, or does the signature tell the story?
+- [ ] See `python-comments` skill for detailed guidelines.
 
 **Style test:**
 - [ ] 2-space indentation enforced?
@@ -516,3 +490,4 @@ Use these questions when reviewing code. Each "no" is a candidate for deletion o
 ## Related Skills
 
 - `python-project` - Project setup, dependency management, and virtual environments with uv
+- `python-comments` - Detailed guidelines for comments and docstrings (tight, relevant, WHY-not-WHAT)
