@@ -105,18 +105,68 @@ __all__ = ["Token", "OAuth2Auth", "User", "Config", "Client"]
 from .models import Token  # Token is defined in auth.py, not models.py
 ```
 
-## Function Parameters
+## Inline Single-Use Indirections
 
-Always expose configurable variables as function parameters. Add sensible defaults, using environment variables if available.
+**Rule:** If a function/method has exactly one call site and its body is shorter than (or comparable to) its signature, inline it. Keep functions only when they have multiple call sites or real logic worth naming.
 
-### Example
+### When to inline
 
+| Signal | Action |
+|--------|--------|
+| One call site + body is a single expression | Inline |
+| One call site + body is 1-3 lines of trivial logic | Inline |
+| One call site + body has real logic worth naming | Keep (judgment call) |
+| Multiple call sites | Keep |
+| Empty intermediate subclass (no behavior, just a parent) | Flatten — subclass extends baseclass directly |
+
+### Examples
+
+**Inline (single-use wrapper):**
 ```python
-def a_command(an_argument=None):
-  if an_argument is None:
-    an_argument = os.environ.get("ARGUMENT_ENV_VAR_NAME", "a sensible default")
-  # perform logic using `an_argument`
+# Before — indirection
+def _run_bootstrap(ui):
+    return BootstrapWizard(ui).run() == BootstrapResult.WRITTEN
+
+# After — inlined at the call site
+if BootstrapWizard(ui).run() == BootstrapResult.WRITTEN:
+    ...
 ```
+
+**Inline (single-line property):**
+```python
+# Before — indirection
+@property
+def max_recursion_depth(self):
+    return self.config.tools.agent.max_recursion_depth
+
+# After — inline at the one call site
+self.config.tools.agent.max_recursion_depth
+```
+
+**Flatten empty intermediate class:**
+```python
+# Before — empty indirection layer
+class BasicContextManager(ContextManager):
+    pass  # no behavior
+
+class SimpleContextManager(BasicContextManager):
+    ...
+
+# After — flattened
+class SimpleContextManager(ContextManager):
+    ...
+```
+
+### When NOT to inline
+
+- The function has multiple call sites (DRY)
+- The function name adds meaningful documentation value (the name explains intent better than the code)
+- The function encapsulates complex logic that would make the call site harder to read
+- The function is part of a public API or protocol
+
+### Rationale
+
+Indirections (single-use wrappers, empty intermediate classes, one-line properties) add cognitive overhead without value. They force the reader to jump to a definition just to find a one-liner. Inlining makes the code flow linear and readable. This aligns with the broader principle of removing redundancy: if the abstraction doesn't earn its keep, it's noise.
 
 ## Use Classes to Group Functions with Common Configuration
 
