@@ -8,6 +8,10 @@ version: 1.0.0
 
 Guide for designing and building MCP (Model Context Protocol) servers that connect Claude to external tools, APIs, and data sources.
 
+## When to Use
+
+Use this skill when the user asks to build, create, or scaffold an MCP server; wrap an API or expose tools/resources/prompts to Claude; or needs guidance on Model Context Protocol design, testing, or deployment.
+
 ## Overview
 
 MCP servers bridge Claude with external systems using a standardized protocol. Three primitives are available:

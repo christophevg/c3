@@ -7,6 +7,10 @@ description: Generate and maintain project status reports in STATUS.md with exec
 
 Generate comprehensive project status reports with executive summaries, metrics, dependencies, blockers, and risks. Creates and maintains a STATUS.md file in the project root.
 
+## When to Use
+
+Use this skill when the user says `/project status` or asks about project health — generating or refreshing STATUS.md with metrics, dependencies, blockers, and risks.
+
 ## Usage
 
 ```

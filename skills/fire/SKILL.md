@@ -1,11 +1,15 @@
 ---
-name: fire-best-practices
+name: fire
 description: Use this skill any time when creating code using Fire
 ---
 
 # Fire Best Practices
 
 When creating code using Fire, use the base practices in the sections below.
+
+## When to Use
+
+Use this skill whenever you create or edit code that uses [Fire](https://github.com/google/python-fire) for CLI generation — scaffolding a Fire CLI, exposing functions or objects as commands, or configuring `__main__` invocation.
 
 ## Naming __main__
 

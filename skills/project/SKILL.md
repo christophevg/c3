@@ -7,6 +7,10 @@ description: Dispatcher for project management skills. Routes to appropriate pro
 
 Dispatcher skill for managing projects. Routes to appropriate sub-skills based on input intent.
 
+## When to Use
+
+Use this skill when the user says `/project` with any project-related intent. It parses the input and routes to the appropriate `project-*` sub-skill; it does no work itself.
+
 ## Usage
 
 ```

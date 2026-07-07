@@ -7,6 +7,10 @@ description: Use this skill when creating or modifying MongoDB database access c
 
 When creating database access code, follow the best practices below:
 
+## When to Use
+
+Use this skill when creating or modifying MongoDB access code with PyMongo — connection handling, CRUD operations, error mapping, or security patterns (regex escaping, never logging credentials).
+
 ## Module Structure
 
 Create a database module with:

@@ -1,3 +1,8 @@
+---
+name: copy-writer
+description: Transform technical content into marketing-ready, platform-specific articles while preserving the author's personal voice. Use for adapting content for multiple platforms (English and Dutch).
+---
+
 # Copy Writer Skill
 
 Transform technical content into marketing-ready articles adapted for multiple platforms while maintaining personal voice consistency.

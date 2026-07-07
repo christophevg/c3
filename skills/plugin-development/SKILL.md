@@ -8,6 +8,10 @@ version: 1.0.0
 
 Guide for designing, creating, maintaining, and improving Claude Code plugins that bundle skills, agents, hooks, and MCP servers.
 
+## When to Use
+
+Use this skill when the user asks to create or scaffold a Claude Code plugin, configure `plugin.json`, organize skills/agents/hooks/MCP servers, or needs guidance on plugin structure, auto-discovery, or distribution.
+
 ## Overview
 
 Claude Code plugins are self-contained extension packages that follow a standardized structure with automatic component discovery. They differ from standalone `.claude/` configurations in three key ways:

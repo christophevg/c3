@@ -5,6 +5,10 @@ description: Use this skill when writing or reviewing Python tests. Provides gui
 
 # Python Testing Guidelines
 
+## When to Use
+
+Use this skill when writing or reviewing Python tests — designing test cases, deciding what to cover, or auditing a suite for relevance and tightness.
+
 ## Core Principle
 
 **Test behavior, not implementation. Write tests until fear turns to boredom.**

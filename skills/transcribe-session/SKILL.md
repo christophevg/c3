@@ -7,7 +7,7 @@ description: Use this skill when the user asks to "transcribe session", "create 
 
 This skill creates a curated transcript of the current session, following the established format in the project.
 
-## When This Skill Applies
+## When to Use
 
 This skill activates when the user:
 - Runs `/transcribe-session`

@@ -1,11 +1,15 @@
 ---
-name: converting-markdown-to-pdf
+name: markdown-to-pdf
 description: Converts folders of Markdown files to a single PDF document with table of contents, CSS styling, and image support. Use when the user asks to convert markdown to PDF, generate PDFs from documentation folders, create reports from markdown, or bundle markdown files into a single document.
 ---
 
 # Converting Markdown to PDF
 
 Convert a folder of Markdown files into a single, professionally formatted PDF document using WeasyPrint for full CSS support.
+
+## When to Use
+
+Use this skill when the user asks to convert Markdown to PDF — generating a PDF from a documentation folder, bundling markdown files into one document, or producing a styled report with a table of contents and image support.
 
 ## Prerequisites
 

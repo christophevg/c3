@@ -7,6 +7,10 @@ description: Manage PLAN.md (Intake Backlog with Minimal Business Increments). U
 
 Manage PLAN.md files containing the Intake Backlog with Minimal Business Increments (MBIs).
 
+## When to Use
+
+Use this skill when the user asks to manage PLAN.md — creating, analyzing, or WSJF-scoring Minimal Business Increments (MBIs), or says `/plan`.
+
 ## Usage
 
 ```
