@@ -14,7 +14,7 @@ A systematic, test-driven workflow for fixing software bugs with agent coordinat
 | Bug Intake | Accept text, issue references, or structured bug reports |
 | Analysis | Root cause investigation with functional analyst review |
 | TDD Approach | Failing test first, then fix implementation |
-| Agent Coordination | Orchestrate functional-analyst, ui-ux-designer, code-reviewer |
+| Verification | Run `make check`; report the fix back to the caller for review + PR |
 | Documentation | Bug analysis reports with issue comments |
 
 ## When to Use This Skill
@@ -105,59 +105,74 @@ Apply systematic debugging framework:
 1. Implement minimal fix
 2. Update test to expect correct behavior
 3. Run all tests (fix + no regressions)
-4. Invoke code-reviewer agent
+4. Run `make check` (test + typecheck + lint + format) — must pass before reporting done
 
-### Phase 6: Agent Coordination
+**Do NOT commit, create a branch, open a PR, or run review here.** This skill
+diagnoses and fixes; the caller runs the review cycle (`c3:project-review`) and
+creates the PR (via `c3:release-manager` in project mode). See Phase 7.
+
+### Phase 6: Documentation
+
+- Update the bug analysis report with the fix summary
+- Ensure the regression test is in the codebase
+- Prepare a commit message (bug, fix, issue link) for the caller to use
+
+**Do NOT close the issue.** Issue closure is handled post-merge by
+`c3:project-post-merge` (via release-manager), after the owner merges the PR.
+
+### Phase 7: Report Back to Caller
+
+This skill does NOT run the review cycle or create the PR. Report back to the
+caller (project-manage, or the main session) so it can run `c3:project-review`
+and create the PR.
+
+**Determine scope** from what the bug touched:
+
+| Scope | When |
+|-------|------|
+| Backend | logic, API, data model, no UI |
+| Frontend | UI/UX changes |
+| Full stack | both |
+| + security | auth, PII, input handling, external API, files, config |
+
+**Report:**
 
 ```
-Functional Analyst Review
-        ↓ Approved
-UI Changes? → UI/UX Designer Review
-        ↓ Approved
-Code Reviewer Review
-        ↓ Approved
-Proceed to Phase 7
+## Bug Fix Ready for Review
+
+**Issue:** #{number}
+**Bug ID:** {bug-id}
+**Summary:** {one-line}
+**Root Cause:** {technical cause}
+
+**Test Added:** {test file}:{test name}
+**make check:** ✅ passing
+**Files Modified:** {list}
+**Scope:** {backend | frontend | full | docs} (+ security?)
+
+**Bug Analysis Report:** docs/bug-analysis/{bug-id}.md
+**Commit Message:** fix: {summary} (#{number})
+
+Ready for c3:project-review, then PR.
 ```
 
-**Rejection Handling:**
+The caller then:
+1. Invokes `c3:project-review` (scoped to this bug) — functional, domain, quality, docs, `make check`.
+2. On approval, creates the PR (via `c3:release-manager` in project mode).
+3. On rejection (max 2 rounds), sends feedback back here to revise the fix.
+
+**Rejection Handling** (when the caller returns feedback from `c3:project-review`):
 | Scenario | Max Iterations | Escalation |
 |----------|----------------|------------|
-| Analyst rejects | 2 rounds | Ask user |
-| Tests fail | 3 attempts | Ask user |
+| Review rejects fix | 2 rounds | Caller escalates to owner |
+| make check fails | 3 attempts | Ask user |
 | Cannot reproduce | 1 request | Close bug |
 
-### Phase 7: Documentation & Closure
+### Phase 8: PR & CI (handled by the caller)
 
-- Update bug analysis report with fix summary
-- Ensure regression test in codebase
-- Document commit message (bug, fix, issue link)
-- Close issue or mark resolved
-
-### Phase 8: PR Creation and CI Follow-up (MANDATORY)
-
-⚠️ **Bug fix is NOT complete until CI passes.**
-
-After creating the PR, MUST:
-1. **Assign and Request Review:**
-   ```bash
-   gh pr edit {number} --add-assignee {user}
-   gh pr edit {number} --add-reviewer {user}
-   ```
-
-2. **Check CI status:**
-   ```bash
-   gh pr checks {number}
-   ```
-
-3. **Wait for CI to complete** (poll if needed)
-
-4. **If CI fails:**
-   - View failure details: `gh run view {id} --log-failed`
-   - Debug and fix the issue
-   - Commit and push fixes to the same branch
-   - Repeat until CI passes
-
-5. **Only report bug fix complete when CI passes**
+PR creation, CI follow-up, and marking ready for review are handled by the
+caller (`c3:project-manage` via `c3:release-manager`), after `c3:project-review`
+approves the fix — mirroring the feature workflow. This skill stops at Phase 7.
 
 ## Bug Analysis Report Template
 
@@ -192,6 +207,8 @@ This skill does NOT handle:
 - **Production incidents** - Use incident response process
 - **Bug prioritization** - Project management concern
 - **Upstream library fixes** - Only workarounds in scope
+- **PR creation & CI** - Handled by the caller (project-manage via release-manager)
+- **Issue closure** - Handled post-merge by c3:project-post-merge (owner merges)
 
 ## Common Issues
 
@@ -200,10 +217,11 @@ This skill does NOT handle:
 | Cannot reproduce | Request more info, check environment differences |
 | Tests keep failing | Analyze if fix incomplete or test incorrect |
 | Multiple fix proposals | Analyst recommends, user decides |
-| Agent rejects fix | Iterate with feedback (max 2 rounds) |
+| Review rejects fix (via c3:project-review) | Caller returns feedback; iterate (max 2 rounds) |
 
 ## Related Skills
 
+- **project-review** - Shared review cycle the caller runs on the fix (functional → domain → quality → docs → `make check`)
 - **commit** - Create properly formatted commit
 - **develop-agent** - For complex bug investigation
 - **researcher** - For researching unknown patterns
@@ -211,9 +229,14 @@ This skill does NOT handle:
 
 ## Related Agents
 
+These review the fix, invoked by `c3:project-review` (the caller runs it), not by this skill:
+
 - **functional-analyst** - Bug validation, solution review
 - **ui-ux-designer** - UI/UX change review (conditional)
+- **security-engineer** - Security review (if security-related)
 - **code-reviewer** - Quality and pattern validation
+- **testing-engineer** - Test coverage and quality
+- **end-user-documenter** - Documentation (if user-facing)
 
 ## Pattern Files
 
