@@ -1,11 +1,15 @@
 ---
-name: python-best-practices
+name: python
 description: Use this skill any time when editing Python code
 ---
 
 # Python Best Practices
 
 When creating Python code, ALWAYS use the best practices in the sections below.
+
+## When to Use
+
+Use this skill whenever you create or edit Python code — implementing features, writing tests, refactoring, or reviewing Python output. It is loaded automatically by the `python-developer` agent and by any skill that produces Python.
 
 ## Core Philosophy: Tight Code
 
