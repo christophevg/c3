@@ -72,6 +72,37 @@ indent-width = 2
 - Fully qualified imports preferred over relative: `from myproject.mymodule import func`
 - Type annotations on all public functions
 
+### Line Breaking
+
+**Don't wrap short constructs across multiple lines.** A one-line call that fits under 100 chars beats a 4-line wrapped version. Wrap only when a line exceeds 100 characters or breaking genuinely aids readability.
+
+```python
+# ❌ Needless wrapping
+logger.warning(
+  "Agent definition not found for %s",
+  name,
+)
+
+register_plugin_agents(
+  registry,
+  loader,
+  config,
+)
+
+__all__ = [
+  "Client",
+  "AsyncClient",
+  "Session",
+]
+
+# ✅ Single line
+logger.warning("Agent definition not found for %s", name)
+register_plugin_agents(registry, loader, config)
+__all__ = ["Client", "AsyncClient", "Session"]
+```
+
+Short signatures, single-argument calls, and small collections stay on one line. Let the 100-char limit, not aesthetics, decide when to break.
+
 ## Imports
 
 ### All Imports on Top
@@ -105,6 +136,26 @@ __all__ = ["Token", "OAuth2Auth", "User", "Config", "Client"]
 from .models import Token  # Token is defined in auth.py, not models.py
 ```
 
+### Keep `__all__` and Imports in Sync
+
+`__all__` and the import block must reflect what actually exists. When you remove a symbol, remove it from `__all__`, drop its import, and delete any `TYPE_CHECKING` import that only existed for it.
+
+```python
+# ❌ Stale after register_configured_plugin_agents was removed
+from .registry import register_plugin_agents, register_configured_plugin_agents  # dead
+
+__all__ = [
+  "register_plugin_agents",
+  "register_configured_plugin_agents",  # dead
+  "Session",  # dead TYPE_CHECKING import
+]
+
+# ✅ Cleaned up
+from .registry import register_plugin_agents
+
+__all__ = ["register_plugin_agents"]
+```
+
 ## Inline Single-Use Indirections
 
 **Rule:** If a function/method has exactly one call site and its body is shorter than (or comparable to) its signature, inline it. Keep functions only when they have multiple call sites or real logic worth naming.
@@ -118,6 +169,7 @@ from .models import Token  # Token is defined in auth.py, not models.py
 | One call site + body has real logic worth naming | Keep (judgment call) |
 | Multiple call sites | Keep |
 | Empty intermediate subclass (no behavior, just a parent) | Flatten — subclass extends baseclass directly |
+| Intermediate variable used once, then passed once | Inline the expression at the call site |
 
 ### Examples
 
@@ -157,6 +209,16 @@ class SimpleContextManager(ContextManager):
     ...
 ```
 
+**Inline (single-use intermediate variable):**
+```python
+# Before — intermediate exists only to be passed once
+effective_plugins = plugins if plugins is not None else extra_plugins
+agent = _create_agent(effective_plugins)
+
+# After — ternary inlined at the one call site
+agent = _create_agent(plugins if plugins is not None else extra_plugins)
+```
+
 ### When NOT to inline
 
 - The function has multiple call sites (DRY)
@@ -171,6 +233,35 @@ Indirections (single-use wrappers, empty intermediate classes, one-line properti
 ## Use Classes to Group Functions with Common Configuration
 
 If a module contains several functions that share common configuration parameters, create a class grouping those functions, adding properties for those common parameters.
+
+## Thin Constructors
+
+`__init__` stays thin: assign fields and call at most one named helper for multi-step setup. Don't drop a 25-line resolution cascade directly in the constructor — extract it.
+
+```python
+# ❌ Multi-step logic inlined in __init__
+def __init__(self, name, registry, path=None):
+  self.name = name
+  if name in registry:
+    self._definition = registry[name]
+  elif path is not None and path.exists():
+    self._definition = load(path)
+  elif default_path.exists():
+    self._definition = load(default_path)
+  else:
+    raise NotFoundError(name)
+
+# ✅ Thin constructor, logic in a named helper
+def __init__(self, name, registry, path=None):
+  self.name = name
+  self._definition = self._resolve_definition(name, registry, path)
+
+def _resolve_definition(self, name, registry, path):
+  """Best-effort cascade: registry → path → default."""
+  # ...
+```
+
+A reader scanning `__init__` should see the shape of the object, not the algorithm that built it.
 
 ## Abstraction Timing
 
@@ -260,6 +351,29 @@ class AsyncClient:
 
 **Rule:** Add a parameter only when a caller needs to vary it. Add an env var only when ops/deployment overrides it. Configurability is earned, not default.
 
+## Defaults and Environment
+
+**Don't use `None`-sentinel parameters that re-read the environment on every call.** Give the parameter a real default value, computed once as a module constant at import.
+
+```python
+# ❌ Re-reads env per call; None-sentinel obscures the real default
+def __init__(self, console_logging: bool | None = None):
+  effective = (
+    console_logging
+    if console_logging is not None
+    else os.environ.get("YOKER_CONSOLE_LOGGING", "") == "1"
+  )
+  self.console_logging = effective
+
+# ✅ Module constant computed once; parameter has a real default
+CONSOLE_LOGGING = os.environ.get("YOKER_CONSOLE_LOGGING", "") == "1"
+
+def __init__(self, console_logging: bool = CONSOLE_LOGGING):
+  self.console_logging = console_logging
+```
+
+Read environment variables once at import, not per call. If a caller needs to override, they pass the value — no `None`-sentinel dance.
+
 ## Comments and Docstrings
 
 **Use the `python-comments` skill** for detailed commenting guidelines. Key principles:
@@ -282,6 +396,10 @@ class AsyncClient:
 | Defensive type-checking inside typed code | Protects against nothing | Trust the type system |
 | Config object for one value | Over-engineering | Pass the value directly |
 | Abstract factory returning one concrete | Factory with no variation | Return the concrete directly |
+| `param: T \| None = None` + `os.environ.get` per call | Re-reads env, hides the real default | Module constant; parameter keeps a real default |
+| Multi-step setup logic in `__init__` | Constructor narrates an algorithm | Extract a named `_resolve_*` helper |
+| Dead branch kept "just in case" with an apologetic comment | Unreachable code with a comment excuse | Delete the branch |
+| Needless multi-line wrapping of short calls/signatures/collections | 4 lines for a 60-char call | Keep it on one line |
 
 For comment-specific anti-patterns, see the `python-comments` skill.
 
@@ -456,6 +574,7 @@ Use these questions when reviewing code. Each "no" is a candidate for deletion o
 - [ ] Would deleting this abstraction break anything? If not, delete it.
 - [ ] Is this helper called from more than one place? If not, inline it.
 - [ ] Is this config parameter ever varied in tests or deployment? If not, hardcode it.
+- [ ] Is there a dead branch kept "just in case"? If so, delete it.
 
 **Abstraction test:**
 - [ ] Does this base class have at least two concrete implementations? If not, delete the base.
@@ -476,10 +595,16 @@ Use these questions when reviewing code. Each "no" is a candidate for deletion o
 - [ ] For docstrings: Are Args/Returns needed, or does the signature tell the story?
 - [ ] See `python-comments` skill for detailed guidelines.
 
+**Construction & defaults test:**
+- [ ] Does any parameter use `None`-sentinel + per-call env fallback? If so, use a module constant with a real default.
+- [ ] Is `__init__` doing multi-step logic? If so, extract a named helper.
+- [ ] Are `__all__` and the imports stale after a removal? If so, clean them up.
+
 **Style test:**
 - [ ] 2-space indentation enforced?
 - [ ] Line length under 100?
 - [ ] Type annotations present on public functions?
+- [ ] Any short call/signature/collection wrapped across lines needlessly? If so, collapse it.
 
 ## References
 

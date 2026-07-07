@@ -184,6 +184,37 @@ Use for:
 - Separate paragraphs with blank comment lines
 - Keep at same indent level as surrounding code
 
+## 6b. Branch Comments: Label, Don't Narrate
+
+For a cascade or switch, label each branch tersely. Don't narrate the algorithm in prose above the block.
+
+```python
+# ❌ Narrates the algorithm
+# Resolve the primary agent definition via a best-effort cascade: first
+# check the registry by name, then fall back to the explicit path, then
+# the default location, and finally raise if nothing matched.
+if name in registry:
+  definition = registry[name]
+elif path is not None and path.exists():
+  definition = load(path)
+elif default_path.exists():
+  definition = load(default_path)
+else:
+  raise NotFoundError(name)
+
+# ✅ Labels each branch
+if name in registry:          # option 1: registry
+  definition = registry[name]
+elif path and path.exists():  # option 2: explicit path
+  definition = load(path)
+elif default_path.exists():   # option 3a: default location
+  definition = load(default_path)
+else:                         # option 3b: nothing matched
+  raise NotFoundError(name)
+```
+
+A one-word label per branch lets the reader scan the alternatives; a prose preamble forces them to read the algorithm twice.
+
 ## 7. Module-Level Comments
 
 ```python
@@ -254,6 +285,20 @@ class ConfigurationError(YokerError):
 # ✅ Good - Use version control
 data = fetch(url)
 ```
+
+### Don't Keep Dead Branches With Apologetic Comments
+
+If a branch can't be reached in this path, delete it — don't leave it with a comment explaining why it's empty.
+
+```python
+# ❌ Dead branch kept "just in case"
+if resolved_definition is None and agent_path is None:
+  pass  # name in registry (none here)
+
+# ✅ Deleted — the branch can't be reached in this path
+```
+
+Git remembers the code you removed. A comment is not a reason to keep unreachable logic.
 
 ### Don't Repeat Function Names
 ```python

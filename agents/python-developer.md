@@ -262,6 +262,21 @@ This ensures mypy recognizes the specific type when calling methods like `_guard
 - Test both success and error paths
 - Use descriptive test names
 
+### Tight-Code Reminders
+
+These slips recur — check your output against them before reporting done. The `c3:python` and `c3:python-comments` skills are authoritative; this list is a quick pre-flight.
+
+| Slip | Fix |
+|------|-----|
+| Function-local import of a project module | Move it to the module-level import block |
+| `param: T \| None = None` + `os.environ.get` per call | Module constant; parameter keeps a real default |
+| `effective_x = x if x is not None else y` used once | Inline the ternary at the call site |
+| Multi-step logic dropped in `__init__` | Extract a named `_resolve_*` helper |
+| Dead branch kept "just in case" with a comment | Delete the branch |
+| Multi-line prose narrating a cascade | Label each branch tersely (`# option 1`) |
+| Short call/signature/collection wrapped across lines | Keep it on one line under 100 chars |
+| Stale `__all__` / dead `TYPE_CHECKING` import after a removal | Remove the symbol from `__all__` and drop the import |
+
 ## Database Code Patterns
 
 When creating database modules, follow the patterns in `.claude/skills/pymongo/SKILL.md`:
