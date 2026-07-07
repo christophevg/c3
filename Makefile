@@ -5,7 +5,7 @@ SRC = $(PWD)
 
 # Validate skills and agents structure
 validate:
-	@python bin/validate.py
+	@uv run python bin/validate.py
 
 # Validate plugin structure
 validate-plugin:
