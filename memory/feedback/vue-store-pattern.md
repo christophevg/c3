@@ -99,7 +99,7 @@ store.commit('authenticated', true);  // For shared state
 ## Memory Impact
 
 **Created new skill:**
-- `/skills/vue/skill.md` — Vue component patterns including store pattern
+- `/skills/vue/SKILL.md` — Vue component patterns including store pattern
 
 **Added to vue skill:**
 - Store pattern for global state
