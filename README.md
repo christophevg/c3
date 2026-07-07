@@ -89,13 +89,16 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/mcp-server` | Guide for designing and building MCP servers (FastMCP, security, deployment). |
 | `/plugin-development` | Guide for creating Claude Code plugins (structure, manifest, distribution). |
 
-### Project Management (7)
+### Project Management (10)
 
 | Skill | Description |
 |-------|-------------|
 | `/project` | Dispatcher for project management skills. |
 | `/project-feature` | Capture and scope new features with MBI support. |
-| `/project-manage` | Full implementation workflow with specialized agents. |
+| `/project-manage` | Full implementation workflow (Phases 0–5) with specialized agents. |
+| `/project-review` | Shared review cycle (functional → domain → quality → docs → `make check`). Sub-skill of project-manage. |
+| `/project-handle-pr` | PR feedback iteration with review re-entry before push. Sub-skill of project-manage. |
+| `/project-post-merge` | Sequenced post-merge cleanup (switch to main before TODO edits). Sub-skill of project-manage. |
 | `/project-status` | Generate STATUS.md with executive summary, metrics, dependencies, blockers, risks. |
 | `/project-todo-refine` | Iteratively refine TODO.md topics by reviewing state, scope, and priority. |
 | `/project-migrate` | Migrate projects between versions or frameworks. |
@@ -236,78 +239,97 @@ The `/project` skill dispatcher handles one-off operations, while the `project-m
 
 ```mermaid
 flowchart TB
-    subgraph Phase0["Phase 0: Task Detection"]
-        A[User Request] --> B{Task Type?}
-        B -->|Bug| C[Bug-Fixer Agent]
-        B -->|Dependency| D[Researcher]
-        B -->|Feature| E[GitHub Issue Check]
-        C --> F[Done]
+    subgraph Phase0["Phase 0: Session Start & Triage"]
+        A["User Request"] --> B{"Task Type?"}
+        B -->|Bug| C["c3:bug-fixer"]
+        B -->|Dependency| D["c3:researcher"]
+        B -->|Feature| E["Issue Triage"]
         D --> E
-        E --> G{Has Issues?}
-        G -->|Yes| H[Process Issues]
-        G -->|No| I[Project State Detection]
+        E --> G{"Project State?"}
+        G -->|"Open PR w/ feedback"| HP["c3:project-handle-pr (Phase 6)"]
+        G -->|"Merged branch"| PM["c3:project-post-merge (Phase 7)"]
+        G -->|"Clean / open issues"| I["Phase 1 / Issue Triage"]
     end
 
-    subgraph Phase1["Phase 1: Analysis"]
-        I --> J{State?}
-        J -->|New Project| K[Phase 1A: Initial Analysis]
-        J -->|Incomplete Setup| L[Phase 1B: Review]
-        J -->|Ready for Work| M[Check Unsorted Items]
-        K --> N[Functional Analyst]
+    subgraph Phase1["Phase 1: Analysis (conditional)"]
+        I --> J{"State?"}
+        J -->|"New Project"| K["Phase 1A: Initial Analysis"]
+        J -->|"Incomplete Setup"| L["Phase 1B: Review"]
+        J -->|"Ready for Work"| M["Phase 2: Task Selection"]
+        K --> N["functional-analyst"]
         L --> N
-        N -->|Optional| O[Researcher]
+        N -->|Optional| O["c3:researcher"]
         O --> N
-        N -->|functional.md, TODO.md| P[Task Scope Classification]
-        M --> Q{Unsorted?}
-        Q -->|Yes| R[Sort or Skip?]
-        Q -->|No| S[Propose Next Task]
+        N -->|"functional.md + TODO.md + PLAN.md"| M
+    end
+
+    subgraph Phase2["Phase 2: Task Selection"]
+        M --> Q{"Unsorted items / MBIs?"}
+        Q -->|Yes| R["Sort / Analyze / Skip"]
+        Q -->|No| S["Priority: Active MBI > Fixes > Backlog"]
         R -->|Sort| N
         R -->|Skip| S
+        S --> SV{"Already implemented?"}
+        SV -->|Yes| S
+        SV -->|No| T["Propose Next Task (AskUser)"]
+        T -->|Approved| SC{"Scope?"}
     end
 
-    subgraph Phase2["Phase 2: Domain Review"]
-        P --> T{Scope?}
-        T -->|Backend| U[API Architect]
-        T -->|Frontend| V[UI/UX Designer]
-        T -->|Full Stack| U
-        T -->|Full Stack| V
-        T -->|Security| W[Security Engineer]
-        U --> X[Consensus]
+    subgraph Phase3["Phase 3: Cross-Domain Review (parallel)"]
+        SC -->|Backend| U["api-architect"]
+        SC -->|Frontend| V["ui-ux-designer"]
+        SC -->|"Full Stack"| U
+        SC -->|"Full Stack"| V
+        SC -->|Security| W["security-engineer"]
+    end
+
+    subgraph Phase4["Phase 4: Consensus"]
+        U --> X["Consensus report"]
         V --> X
         W --> X
+        X --> CA{"All approve?"}
+        CA -->|No| X
+        CA -->|Yes| BR["Phase 5: Implementation"]
     end
 
-    subgraph Phase4["Phase 4: Implementation"]
-        S --> Y[Plan]
-        X --> Y
-        Y --> Z[Python Developer]
-        Z --> AA{Review Cycle}
-        AA -->|Functional| AB[Functional Analyst]
-        AB --> AC{Domain Reviews}
-        AC -->|Parallel| AD[API Architect]
-        AC -->|Parallel| AE[UI/UX Designer]
-        AC -->|Parallel| AF[Security Engineer]
-        AD --> AG{Quality Reviews}
-        AE --> AG
-        AF --> AG
-        AG -->|Parallel| AH[Code Reviewer]
-        AG -->|Parallel| AI[Testing Engineer]
-        AH --> AJ{User-facing?}
-        AI --> AJ
-        AJ -->|Yes| AK[End-User Documenter]
-        AJ -->|No| AL{All Approve?}
-        AK --> AL
-        AL -->|No| Z
-        AL -->|Yes| AM[Create Feature Branch]
-        AM --> AN[Commit & Push]
-        AN --> AO[Create PR]
-        AO --> AP{PR Feedback?}
-        AP -->|Changes Requested| Z
-        AP -->|Approved| AQ[Owner Merges]
-        AQ --> AR[Mark Task Complete]
-        AR --> AS{More Tasks?}
-        AS -->|Yes| Y
-        AS -->|No| AT[Project Complete]
+    subgraph Phase5["Phase 5: Implementation"]
+        BR --> FB["Feature branch + commit analysis docs + draft PR"]
+        FB --> PL["Post plan as PR comment"]
+        PL --> GATE{"Plan Approval Gate (BLOCKING)"}
+        GATE -->|Changes| PL
+        GATE -->|Rejected| CLOSE["Close PR + issue"]
+        GATE -->|Approved| SK["Check domain skills"]
+        SK --> Z["python-developer implements (incremental)"]
+        C -->|"scoped (no plan gate)"| RV
+        Z --> RV["c3:project-review (Stage a-f)"]
+        RV -->|rejected| Z
+        RV -->|approved| MK["make check gate + summary"]
+        MK --> CP["Commit, push, PR, CI (fix until green)"]
+        CP --> RD["Mark ready, assign, request owner review"]
+        RD --> PAUSE["PAUSE - do not poll"]
+    end
+
+    subgraph Phase6["Phase 6: PR Iteration - c3:project-handle-pr"]
+        PAUSE --> FBC{"Owner comments?"}
+        FBC -->|No| WAIT["Report & wait"]
+        FBC -->|Yes| FA["functional-analyst interprets vs task"]
+        FA --> DEV["python-developer implements change"]
+        DEV --> RV2["c3:project-review (scoped re-run)"]
+        RV2 -->|rejected| DEV
+        RV2 -->|approved| PUSH["Commit, push, comment on PR"]
+        PUSH --> APP{"Owner approves?"}
+        APP -->|"More changes"| FBC
+        APP -->|Approved| MERGE["Wait for owner to merge"]
+    end
+
+    subgraph Phase7["Phase 7: Post-Merge - c3:project-post-merge"]
+        MERGE --> SW["Switch to main + pull (BEFORE TODO edits)"]
+        SW --> TD["functional-analyst: mark task done in TODO.md"]
+        TD --> CM["Commit TODO.md"]
+        CM --> CL["Clean up issue labels / close"]
+        CL --> NX{"Release or next task?"}
+        NX -->|Release| REL["c3:release"]
+        NX -->|Next| M
     end
 ```
 
