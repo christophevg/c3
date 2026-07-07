@@ -1,9 +1,9 @@
 -include .env
 -include .env.local
 
-MODEL  ?= glm-5:cloud   # our preferred model ;-)
-ARGS   ?=               # optional additional CLI arguments
-PROMPT ?=               # optional initial prompt
+MODEL  ?= glm-5.2:cloud   # our preferred model ;-)
+ARGS   ?=                 # optional additional CLI arguments
+PROMPT ?=                 # optional initial prompt
 
 ifdef QWEN
 MODEL = qwen3.5:397b-cloud   # sometimes qwen is better
