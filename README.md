@@ -78,7 +78,7 @@ This loads all skills and agents from the current directory into your Claude Cod
 
 ---
 
-## Skills (54)
+## Skills (60)
 
 Skills provide focused guidance for specific technologies and workflows.
 
@@ -179,9 +179,21 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/copy-writer` | Content writing and copy editing. |
 | `/prepare-for-exam` | Interactive study material generation. |
 
+### Writing (6)
+
+| Skill | Description |
+|-------|-------------|
+| `/writing-review` | Developmental review: claim verification, gap/perspective analysis, advisory reports. |
+| `/writing-continuity` | Check continuity: references resolve, concepts introduced before use, themes in sync. |
+| `/writing-voice` | Voice drift and ChatGPT-smell checks against the author's voice profile. |
+| `/writing-mistakes` | Flag common writing mistakes (canonical errors + craft patterns) as TODO notes. |
+| `/writing-idioms` | Flag misused idioms/proverbs and propose the canonical form. |
+| `/writing-split` | Split a long-form article into a sequential social-post series. |
+| `/writing-order` | Reorder raw material (written sections + TODO stubs) into a smooth argument flow. |
+
 ---
 
-## Agents (16)
+## Agents (17)
 
 | Agent | Description |
 |-------|-------------|
@@ -201,6 +213,7 @@ Skills provide focused guidance for specific technologies and workflows.
 | `knowledge-agent` | Knowledge base querying and evolution. |
 | `bug-fixer` | Bug fixing workflow with TDD approach. |
 | `release-manager` | Release workflow and GitHub operations. |
+| `writing-assistant` | Writing coach + developmental editor; thin orchestrator over the writing-* skills. Never writes prose. |
 
 ---
 
