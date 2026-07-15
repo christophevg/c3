@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-This is a **Claude Code plugin** that provides reusable skills, agents, and settings for Python/Baseweb development projects. It can be installed as a plugin via the marketplace or used directly via symlink.
+This is a **Claude Code plugin** that provides reusable skills, agents, and settings for Python/Baseweb development projects. It can be installed as a plugin via the marketplace or used directly by pointing the harness at this folder as a plugin directory (`--plugin-dir`).
 
 ## Installation
 
@@ -18,15 +18,15 @@ claude plugin marketplace add christophevg/marketplace
 claude plugin install c3@christophe.vg
 ```
 
-### Via Symlink (Development)
+### Via `--plugin-dir` (Development)
 
-For development or local use, symlink into `~/.claude/`:
+For development or local use, point the harness at this folder as a plugin directory — skills and agents are picked up directly from `skills/` and `agents/`:
 
 ```bash
-make install
+make test-plugin      # runs: claude --plugin-dir .
 ```
 
-This symlinks the `agents/`, `skills/`, `bin/`, and `settings.json` into `~/.claude/`.
+No symlinking of skills or agents is involved. (`make install` only symlinks the global `CLAUDE.md` and `Makefile` into `~/.claude/`; it does not install skills or agents.)
 
 ## Project Structure
 
@@ -38,7 +38,7 @@ c3/
 ├── skills/           # Reusable skill definitions
 ├── bin/              # Utility scripts (statusline)
 ├── settings.json     # Plugin settings (permissions)
-└── Makefile          # Installation commands
+└── Makefile          # Version, validation, and test-plugin targets
 ```
 
 ## Skills Overview

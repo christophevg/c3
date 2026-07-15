@@ -46,7 +46,7 @@ Before starting, detect the development context:
 - Validation against existing skill patterns
 - Progressive disclosure check
 - Line count validation
-- Immediate symlink testing
+- Immediate `--plugin-dir` testing (`make test-plugin`)
 
 ## Skill Naming Conventions
 
@@ -453,7 +453,7 @@ After creating/modifying any skill, validate:
 **Structure:**
 - [ ] **Line count** — SKILL.md under 500 lines
 - [ ] **Directory structure** — Only needed directories exist
-- [ ] **Symlink** — Installed via `make install`
+- [ ] **Activation** — C3: loaded via `--plugin-dir` (`make test-plugin`); incubator: symlinked into `.claude/skills/`
 
 **Description:**
 - [ ] **Single-line** — No newlines in description

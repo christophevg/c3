@@ -156,24 +156,24 @@ agents/
 
 ## Installation Testing
 
-Before submitting:
+Before submitting, validate the plugin and test it locally:
 
 ```bash
-# Clean install test
-make uninstall
-make install
+# Validate skill/agent structure and the plugin manifest
+make validate
+make validate-plugin
 
-# Verify symlinks
-ls -la ~/.claude/agents/
-ls -la ~/.claude/skills/
-ls -la ~/.claude/bin/
+# Test locally by pointing the harness at this folder as a plugin dir
+make test-plugin
 ```
+
+Skills and agents are loaded from `skills/` and `agents/` via `--plugin-dir` — there is no symlink step, and `make install` does not install skills or agents.
 
 ## Pull Request Process
 
 1. **Update documentation** if changing functionality
 2. **Add changelog entry** to CHANGELOG.md
-3. **Test installation** with `make install`
+3. **Test locally** with `make test-plugin` (and `make validate`)
 4. **Link related issues** in PR description
 
 ## Getting Help

@@ -45,7 +45,7 @@ When creating or refining skills, avoid these common pitfalls.
 | Skipping validation | Quality issues | Always run validation checklist |
 | Wrong context workflow | Unnecessary overhead | Detect incubator vs C3 context |
 | Not testing triggers | Skill doesn't activate | Test with trigger phrases |
-| Forgetting symlink | Skill not installed | Run `make install` after changes |
+| Forgetting to activate | Skill not loaded | C3: `make test-plugin` (or `claude --plugin-dir .`); incubator: re-symlink into `.claude/skills/` |
 
 ## YAML Frontmatter Format
 

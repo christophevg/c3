@@ -74,7 +74,7 @@ claude --plugin-dir ./
 This loads all skills and agents from the current directory into your Claude Code session.
 
 > [!NOTE]
-> For project-specific Makefile integration, you can still use `make install` to copy `Makefile.claude` to `~/.claude/`. This provides utility targets for working with Claude Code (e.g., `make` runs Claude Code using Ollama). However, for local development of C3 itself, `--plugin-dir` is the recommended approach.
+> For project-specific Makefile integration, you can still use `make install` to symlink the global `CLAUDE.md` and `Makefile` into `~/.claude/`. This provides utility targets for working with Claude Code (e.g., `make` runs Claude Code using Ollama). However, for local development of C3 itself, `--plugin-dir` is the recommended approach — skills and agents are picked up directly from `skills/` and `agents/`, with no symlink step.
 
 ---
 
