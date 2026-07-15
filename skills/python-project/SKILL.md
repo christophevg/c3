@@ -364,12 +364,37 @@ uv run mypy src/               # Type check
 
 ```bash
 uv add package-name                 # Add dependency
+uv add --dev package-name           # Add dev dependency
 uv remove package-name              # Remove dependency
 uv sync                             # Sync to lock file
 uv sync --frozen                    # Verify lock is current
 uv lock --upgrade                   # Update all deps
 uv lock --upgrade-package pkg       # Update specific dep
 ```
+
+#### Upgrading a Dependency Version
+
+When bumping a version constraint in `pyproject.toml` (e.g., `>=0.3.3` → `>=0.7.0`):
+
+```bash
+# 1. Edit pyproject.toml with the new version constraint
+# 2. Update the lockfile to resolve the new version
+uv lock
+
+# 3. Sync the virtual environment to the new lockfile
+uv sync
+
+# 4. Verify the correct version is installed
+uv run python -c "import package; print(package.__version__)"
+```
+
+**CRITICAL: Editing `pyproject.toml` alone does NOT update the installed package.** The lockfile (`uv.lock`) pins exact versions. You must run `uv lock` followed by `uv sync` after changing version constraints. Without this, the old version remains installed.
+
+| Wrong | Correct |
+|-------|---------|
+| Edit `pyproject.toml` and start coding | Edit `pyproject.toml` → `uv lock` → `uv sync` → verify → code |
+| `pip install package>=0.7.0` | `uv lock && uv sync` |
+| Assume the new version is available | `uv run python -c "import pkg; print(pkg.__version__)"` |
 
 ### Python Version Management
 

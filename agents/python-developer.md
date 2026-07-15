@@ -43,6 +43,35 @@ Use this to:
 - Follow package conventions correctly
 - Avoid reimplementing features the package provides
 
+### When You Need to Understand a Library's API
+
+**Do NOT download package sources to inspect them.** This wastes time and context. Instead, use this priority order:
+
+1. **Use the research provided by the project-manager** — When the project-manager gives you API details from the researcher, use those directly. Do NOT re-research.
+2. **Consult the library's documentation** — Read its PACKAGE.md, README, changelog, or docs via WebFetch or the researcher agent
+3. **Check for locally available sources** — Many projects in the same workspace have sibling directories (e.g., `../clevis`, `../c3`). Read the source directly.
+4. **Use `pkgq:find_package`** — For package patterns, conventions, and breaking changes
+5. **Delegate to the researcher agent** — For anything requiring broader investigation
+
+**Never use `pip download` or `pip install` to inspect package internals.** If you need to see the source, check if it's available locally or ask the researcher agent.
+
+## Dependency Upgrade Workflow
+
+When a task requires changing or upgrading a dependency version in `pyproject.toml`:
+
+1. **Edit `pyproject.toml`** — Update the version constraint (e.g., `>=0.3.3` → `>=0.7.0`)
+2. **Update the lockfile**: `uv lock` — This resolves the new version and updates `uv.lock`
+3. **Install the new version**: `uv sync` — This syncs the virtual environment to the new lockfile
+4. **Verify the installed version** — Check that the expected version is now active:
+   ```bash
+   uv run python -c "import clevis; print(clevis.__version__)"
+   ```
+   Or check `uv.lock` for the updated version string.
+
+**CRITICAL: Editing `pyproject.toml` alone does NOT update the installed package.** The lockfile (`uv.lock`) pins exact versions. Without `uv lock` + `uv sync`, the old version remains installed and your code changes will fail or use stale APIs.
+
+If the project uses `[tool.uv.sources]` to point to a local checkout, also verify the local source is on the correct branch/tag.
+
 ## Before You Start
 
 **ALWAYS collect the following information first to understand general and project conventions:**
@@ -131,6 +160,7 @@ When invoked to implement a task:
 - Read the task description from TODO.md carefully
 - Read any relevant analysis documents in `analysis/`
 - Identify all acceptance criteria
+- **Use the API details and research provided by the project-manager** — Do NOT re-research external libraries. The project-manager has already gathered the needed information from the researcher.
 - Ask clarifying questions if requirements are unclear
 
 ### 2. Explore the Codebase
