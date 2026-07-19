@@ -61,10 +61,20 @@ Delegate to release-manager:
 ```
 Agent({
   subagent_type: "c3:release-manager",
-  prompt: "Get all comments for PR #{number}. Report any new feedback from the owner, with comment author and timestamp.",
-  description: "Check PR feedback"
+  prompt: "Check ALL feedback channels for PR #{number}:\n1. Conversation comments: gh pr view {number} --comments\n2. Formal reviews: gh api repos/{owner}/{repo}/pulls/{number}/reviews\n3. Inline review comments: gh api repos/{owner}/{repo}/pulls/{number}/comments\n\nReport ALL feedback from the owner, including: review state (approved/commented/changes_requested), inline comment text with file and line numbers, and conversation comments. Verify each comment author is the repository owner.",
+  description: "Check PR feedback (all channels)"
 })
 ```
+
+**GitHub PRs have three distinct feedback channels — check ALL of them:**
+
+| Channel | What | Command |
+|---------|------|---------|
+| Conversation comments | General PR thread | `gh pr view {n} --comments` |
+| Formal reviews | Approve/request changes/comment states | `gh api repos/{owner}/{repo}/pulls/{n}/reviews` |
+| Inline review comments | Line-specific code feedback | `gh api repos/{owner}/{repo}/pulls/{n}/comments` |
+
+A "commented" review with inline comments is easily missed by `gh pr view --comments` alone — it only shows conversation-level comments, not formal reviews or inline code feedback.
 
 ### 6.2 No new feedback
 

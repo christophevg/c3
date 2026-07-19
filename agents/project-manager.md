@@ -311,11 +311,35 @@ After implementation is complete and CI passes:
 3. **Post comment: "Implementation complete. Ready for review."**
 4. **Pause** — Do NOT check for feedback immediately
 5. **User says "follow up on PR #{number}"** to check for feedback
+   → **MUST invoke `c3:project-handle-pr` skill** — do NOT just ask
+     release-manager for a status report (that misses formal reviews and
+     inline comments)
+
+### "Follow Up on PR" Workflow
+
+**When the user says "follow up on PR #{number}":**
+
+⚠️ **Do NOT just ask release-manager for a status report.** A status check
+via `gh pr view --comments` only shows conversation comments — it misses
+formal reviews (approve/comment/request-changes) and inline review comments
+(line-specific code feedback). This is how review feedback gets missed.
+
+**Instead, invoke the c3:project-handle-pr skill:**
+
+```
+Skill({ skill: "c3:project-handle-pr", args: "PR #{number}" })
+```
+
+This ensures ALL feedback channels are checked (conversation comments,
+formal reviews, inline review comments) and the full PR iteration workflow
+runs — including interpretation, implementation, review re-qualification,
+and response posting.
 
 **Do NOT:**
 - Merge PRs yourself — only the owner merges
 - Check for feedback immediately after requesting review
 - Assume PR is ready without owner approval
+- Ask release-manager for a "status report" instead of invoking the skill
 
 ## User Slash Commands
 
