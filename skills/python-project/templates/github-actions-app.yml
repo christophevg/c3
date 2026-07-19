@@ -1,11 +1,19 @@
 # GitHub Actions Workflow for Applications
 
+Applications target a single Python version (e.g., 3.11) and focus on one
+execution environment. CI still splits jobs, uses --frozen, and checks
+formatting in verify-only mode.
+
 Create `.github/workflows/test.yml`:
 
 ```yaml
 name: Test
 
-on: push
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   test:
@@ -18,7 +26,7 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v8.2.0
         with:
           version: "latest"
 
@@ -29,14 +37,55 @@ jobs:
         run: uv sync --frozen --all-extras
 
       - name: Run tests
-        run: uv run pytest -v
+        run: uv run pytest -v --cov=src --cov-report=xml
 
-      - name: Run linter
-        run: uv run ruff check src tests
+      - name: Upload coverage to Coveralls
+        uses: coverallsapp/github-action@v2
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./coverage.xml
+          fail-on-error: false
 
-      - name: Check formatting
-        run: uv run ruff format --check src tests
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v8.2.0
+      - run: uv sync --frozen --all-extras
+      - run: uv run ruff check src tests
+      - run: uv run ruff format --check src tests
 
-      - name: Type check
-        run: uv run mypy src
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v8.2.0
+      - run: uv sync --frozen --all-extras
+      - run: uv run mypy src
 ```
+
+## Job Explanation
+
+| Job | Purpose |
+|-----|---------|
+| `test` | Run pytest across OS matrix with coverage |
+| `lint` | Check code style with ruff (verify-only, no auto-fix) |
+| `typecheck` | Static type checking with mypy |
+
+## Verification Checklist
+
+**All 3 jobs must be present:**
+
+```bash
+grep -E "^  (test|lint|typecheck):" .github/workflows/test.yaml
+```
+
+Expected output:
+```
+  test:
+  lint:
+  typecheck:
+```
+
+**Critical:** `ruff format --check` is verify-only — it must NOT auto-fix code. Never use `make check` in CI (it runs the mutating `format` target).

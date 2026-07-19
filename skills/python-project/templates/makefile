@@ -3,7 +3,7 @@
 ```makefile
 -include ~/.claude/Makefile
 
-.PHONY: env-dev env-run install-pythons test test-cov test-all format lint typecheck check run docs docs-view build pre-publish publish publish-test clean clean-all help
+.PHONY: env-dev env-run install-pythons test test-cov test-all format format-check lint typecheck check run docs docs-view build pre-publish publish publish-test clean clean-all help
 
 ## Environment
 
@@ -33,13 +33,16 @@ format: env-dev ## Format code and fix linting issues
 	uv run ruff format src tests
 	uv run ruff check --fix src tests
 
+format-check: env-dev ## Check code formatting without modifying
+	uv run ruff format --check src tests
+
 lint: env-dev ## Check code for linting issues
 	uv run ruff check src tests
 
 typecheck: env-dev ## Run type checking
 	uv run mypy src
 
-check: format lint typecheck test ## Run all quality checks
+check: format-check lint typecheck test ## Run all quality checks
 
 ## Running
 
@@ -103,11 +106,13 @@ help: ## Show this help message
 1. **Environment targets** - `env-dev` and `env-run` ensure dependencies are synced
 2. **Help system** - `## comments` enable `make help` documentation
 3. **Combined format** - Runs both `ruff format` and `ruff check --fix`
-4. **docs-view** - Builds docs and opens in browser (macOS)
-5. **PHONY declarations** - Prevents conflicts with files of same name
-6. **Default to help** - Running `make` shows help, doesn't run checks
-7. **Multi-version testing** - `test-all` runs tox across Python versions
-8. **Project-specific section** - Preserve custom targets at the bottom
+4. **Verify-only format check** - `format-check` runs `ruff format --check` without modifying code (use in CI)
+5. **docs-view** - Builds docs and opens in browser (macOS)
+6. **PHONY declarations** - Prevents conflicts with files of same name
+7. **Default to help** - Running `make` shows help, doesn't run checks
+8. **Multi-version testing** - `test-all` runs tox across Python versions
+9. **Project-specific section** - Preserve custom targets at the bottom
+10. **Pre-publish checks** - Validates before PyPI upload
 
 ## Usage
 

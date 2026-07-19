@@ -244,9 +244,10 @@ Create `Makefile` at project root. See `templates/makefile` for the full templat
 | `test-all` | Run tests on all Python versions | For libraries |
 | `run` | Run application | ✓ Required |
 | `format` | Format and auto-fix code | ✓ Required |
+| `format-check` | Check formatting without modifying (verify-only) | ✓ Required |
 | `lint` | Lint code | ✓ Required |
 | `typecheck` | Run mypy | ✓ Required |
-| `check` | Format + lint + typecheck + test | ✓ Required |
+| `check` | format-check + lint + typecheck + test (verify-only) | ✓ Required |
 | `docs` | Build docs | If has docs |
 | `docs-view` | Build and view docs | Recommended |
 | `build` | Build distribution packages | ✓ Required |
@@ -281,12 +282,13 @@ This eliminates the need for separate `test-file` and `test-one` targets.
 1. **Environment targets** - `env-dev` and `env-run` ensure dependencies are synced
 2. **Help system** - `## comments` enable `make help` documentation
 3. **Combined format** - Runs both `ruff format` and `ruff check --fix`
-4. **docs-view** - Builds docs and opens in browser (macOS)
-5. **PHONY declarations** - Prevents conflicts with files of same name
-6. **Default to help** - Running `make` shows help, doesn't run checks
-7. **Multi-version testing** - `test-all` runs tox across Python versions
-8. **Project-specific section** - Preserve custom targets at the bottom
-9. **Pre-publish checks** - Validates before PyPI upload
+4. **Verify-only format check** - `format-check` runs `ruff format --check` without modifying code (for CI)
+5. **docs-view** - Builds docs and opens in browser (macOS)
+6. **PHONY declarations** - Prevents conflicts with files of same name
+7. **Default to help** - Running `make` shows help, doesn't run checks
+8. **Multi-version testing** - `test-all` runs tox across Python versions
+9. **Project-specific section** - Preserve custom targets at the bottom
+10. **Pre-publish checks** - Validates before PyPI upload
 
 ### Pre-Publish Target
 
@@ -480,7 +482,7 @@ All pyproject.toml files MUST follow this section order:
 ### Key Standards
 
 - **Build system**: hatchling (not setuptools)
-- **Python version**: `>=3.10` for libraries, `>=3.11` for applications
+- **Python version**: `>=3.10` for libraries (3.10/3.11/3.12 matrix), `>=3.11` for applications (single version)
 - **Line length**: 100
 - **Indent width**: 2
 - **Ruff rules**: E, W, F, I, B, C4, UP
@@ -489,21 +491,53 @@ All pyproject.toml files MUST follow this section order:
 
 ## GitHub Actions CI
 
-Run tests automatically on push. Create `.github/workflows/test.yml`:
+Run tests automatically on push and PRs. Create `.github/workflows/test.yml`.
 
-**Key settings:**
+**STANDARD: All projects use split jobs, --frozen, and verify-only formatting.**
 
-| Setting | Purpose |
-|---------|---------|
-| `matrix.os` | Test on Linux, macOS, Windows |
-| `matrix.python-version` | Test multiple Python versions (libraries) |
-| `--frozen` | Fail if lock file is out of date |
-| `on: push` | Run on every push |
-| `on: [push, pull_request]` | Also run on PRs (libraries) |
+### Required Structure
 
-**Coverage Reporting:**
+CI MUST split into three independent jobs (not a single `make check` job):
 
-Library workflows include coverage reporting to Coveralls:
+| Job | Purpose | Runs on |
+|-----|---------|---------|
+| `test` | Run pytest with coverage | OS matrix (ubuntu/macos/windows) |
+| `lint` | `ruff check` + `ruff format --check` (verify-only) | ubuntu-latest |
+| `typecheck` | `mypy src` | ubuntu-latest |
+
+### Critical Settings
+
+| Setting | Value | Why |
+|---------|-------|-----|
+| `setup-uv` | `astral-sh/setup-uv@v8.2.0` | Current version |
+| `uv sync` | `--frozen --all-extras` | Fail if lockfile drifts |
+| `ruff format` | `--check` (verify-only) | CI must NOT auto-fix code |
+| triggers | `push: branches: [master]` + `pull_request:` + `workflow_dispatch:` | Filter pushes to master, run on PRs, allow manual |
+| coverage | Coveralls on one matrix combo | Upload once, not per combination |
+
+### ⚠️ Never Use `make check` in CI
+
+`make check` runs the **mutating** `format` target (`ruff format` + `ruff check --fix`), which auto-fixes code. CI must use **verify-only** commands directly:
+
+```yaml
+# WRONG — mutates code:
+- run: make check
+
+# RIGHT — verify-only:
+- run: uv run ruff check src tests
+- run: uv run ruff format --check src tests
+```
+
+### Python Version Matrix
+
+| Project Type | Python Versions | Matrix |
+|--------------|-----------------|--------|
+| Libraries | 3.10, 3.11, 3.12 | Full matrix (os × python) |
+| Applications | 3.11 | OS matrix only (single Python) |
+
+**The CI Python matrix MUST match the `tox env_list` and `requires-python` in pyproject.toml.**
+
+### Coverage Reporting
 
 ```yaml
 - name: Run tests
@@ -511,9 +545,12 @@ Library workflows include coverage reporting to Coveralls:
 
 - name: Upload coverage to Coveralls
   uses: coverallsapp/github-action@v2
-  if: matrix.python-version == '3.11' && matrix.os == 'ubuntu-latest'
+  if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10'  # libs
+  # if: matrix.os == 'ubuntu-latest'                                   # apps (single Python)
   with:
     github-token: ${{ secrets.GITHUB_TOKEN }}
+    file: ./coverage.xml
+    fail-on-error: false
 ```
 
 The `if` condition ensures coverage is uploaded once (not for every matrix combination).

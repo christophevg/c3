@@ -5,7 +5,11 @@ Create `.github/workflows/test.yml`:
 ```yaml
 name: Test
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   test:
@@ -19,7 +23,7 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v8.2.0
         with:
           version: "latest"
 
@@ -34,15 +38,17 @@ jobs:
 
       - name: Upload coverage to Coveralls
         uses: coverallsapp/github-action@v2
-        if: matrix.python-version == '3.11' && matrix.os == 'ubuntu-latest'
+        if: matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest'
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./coverage.xml
+          fail-on-error: false
 
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v8.2.0
       - run: uv sync --frozen --all-extras
       - run: uv run ruff check src tests
       - run: uv run ruff format --check src tests
@@ -51,17 +57,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v8.2.0
       - run: uv sync --frozen --all-extras
       - run: uv run mypy src
-
-  build:
-    runs-on: ubuntu-latest
-    needs: [test, lint, typecheck]
-    steps:
-      - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@v6
-      - run: uv build
 ```
 
 ## Job Explanation
@@ -71,14 +69,13 @@ jobs:
 | `test` | Run pytest across OS and Python version matrix |
 | `lint` | Check code style with ruff |
 | `typecheck` | Static type checking with mypy |
-| `build` | Verify package builds correctly (after tests pass) |
 
 ## Verification Checklist
 
-**All 4 jobs must be present:**
+**All 3 jobs must be present:**
 
 ```bash
-grep -E "^  (test|lint|typecheck|build):" .github/workflows/test.yaml
+grep -E "^  (test|lint|typecheck):" .github/workflows/test.yaml
 ```
 
 Expected output:
@@ -86,7 +83,6 @@ Expected output:
   test:
   lint:
   typecheck:
-  build:
 ```
 
-**Critical:** The `build` job must have `needs: [test, lint, typecheck]` to run only after all checks pass.
+**Critical:** `ruff format --check` is verify-only — it must NOT auto-fix code. Never use `make check` in CI (it runs the mutating `format` target).
