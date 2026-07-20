@@ -63,6 +63,28 @@ A hard rule runs through the whole skill: **the repository owner is the only
 human decision-maker.** The agent proposes; the owner approves via PR comments
 (not AskUserQuestion); only the owner merges.
 
+## ⚠️ Simplicity Principle — Owner's Proposal is the Default
+
+**Slim, tight, concise is the default.** Avoid indirections, wrappers, and
+redundant work. Less is the default unless there is no other way.
+
+When the owner provides an explicit proposal or snippet, OR states a worry / constraint / directive (in the issue, PR comments, or interview):
+1. **It is the default.** Implement/endorse it as-is unless there is a
+   specific, documented problem.
+2. **Any deviation must** (i) quote the owner's proposal, (ii) state the
+   specific problem with it, (iii) justify why the added complexity is earned.
+3. **"Reviewer prefers X" or "refinement" is NOT justification.**
+4. **Ignoring the owner's proposal without a stated reason is unacceptable.**
+5. **Owner-stated worries and constraints are binding.** The implementation plan (Phase 5.2) MUST enumerate every owner-stated proposal, worry, and constraint (from the issue, PR comments, or interview) and explicitly respond to each — quote it, state whether the plan satisfies it. An owner instruction left as background context (no explicit response in the plan) blocks plan approval.
+
+**PM Simplicity Gate (applies at Phase 3, 4, 5.2, 5.6):** before forwarding any
+reviewer recommendation that diverges from the owner's explicit proposal, the
+project-manager must (a) quote the owner's proposal, (b) state the specific
+problem with it, (c) only forward if the problem is real and the added
+complexity is earned. Do NOT rubber-stamp reviewer recommendations that add
+classes/indirections/wrappers/guards not in the owner's proposal without
+earned justification.
+
 ---
 
 ## Workflow Overview

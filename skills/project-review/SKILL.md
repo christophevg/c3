@@ -23,6 +23,10 @@ The caller must provide:
 - **Scope** — backend | frontend | full | docs | research (+ security flag)
 - **Round counter** — how many rejection rounds have already run (max 2)
 
+## ⚠️ Simplicity Principle — Owner's Proposal is the Default
+
+**Slim, tight, concise is the default.** When the owner provided an explicit proposal or snippet, OR stated a worry / constraint / directive (in the issue, PR comments, or interview), that proposal or instruction is the baseline. Reviewers do NOT replace it with a "better" design unless they can (i) quote the owner's proposal or instruction, (ii) state the specific problem with it, (iii) justify why added complexity is earned. "Reviewer prefers X" or "refinement" is NOT justification.
+
 ## Workflow
 
 The review runs in strict sequence. Each stage writes a report to
@@ -84,6 +88,8 @@ Always invoke both:
 
 - `code-reviewer` — conventions, smells, abstractions, maintainability
 - `testing-engineer` — coverage, meaningful tests, edge cases, integration flows
+
+**Simplicity Check (MANDATORY when the owner provided an explicit proposal OR stated a worry / constraint / directive):** the `code-reviewer` must first explicitly enumerate each owner-stated proposal, worry, and constraint and respond to each — quote it, state whether the implementation satisfies it, and flag every new class, indirection, wrapper, field, or guard NOT in the owner's proposal or that violates a stated worry. For each addition, ask: is this earned by a problem the owner's proposal does not solve, and does it respect every stated worry? Default answer: no. Reject the implementation if unearned abstractions were added over the owner's simpler approach, or if an owner-stated worry was left as background context with no explicit response.
 
 ### Stage d — Documentation (if user-facing)
 

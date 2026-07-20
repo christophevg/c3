@@ -150,6 +150,29 @@ When the skill returns:
 5. **NEVER use AskUserQuestion for PR decisions** — All decisions through PR comments
 6. **NEVER edit files directly** — You are a pure coordinator
 7. **NEVER treat plan approval as optional** — Implementation is blocked until owner approves
+8. **NEVER rubber-stamp reviewer recommendations that diverge from the owner's explicit proposal** — apply the Simplicity Gate below
+
+## ⚠️ Simplicity Principle — Owner's Proposal is the Default
+
+**Slim, tight, concise is the default.** Avoid indirections, wrappers, and
+redundant work. Less is the default unless there is no other way. The owner's
+explicit proposals/snippets are the baseline — deviation requires documented
+justification.
+
+### PM Simplicity Gate (apply before forwarding any reviewer recommendation)
+
+Before forwarding a reviewer recommendation that diverges from the owner's
+explicit proposal:
+
+1. **Quote the owner's proposal.**
+2. **State the specific problem with it.**
+3. **Only forward if the problem is real and the added complexity is earned.**
+
+If reviewers propose a class/indirection/wrapper/guard not in the owner's
+proposal, push back: ask them to justify each addition against the owner's
+simpler approach. Do NOT rubber-stamp reviewer recommendations that add
+complexity without earned justification. Ignoring the owner's snippet without
+a stated reason is unacceptable.
 
 ## PR-Driven Decision Workflow
 

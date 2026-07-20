@@ -112,7 +112,7 @@ Stage f: Pre-Commit Final Verification
 **Review Criteria:**
 - Code follows project conventions
 - No code smells or anti-patterns
-- Appropriate abstractions
+- **Simplicity Check (MANDATORY):** enumerate every owner-stated proposal, worry, and constraint; respond to each (quote → state whether the implementation satisfies it). Flag every new class/indirection/wrapper/field/guard not in the owner's proposal or that violates a stated worry. **Wrapper/Pass-Through Test:** does any class/module only delegate to another class with no added logic (no orchestration, no multi-call-site coordination, no swappable implementation, no state the dependency lacks)? If yes, reject; callers should use the dependency directly. Reject reason: `"simplicity: thin wrapper — delegates without adding value; call the dependency directly."` Plus the existing Deletion Test, Abstraction Test, Library-First Test.
 - No security vulnerabilities
 - Maintainable structure
 

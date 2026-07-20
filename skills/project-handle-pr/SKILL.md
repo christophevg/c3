@@ -39,6 +39,10 @@ The caller (`project-manage`) provides:
 - **Do not poll.** After posting, pause. The user re-invokes "follow up on PR #N"
   to check for new responses.
 
+## ⚠️ Simplicity Principle — Owner's Proposal is the Default
+
+**Slim, tight, concise is the default.** PR feedback from the owner often includes an explicit snippet, design, OR a stated worry / constraint / directive. That proposal or instruction is the default — the functional-analyst's interpretation (6.3 Step 1) MUST quote each owner-stated proposal, worry, and constraint, state whether the change satisfies it, and only propose a deviation with a specific, documented problem. "Refinement" or "reviewer prefers X" is NOT justification. Added classes/indirections/wrappers/guards not in the owner's proposal require earned justification. Ignoring the owner's snippet or stated worry without a stated reason is unacceptable.
+
 ## Workflow
 
 ```

@@ -97,6 +97,16 @@ All artifacts are created relative to an **artifact root folder**. This allows t
 
 **Apply these questions to every review. Each "no" is a candidate for deletion or simplification.**
 
+### Owner's Proposal Check (MANDATORY when the owner provided an explicit proposal)
+
+- [ ] Did the owner provide an explicit proposal/snippet OR state a worry/constraint/directive (in the issue, PR comments, or interview)? If so, quote EACH one in the review — proposals AND stated worries.
+- [ ] Does the implementation match the owner's proposal? If not, is each deviation justified by a specific problem with the owner's approach?
+- [ ] For each owner-stated worry/constraint, does the implementation explicitly respond to it (not leave it as background context)? An owner instruction with no explicit response is a reject.
+- [ ] Flag every new class/indirection/wrapper/field/guard NOT in the owner's proposal. For each: is it earned by a problem the owner's proposal does not solve? Default: no.
+- [ ] If unearned abstractions were added over the owner's simpler approach, recommend rejection with "simplicity: unearned abstraction over owner's proposal."
+
+**Slim, tight, concise is the default.** "Reviewer prefers X" or "refinement" is NOT justification to diverge from the owner's proposal.
+
 ### Deletion Test
 
 - [ ] Would deleting this abstraction break anything? If not, delete it.
@@ -110,6 +120,12 @@ All artifacts are created relative to an **artifact root folder**. This allows t
 - [ ] Has this pattern appeared three times with variation? If not, tolerate duplication.
 - [ ] Is the interface simpler than the implementation? If not, the module is shallow.
 - [ ] Is this abstraction earning its existence?
+
+### Wrapper / Pass-Through Test
+
+- [ ] Does this class/module only delegate to another class with **no added logic** — no orchestration across multiple calls, no multi-call-site coordination, no swappable implementation, no state the dependency lacks? If yes, it's a thin wrapper: reject; callers should use the dependency directly.
+- [ ] Could the callers call the underlying dependency directly? If yes, the wrapper is unearned indirection.
+- [ ] Reject reason: `"simplicity: thin wrapper — delegates without adding value; call the dependency directly."`
 
 ### Library-First Test (NIH Check)
 
@@ -454,6 +470,12 @@ State whether the code is ready, needs changes, or blocked.
 | Abstraction | Would deleting break things? | Verdict |
 |-------------|------------------------------|---------|
 | [abstraction name] | [yes/no] | [keep/delete] |
+
+### Wrapper / Pass-Through Test Results
+
+| Class/Module | Only delegates? | Could callers use dependency directly? | Verdict |
+|--------------|------------------|----------------------------------------|---------|
+| [class/module name] | [yes/no] | [yes/no] | [reject/keep] |
 
 ### Library-First Check
 

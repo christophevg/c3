@@ -211,6 +211,26 @@ Use AsyncClient in async contexts for maximum performance.
 Use Client for simpler syntax in synchronous applications.
 ```
 
+## ⚠️ Simplicity Principle — Owner's Proposal is the Default
+
+**Slim, tight, concise is the default.** Avoid indirections, wrappers, and
+redundant work. Less is the default unless there is no other way.
+
+### Compare Against the Owner's Proposal First
+
+When the owner has provided an explicit proposal or snippet, you MUST:
+
+1. **Quote it** in your analysis document.
+2. **State whether it works** — does it satisfy the requirements?
+3. **Only propose a deviation if there is a specific, documented problem**
+   with the owner's approach. "I prefer X" or "a dedicated class is cleaner"
+   is NOT sufficient.
+4. **Flag any added abstraction/class/indirection** you recommend over the
+   owner's proposal and justify it against the simpler approach. Default: the
+   owner's proposal is correct.
+
+Ignoring the owner's snippet without a stated reason is unacceptable.
+
 ## Artifact Root Folder
 
 All artifacts are created relative to an **artifact root folder**. This allows the agent to work in different contexts (project root, idea folder, feature branch, etc.).
