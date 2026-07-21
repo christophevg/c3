@@ -89,7 +89,29 @@ Always invoke both:
 - `code-reviewer` — conventions, smells, abstractions, maintainability
 - `testing-engineer` — coverage, meaningful tests, edge cases, integration flows
 
-**Simplicity Check (MANDATORY when the owner provided an explicit proposal OR stated a worry / constraint / directive):** the `code-reviewer` must first explicitly enumerate each owner-stated proposal, worry, and constraint and respond to each — quote it, state whether the implementation satisfies it, and flag every new class, indirection, wrapper, field, or guard NOT in the owner's proposal or that violates a stated worry. For each addition, ask: is this earned by a problem the owner's proposal does not solve, and does it respect every stated worry? Default answer: no. Reject the implementation if unearned abstractions were added over the owner's simpler approach, or if an owner-stated worry was left as background context with no explicit response.
+**Simplicity Check (MANDATORY):** the `code-reviewer` must run two checks:
+
+1. **Wrapper Check (fires on ALL sources, including the owner's own
+   proposal):** for every class in the implementation that wraps another
+   class, answer: *what behavior does this class add beyond configuration in
+   `__init__` and forwarding methods unchanged?* If "nothing," reject —
+   propose a factory function, inline configuration, or module-level
+   constants + direct calls instead. The "useless wrapper" pattern (forwards
+   methods unchanged + only adds config in the constructor) is rejected on
+   sight, EVEN when it appears in the owner's own TODO spec or proposal. This
+   is the gap that let P1-003 (`Mailbox`) and P1-004 (`Assistant`) reach
+   consensus before the owner caught them.
+
+2. **Owner-proposal alignment (when the owner provided an explicit proposal
+   OR stated a worry / constraint / directive):** explicitly enumerate each
+   owner-stated proposal, worry, and constraint and respond to each — quote
+   it, state whether the implementation satisfies it, and flag every new
+   class, indirection, wrapper, field, or guard NOT in the owner's proposal
+   or that violates a stated worry. For each addition, ask: is this earned by
+   a problem the owner's proposal does not solve, and does it respect every
+   stated worry? Default answer: no. Reject if unearned abstractions were
+   added over the owner's simpler approach, or if an owner-stated worry was
+   left as background context with no explicit response.
 
 ### Stage d — Documentation (if user-facing)
 

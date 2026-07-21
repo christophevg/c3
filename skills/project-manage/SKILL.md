@@ -63,27 +63,78 @@ A hard rule runs through the whole skill: **the repository owner is the only
 human decision-maker.** The agent proposes; the owner approves via PR comments
 (not AskUserQuestion); only the owner merges.
 
-## ⚠️ Simplicity Principle — Owner's Proposal is the Default
+## ⚠️ Simplicity Principle — Avoid Wrappers is Primary
 
 **Slim, tight, concise is the default.** Avoid indirections, wrappers, and
 redundant work. Less is the default unless there is no other way.
 
-When the owner provides an explicit proposal or snippet, OR states a worry / constraint / directive (in the issue, PR comments, or interview):
-1. **It is the default.** Implement/endorse it as-is unless there is a
-   specific, documented problem.
+**This principle is PRIMARY** — it overrides "the owner's proposal is the
+default" when the owner's own proposal contains a wrapper or indirection
+that adds no behavior. The owner's proposal is the default **among simple
+options**, not a license to ship useless wrappers.
+
+### The Wrapper Check (fires on ALL sources)
+
+Before introducing — or adopting from ANY source (the owner's TODO spec, a
+reviewer recommendation, a domain agent's design, the implementer's own
+design) — any class that wraps another class, answer:
+
+> **What behavior does this class add beyond configuration in `__init__` and
+> forwarding methods unchanged?**
+
+- **"Nothing"** → the wrapper is NOT earned. Do NOT introduce it. Propose a
+  **factory function** returning the configured instance, or **inlining** at
+  the call site, or **module-level constants** + direct calls.
+- **"Real behavior"** (retry, validation, state, a different contract,
+  multi-step orchestration the wrapped class doesn't do) → the wrapper IS
+  earned. Keep it and state the behavior it adds.
+
+The same check applies to adapter layers, façades, config objects, "seam"
+modules, dataclasses that just repackage another structure's fields, and
+helper methods that forward unchanged.
+
+**The "useless wrapper" pattern (reject on sight):** a class that (a)
+forwards one or more methods to a wrapped class unchanged AND (b) adds only
+configuration in its constructor. P1-003 (`Mailbox`) and P1-004
+(`Assistant`) were both this pattern — caught during owner review after
+consensus; the Wrapper Check now catches them at design time.
+
+### Owner's Proposal is the Default (among simple options)
+
+When the owner provides an explicit proposal or snippet, OR states a worry /
+constraint / directive (in the issue, PR comments, or interview):
+1. **It is the default** — implement/endorse it as-is unless there is a
+   specific, documented problem OR it fails the Wrapper Check.
 2. **Any deviation must** (i) quote the owner's proposal, (ii) state the
-   specific problem with it, (iii) justify why the added complexity is earned.
+   specific problem, (iii) justify why the added complexity is earned.
 3. **"Reviewer prefers X" or "refinement" is NOT justification.**
 4. **Ignoring the owner's proposal without a stated reason is unacceptable.**
-5. **Owner-stated worries and constraints are binding.** The implementation plan (Phase 5.2) MUST enumerate every owner-stated proposal, worry, and constraint (from the issue, PR comments, or interview) and explicitly respond to each — quote it, state whether the plan satisfies it. An owner instruction left as background context (no explicit response in the plan) blocks plan approval.
+5. **Owner-stated worries and constraints are binding.** The implementation
+  plan (Phase 5.2) MUST enumerate every owner-stated proposal, worry, and
+  constraint and explicitly respond to each. An owner instruction left as
+  background context (no explicit response) blocks plan approval.
 
-**PM Simplicity Gate (applies at Phase 3, 4, 5.2, 5.6):** before forwarding any
-reviewer recommendation that diverges from the owner's explicit proposal, the
-project-manager must (a) quote the owner's proposal, (b) state the specific
-problem with it, (c) only forward if the problem is real and the added
-complexity is earned. Do NOT rubber-stamp reviewer recommendations that add
-classes/indirections/wrappers/guards not in the owner's proposal without
-earned justification.
+**If the owner's own proposal fails the Wrapper Check:** flag it, propose the
+simpler alternative (factory function / inline / constants), and let the
+owner decide. Do NOT silently implement the wrapper. This is the gap that let
+P1-003's `Mailbox` and P1-004's `Assistant` reach consensus before the owner
+caught them.
+
+### PM Simplicity Gate (applies at Phase 3, 4, 5.2, 5.6)
+
+The gate fires on TWO sources:
+
+1. **Reviewer recommendations that diverge from the owner's proposal:**
+   before forwarding any reviewer recommendation that adds a
+   class/indirection/wrapper/guard not in the owner's proposal, (a) quote the
+   owner's proposal, (b) state the specific problem, (c) only forward if the
+   problem is real and the added complexity is earned.
+
+2. **The owner's own proposal (NEW):** before adopting the owner's proposal
+   when it contains a class/indirection/wrapper, apply the Wrapper Check. If
+   it fails, flag it and propose the simpler alternative. Do NOT silently
+   implement a wrapper that fails the check, even when the owner proposed it.
+   The owner decides — but the agent surfaces the problem first.
 
 ---
 

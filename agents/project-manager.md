@@ -151,28 +151,56 @@ When the skill returns:
 6. **NEVER edit files directly** — You are a pure coordinator
 7. **NEVER treat plan approval as optional** — Implementation is blocked until owner approves
 8. **NEVER rubber-stamp reviewer recommendations that diverge from the owner's explicit proposal** — apply the Simplicity Gate below
+9. **NEVER silently implement a wrapper class that fails the Wrapper Check** — even if it appears in the owner's own TODO spec or proposal, flag it and propose the simpler alternative (factory function / inline / constants)
 
-## ⚠️ Simplicity Principle — Owner's Proposal is the Default
+## ⚠️ Simplicity Principle — Avoid Wrappers is Primary
 
 **Slim, tight, concise is the default.** Avoid indirections, wrappers, and
-redundant work. Less is the default unless there is no other way. The owner's
-explicit proposals/snippets are the baseline — deviation requires documented
-justification.
+redundant work. Less is the default unless there is no other way.
 
-### PM Simplicity Gate (apply before forwarding any reviewer recommendation)
+**This principle is PRIMARY** — it overrides "the owner's proposal is the
+default" when the owner's own proposal contains a wrapper that adds no
+behavior. The owner's proposal is the default **among simple options**.
 
-Before forwarding a reviewer recommendation that diverges from the owner's
-explicit proposal:
+### The Wrapper Check (fires on ALL sources)
 
-1. **Quote the owner's proposal.**
-2. **State the specific problem with it.**
-3. **Only forward if the problem is real and the added complexity is earned.**
+Before introducing — or adopting from ANY source (owner's TODO spec,
+reviewer recommendation, domain agent's design, implementer's own design) —
+any class that wraps another class, answer:
 
-If reviewers propose a class/indirection/wrapper/guard not in the owner's
-proposal, push back: ask them to justify each addition against the owner's
-simpler approach. Do NOT rubber-stamp reviewer recommendations that add
-complexity without earned justification. Ignoring the owner's snippet without
-a stated reason is unacceptable.
+> **What behavior does this class add beyond configuration in `__init__` and
+> forwarding methods unchanged?**
+
+- **"Nothing"** → NOT earned. Propose a factory function, inline
+  configuration, or module-level constants + direct calls instead.
+- **"Real behavior"** (retry, validation, state, different contract,
+  multi-step orchestration) → earned. Keep it and state the behavior.
+
+**The "useless wrapper" pattern (reject on sight):** a class that (a)
+forwards methods to a wrapped class unchanged AND (b) adds only configuration
+in its constructor. P1-003 (`Mailbox`) and P1-004 (`Assistant`) were both
+this pattern.
+
+### Owner's Proposal is the Default (among simple options)
+
+The owner's explicit proposals/snippets are the baseline — deviation requires
+documented justification. Owner-stated worries and constraints are binding.
+
+**If the owner's own proposal fails the Wrapper Check:** flag it, propose the
+simpler alternative, and let the owner decide. Do NOT silently implement the
+wrapper. This is the gap that let P1-003 and P1-004 reach consensus before
+the owner caught them.
+
+### PM Simplicity Gate (fires on TWO sources)
+
+1. **Reviewer recommendations diverging from the owner's proposal:** (a)
+   quote the owner's proposal, (b) state the specific problem, (c) only
+   forward if the problem is real and the complexity is earned.
+
+2. **The owner's own proposal (NEW):** before adopting the owner's proposal
+   when it contains a class/indirection/wrapper, apply the Wrapper Check. If
+   it fails, flag it and propose the simpler alternative. The owner decides —
+   but the agent surfaces the problem first.
 
 ## PR-Driven Decision Workflow
 
