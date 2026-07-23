@@ -565,6 +565,24 @@ Then proceed to Phase 3.
 
 ---
 
+### 2.6 Owner-Directed Bundling
+
+When the owner directs bundling (e.g., "bundle almost all remaining tasks"):
+
+1. **Enumerate ALL incomplete tasks** from TODO.md — do not skip any.
+2. **Propose a split** — group by nature (implementation vs. documentation vs.
+   evaluation). Documentation is typically a separate follow-up PR.
+3. **Exclude open-ended evaluation tasks** from bundles by default — they
+   don't produce code and don't benefit from the review cycle. Flag them to
+   the owner for separate triage.
+4. **Present the proposed bundle** via AskUserQuestion before proceeding.
+
+Bundled tasks share a single feature branch, PR, and review cycle. The
+implementation plan (Phase 5.2) must enumerate every task in the bundle and
+map each to its acceptance criteria.
+
+---
+
 ## Phase 3 — Cross-Domain Design Review
 
 Invoke domain agents based on scope. Run them **in parallel** where independent.
@@ -661,9 +679,14 @@ Before exploring code or running one-off scripts, check for a domain skill:
 | `fire` | Fire CLI framework |
 | `baseweb` / `vuetify` | Web UI frameworks |
 | `python` | Python coding standards (always relevant) |
+| `readme` | README creation/maintenance (any task touching README) |
+| `documentation` | docs/ + Sphinx + ReadTheDocs setup (any task touching user docs, tutorials, publication) |
 
 Invoke the matching skill first to get API knowledge and patterns — saves
-exploration time.
+exploration time. For docs-scope tasks, consult BOTH `readme` and
+`documentation` — the README is the lean front-door; `docs/` is the full
+narrative published via ReadTheDocs. Missing the documentation standard leads
+to rejected plans.
 
 ### 5.5 Implement
 

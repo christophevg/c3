@@ -67,6 +67,7 @@ Invoke `functional-analyst`:
 - Edge cases handled
 - User flow works end-to-end
 - No regressions
+- **Standards Consultation Check:** for the task's scope, confirm the plan consulted the relevant c3 domain skills (e.g., docs-scope tasks must have consulted both `c3:readme` AND `c3:documentation`; Python-scope tasks must have consulted `c3:python`). A plan that missed a relevant standard skill is rejected with a directive to consult it and revise.
 
 **Must pass before any domain/quality review.** On reject, return consolidated feedback to the caller — the caller sends the developer back to implementation.
 

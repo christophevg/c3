@@ -19,6 +19,15 @@ Create and maintain README.md files with appropriate structure, badges, and cont
 
 ## Philosophy: End-User First
 
+**The README is the front-door.** Full end-user documentation lives in a
+`docs/` folder published to ReadTheDocs (Sphinx + MyST + `sphinx_rtd_theme`).
+This skill covers the README; the docs/ standard is covered by the
+[`c3:documentation`](../documentation/SKILL.md) skill. The two are
+complementary: the README is concise and front-door-critical (works on
+GitHub AND on PyPI, where repo-relative file links do NOT work), and
+`docs/` is the all-inclusive narrative the README links into via absolute
+ReadTheDocs URLs.
+
 **READMEs must be END-USER ORIENTED, not developer oriented.**
 
 ### End-User README (✓)
@@ -80,6 +89,12 @@ Use this skill when:
 - New project initialization
 - After significant project changes
 - Before releases/publishing
+
+**When NOT to use this skill:** For full tutorials, user guides, or
+all-inclusive documentation, use [`c3:documentation`](../documentation/SKILL.md)
+(docs/ + Sphinx + ReadTheDocs) — this skill covers the README front-door only.
+The README is lean (under 500 lines); the tutorial and full narrative live in
+`docs/`.
 
 ## File Location
 
@@ -328,6 +343,7 @@ See `patterns/badge-selection.md` for detailed badge configuration.
 
 ## Related Skills
 
+- [`c3:documentation`](../documentation/SKILL.md) — the docs/ + Sphinx + ReadTheDocs standard. README is the front-door; `docs/` is the full narrative.
 - commit — For committing README changes
 - develop-skill — For updating this skill itself
 
