@@ -125,7 +125,7 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/develop-skill` | Create and refine skills. |
 | `/develop-agent` | Develop agents. |
 
-### Utility (21)
+### Utility (20)
 
 | Skill | Description |
 |-------|-------------|
@@ -146,7 +146,6 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/ollama` | Python ollama library for LLM integration. |
 | `/python-project` | Python project setup with uv. |
 | `/pypi-publish` | Publish packages to PyPI. |
-| `/mcp-tools` | Work with MCP tools: discovery, naming, sub-agent config. |
 | `/release` | Release workflow and version management. |
 | `/github` | GitHub operations and PR management. |
 | `/research` | Comprehensive research with provenance tracking and source citations. |
@@ -161,11 +160,10 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/plugin-development` | Guide for creating plugins (structure, manifest, distribution). |
 | `/prepare-for-exam` | Interactive study material generation. |
 
-### Other (2)
+### Other (1)
 
 | Skill | Description |
 |-------|-------------|
-| `/mcp-server` | Guide for designing and building MCP servers (FastMCP, security, deployment). |
 | `/python-comments` | Python code comments and docstrings guidelines. |
 
 ---

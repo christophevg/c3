@@ -22,6 +22,7 @@ See also: **AGENTS.global.md** for shared conventions (read this alongside AGENT
 - Updated agent definitions to remove Claude-specific tool references
 - Updated README.md to reflect Yoker-based setup
 - Updated TODO.md to remove Claude-specific backlog items
+- Removed MCP skills (`mcp-server`, `mcp-tools`) — Yoker is Python-first, Python functions are first-class tools, no MCP needed
 
 ## Session History
 
@@ -61,6 +62,8 @@ See the full migration plan in the session transcript. Key decisions:
 - **writing-continuity, writing-idioms, writing-mistakes, writing-order,
   writing-review, writing-split, writing-voice** — moved with writing-assistant
 - **copy-writer** — moved with writing-assistant
+- **mcp-server, mcp-tools** — MCP is not a concept in Yoker; Python functions
+  are first-class tools, no MCP layer needed
 
 ## Tool Name Mapping (Claude Code → Yoker)
 
