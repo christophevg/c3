@@ -1,6 +1,7 @@
 ---
 name: python-comments
-description: Use this skill when writing or reviewing Python code comments and docstrings. Provides guidelines for tight, relevant comments that explain WHY not WHAT.
+description: |
+  Use this skill when writing or reviewing Python code comments and docstrings. Provides guidelines for tight, relevant comments that explain WHY not WHAT.
 ---
 
 # Python Code Commenting Guidelines

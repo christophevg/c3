@@ -1,6 +1,7 @@
 ---
 name: project-todo-refine
-description: Iteratively refine TODO.md topics by reviewing current state, scope, and priority. Use when refining backlog, updating TODO entries, or reviewing topic progress. Examples: "refine todo", "review backlog items", "update TODO.md scope".
+description: |
+  Iteratively refine TODO.md topics by reviewing current state, scope, and priority. Use when refining backlog, updating TODO entries, or reviewing topic progress. Examples: "refine todo", "review backlog items", "update TODO.md scope".
 ---
 
 # Project TODO Refine

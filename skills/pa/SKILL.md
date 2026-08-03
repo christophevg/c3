@@ -1,6 +1,7 @@
 ---
 name: pa
-description: Main dispatcher for personal assistant workflow. Processes unstructured input into actionable TODOs. Use when user says "process inbox", "handle my input", or files exist in inbox/. Examples: "/pa", "process my inbox", "handle these files".
+description: |
+  Main dispatcher for personal assistant workflow. Processes unstructured input into actionable TODOs. Use when user says "process inbox", "handle my input", or files exist in inbox/. Examples: "/pa", "process my inbox", "handle these files".
 ---
 
 # Personal Assistant (pa)

@@ -1,6 +1,7 @@
 ---
 name: project-review
-description: Shared implementation review cycle for project work. Runs functional → domain → quality → documentation → completeness reviews with a hard `make check` gate. Invoked by project-manage (Phase 5.6, initial implementation) and project-handle-pr (Phase 6.4, PR-feedback re-validation). Use when implementation or a PR-feedback change needs to be qualified before commit/push.
+description: |
+  Shared implementation review cycle for project work. Runs functional → domain → quality → documentation → completeness reviews with a hard `make check` gate. Invoked by project-manage (Phase 5.6, initial implementation) and project-handle-pr (Phase 6.4, PR-feedback re-validation). Use when implementation or a PR-feedback change needs to be qualified before commit/push.
 ---
 
 # Project Review

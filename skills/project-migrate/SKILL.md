@@ -1,6 +1,7 @@
 ---
 name: project-migrate
-description: Use this skill when migrating existing Python projects to the uv-based standard. Migrates pyproject.toml, Makefile, GitHub Actions, ReadTheDocs, and removes legacy files. Examples: "migrate project to uv", "update project to new standard", "modernize Python project setup", "add uv support to old project", "bring project up to standard", "setup uv for existing project", "convert legacy setup to uv".
+description: |
+  Use this skill when migrating existing Python projects to the uv-based standard. Migrates pyproject.toml, Makefile, GitHub Actions, ReadTheDocs, and removes legacy files. Examples: "migrate project to uv", "update project to new standard", "modernize Python project setup", "add uv support to old project", "bring project up to standard", "setup uv for existing project", "convert legacy setup to uv".
 ---
 
 # Python Project Migration to uv

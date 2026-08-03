@@ -1,6 +1,7 @@
 ---
 name: vue
-description: Use this skill when working with Vue.js components, reactivity, state management, or component patterns in Baseweb projects. Examples: "Vue component structure", "Vue reactivity issues", "shared state between components", "Vue computed properties"
+description: |
+  Use this skill when working with Vue.js components, reactivity, state management, or component patterns in Baseweb projects. Examples: "Vue component structure", "Vue reactivity issues", "shared state between components", "Vue computed properties"
 ---
 
 # Vue.js Component Patterns

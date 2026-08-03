@@ -1,6 +1,7 @@
 ---
 name: textual
-description: Guide Python Textual framework for building terminal user interfaces (TUIs) with CSS styling and reactive state. Use when user mentions textual, TUI, terminal UI, or code imports textual. Use for interactive apps when Rich is insufficient. MUST be used BEFORE exploring Textual code or running one-off scripts to understand Textual APIs.
+description: |
+  Guide Python Textual framework for building terminal user interfaces (TUIs) with CSS styling and reactive state. Use when user mentions textual, TUI, terminal UI, or code imports textual. Use for interactive apps when Rich is insufficient. MUST be used BEFORE exploring Textual code or running one-off scripts to understand Textual APIs.
 ---
 
 # Textual

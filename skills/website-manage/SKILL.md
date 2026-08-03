@@ -1,6 +1,7 @@
 ---
 name: website-manage
-description: Manage content website projects with streamlined conversational workflow. Syncs, processes GitHub issues into TODO, and implements tasks iteratively with user. Use for Jekyll/static sites when user asks to "manage website", "work on site", or project has _config.yml. No PRs, no agents - direct collaboration. Examples: "manage the website", "work on site tasks", "next website task".
+description: |
+  Manage content website projects with streamlined conversational workflow. Syncs, processes GitHub issues into TODO, and implements tasks iteratively with user. Use for Jekyll/static sites when user asks to "manage website", "work on site", or project has _config.yml. No PRs, no agents - direct collaboration. Examples: "manage the website", "work on site tasks", "next website task".
 ---
 
 # Website Manage

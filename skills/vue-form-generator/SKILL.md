@@ -1,7 +1,8 @@
 ---
 name: vue-form-generator
-description: Use this skill when creating complex, schema-based forms in Vue.js applications. Preferred for larger forms, dynamic forms, and API-driven form schemas.
-triggers:
+description: |
+  Use this skill when creating complex, schema-based forms in Vue.js applications. Preferred for larger forms, dynamic forms, and API-driven form schemas.
+  triggers:
   - when creating complex forms in Vue/Baseweb
   - when asked about schema-based forms
   - when implementing multi-step forms

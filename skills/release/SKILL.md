@@ -1,6 +1,7 @@
 ---
 name: release
-description: Standardize release preparation and publishing workflow. Use when preparing a release, publishing to PyPI, or release-manager starts release process. Handles version bump decisions, changelog updates, CI verification, tagging, and PyPI upload.
+description: |
+  Standardize release preparation and publishing workflow. Use when preparing a release, publishing to PyPI, or release-manager starts release process. Handles version bump decisions, changelog updates, CI verification, tagging, and PyPI upload.
 ---
 
 # Release Workflow

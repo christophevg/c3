@@ -1,6 +1,7 @@
 ---
 name: pypi-publish
-description: Publish Python packages to PyPI with proper checks and workflow. Use when publishing to PyPI, releasing a package, or before running twine upload. Examples: "publish to PyPI", "release to PyPI", "upload to PyPI".
+description: |
+  Publish Python packages to PyPI with proper checks and workflow. Use when publishing to PyPI, releasing a package, or before running twine upload. Examples: "publish to PyPI", "release to PyPI", "upload to PyPI".
 ---
 
 # pypi-publish

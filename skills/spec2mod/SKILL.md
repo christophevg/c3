@@ -1,6 +1,7 @@
 ---
 name: spec2mod
-description: Generate Python module from OpenAPI/Swagger/Postman spec. Use when user has an API spec file and wants a Python client library, CLI, and REPL.
+description: |
+  Generate Python module from OpenAPI/Swagger/Postman spec. Use when user has an API spec file and wants a Python client library, CLI, and REPL.
 ---
 
 # spec2mod

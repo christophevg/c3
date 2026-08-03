@@ -1,6 +1,7 @@
 ---
 name: ollama
-description: Guide Python ollama library for LLM integration including chat, tool calling, streaming, embeddings, model management, web search, and image generation. Use when user mentions ollama or imports ollama in Python. Examples: "using ollama", "ollama.chat", "from ollama import".
+description: |
+  Guide Python ollama library for LLM integration including chat, tool calling, streaming, embeddings, model management, web search, and image generation. Use when user mentions ollama or imports ollama in Python. Examples: "using ollama", "ollama.chat", "from ollama import".
 ---
 
 # Ollama

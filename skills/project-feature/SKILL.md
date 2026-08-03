@@ -1,6 +1,7 @@
 ---
 name: project-feature
-description: Capture and scope new features for a project. Use when user wants to add a new feature or says "/project feature". Can handle minimal descriptions (adds to unsorted backlog) or detailed descriptions (full scoping with functional-analyst). Examples: "add user authentication", "new feature: export to PDF".
+description: |
+  Capture and scope new features for a project. Use when user wants to add a new feature or says "/project feature". Can handle minimal descriptions (adds to unsorted backlog) or detailed descriptions (full scoping with functional-analyst). Examples: "add user authentication", "new feature: export to PDF".
 ---
 
 # Project Feature

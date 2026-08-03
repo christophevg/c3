@@ -1,6 +1,7 @@
 ---
 name: vuetify-v4
-description: Use this skill when creating or modifying Vuetify 4 UI components in Baseweb projects. Examples: "create Vuetify 4 component", "Vuetify layout structure", "Vuetify v-layout v-main v-footer", "fix scrolling layout"
+description: |
+  Use this skill when creating or modifying Vuetify 4 UI components in Baseweb projects. Examples: "create Vuetify 4 component", "Vuetify layout structure", "Vuetify v-layout v-main v-footer", "fix scrolling layout"
 ---
 
 # Vuetify 4 Layout and Components

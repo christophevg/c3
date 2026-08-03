@@ -1,6 +1,7 @@
 ---
 name: python-testing
-description: Use this skill when writing or reviewing Python tests. Provides guidelines for relevant and tight testing - focus on behavior, not implementation; test what matters, not everything.
+description: |
+  Use this skill when writing or reviewing Python tests. Provides guidelines for relevant and tight testing - focus on behavior, not implementation; test what matters, not everything.
 ---
 
 # Python Testing Guidelines

@@ -1,6 +1,7 @@
 ---
 name: git-activity-report
-description: Generate human-readable git activity summaries focused on accomplishments. Use when user asks to "report git activity", "show work done", or wants a summary of commits. Examples: "/git-activity-report --week", "report git activity for today on paths in file repos.txt", "what did I do this week".
+description: |
+  Generate human-readable git activity summaries focused on accomplishments. Use when user asks to "report git activity", "show work done", or wants a summary of commits. Examples: "/git-activity-report --week", "report git activity for today on paths in file repos.txt", "what did I do this week".
 ---
 
 # Git Activity Report

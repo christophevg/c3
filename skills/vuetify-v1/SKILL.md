@@ -1,7 +1,8 @@
 ---
 name: vuetify-v1
-description: Use this skill when creating or modifying Vuetify 1.5 UI components in legacy Baseweb projects
-triggers:
+description: |
+  Use this skill when creating or modifying Vuetify 1.5 UI components in legacy Baseweb projects
+  triggers:
   - when creating Vuetify 1.5 components
   - when asked about Vuetify 1.5 component options
   - when maintaining legacy Baseweb projects using Vuetify 1.x

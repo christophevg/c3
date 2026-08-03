@@ -1,7 +1,8 @@
 ---
 name: vuetify-v2
-description: Use this skill when creating or modifying Vuetify V2 UI components in Baseweb projects
-triggers:
+description: |
+  Use this skill when creating or modifying Vuetify V2 UI components in Baseweb projects
+  triggers:
   - when creating Vuetify components
   - when asked about Vuetify component options
   - when designing UI layouts

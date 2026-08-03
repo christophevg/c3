@@ -1,6 +1,7 @@
 ---
 name: transcribe-session
-description: Use this skill when the user asks to "transcribe session", "create transcript", "log conversation", or wants to manually create a curated transcript of the current or recent session.
+description: |
+  Use this skill when the user asks to "transcribe session", "create transcript", "log conversation", or wants to manually create a curated transcript of the current or recent session.
 ---
 
 # Transcribe Session

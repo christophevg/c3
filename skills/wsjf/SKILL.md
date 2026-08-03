@@ -1,6 +1,7 @@
 ---
 name: wsjf
-description: Interactive WSJF (Weighted Shortest Job First) scoring for MBI prioritization. Use when user wants to prioritize MBIs using economic decision-making. WSJF calculates priority based on Business Value, Time Criticality, Risk Reduction, and Job Size. Examples: "/wsjf", "score MBIs", "prioritize using WSJF".
+description: |
+  Interactive WSJF (Weighted Shortest Job First) scoring for MBI prioritization. Use when user wants to prioritize MBIs using economic decision-making. WSJF calculates priority based on Business Value, Time Criticality, Risk Reduction, and Job Size. Examples: "/wsjf", "score MBIs", "prioritize using WSJF".
 ---
 
 # WSJF Scoring

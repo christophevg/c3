@@ -1,6 +1,7 @@
 ---
 name: plan
-description: Manage PLAN.md (Intake Backlog with Minimal Business Increments). Use when user asks about MBIs, wants to create/analyze/score MBIs, or says "/plan". Examples: "/plan", "analyze MBI", "create MBI", "score MBIs with WSJF".
+description: |
+  Manage PLAN.md (Intake Backlog with Minimal Business Increments). Use when user asks about MBIs, wants to create/analyze/score MBIs, or says "/plan". Examples: "/plan", "analyze MBI", "create MBI", "score MBIs with WSJF".
 ---
 
 # Plan Management

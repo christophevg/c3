@@ -1,6 +1,7 @@
 ---
 name: pa-inbox
-description: Process inbox files and categorize items into actionable TODOs or clarification requests. Use when user says "process inbox", "handle inbox", or files exist in inbox/. Examples: "/pa-inbox", "process my inbox".
+description: |
+  Process inbox files and categorize items into actionable TODOs or clarification requests. Use when user says "process inbox", "handle inbox", or files exist in inbox/. Examples: "/pa-inbox", "process my inbox".
 ---
 
 # Inbox Processor (pa-inbox)

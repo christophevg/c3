@@ -1,6 +1,7 @@
 ---
 name: pymongo
-description: Use this skill when creating or modifying MongoDB database access code with PyMongo
+description: |
+  Use this skill when creating or modifying MongoDB database access code with PyMongo
 ---
 
 # PyMongo Best Practices

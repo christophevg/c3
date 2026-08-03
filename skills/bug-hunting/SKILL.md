@@ -1,6 +1,7 @@
 ---
 name: bug-hunting
-description: Systematic bug hunting workflow for finding edge cases and hidden bugs. Use after implementing features, before releases, or when asked to find bugs, probe for holes, or stress-test code. Examples: "hunt for edge cases", "what could go wrong", "stress-test config parsing".
+description: |
+  Systematic bug hunting workflow for finding edge cases and hidden bugs. Use after implementing features, before releases, or when asked to find bugs, probe for holes, or stress-test code. Examples: "hunt for edge cases", "what could go wrong", "stress-test config parsing".
 ---
 
 # Bug Hunting

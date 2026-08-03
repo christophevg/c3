@@ -1,7 +1,8 @@
 ---
 name: vuetify-v3
-description: Use this skill when creating or modifying Vuetify V3 UI components in Baseweb projects. Examples: "create Vuetify 3 component", "Vuetify V3 form patterns", "Vuetify 3 data table", "migrate Vuetify 2 to 3"
-triggers:
+description: |
+  Use this skill when creating or modifying Vuetify V3 UI components in Baseweb projects. Examples: "create Vuetify 3 component", "Vuetify V3 form patterns", "Vuetify 3 data table", "migrate Vuetify 2 to 3"
+  triggers:
   - when creating Vuetify V3 components
   - when asked about Vuetify V3 component options
   - when designing UI layouts with Vuetify 3

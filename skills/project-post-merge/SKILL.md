@@ -1,6 +1,7 @@
 ---
 name: project-post-merge
-description: Handle post-merge cleanup for a project task after the owner merges a PR. Sequenced to prevent TODO.md loss: switches to main and pulls BEFORE any TODO.md edit, marks the task done, commits, cleans up issue labels, and asks owner about release vs next task. Use when the user reports a PR was merged, or project-manage routes here from a merged feature branch.
+description: |
+  Handle post-merge cleanup for a project task after the owner merges a PR. Sequenced to prevent TODO.md loss: switches to main and pulls BEFORE any TODO.md edit, marks the task done, commits, cleans up issue labels, and asks owner about release vs next task. Use when the user reports a PR was merged, or project-manage routes here from a merged feature branch.
 ---
 
 # Project Post-Merge

@@ -1,6 +1,7 @@
 ---
 name: pa-outbox
-description: Generate formatted outbox replies and manage archive. Use after processing inbox files to create user-facing replies. Examples: "/pa-outbox", "create reply", "archive processed files".
+description: |
+  Generate formatted outbox replies and manage archive. Use after processing inbox files to create user-facing replies. Examples: "/pa-outbox", "create reply", "archive processed files".
 ---
 
 # Outbox Processor (pa-outbox)

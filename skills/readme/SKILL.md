@@ -1,6 +1,7 @@
 ---
 name: readme
-description: Create and maintain README.md files for agentic projects. Use when creating, updating, or reviewing READMEs. Examples: "create a README", "update the README", "review README structure", "add badges to README".
+description: |
+  Create and maintain README.md files for agentic projects. Use when creating, updating, or reviewing READMEs. Examples: "create a README", "update the README", "review README structure", "add badges to README".
 ---
 
 # readme
@@ -346,4 +347,3 @@ See `patterns/badge-selection.md` for detailed badge configuration.
 - [`c3:documentation`](../documentation/SKILL.md) — the docs/ + Sphinx + ReadTheDocs standard. README is the front-door; `docs/` is the full narrative.
 - commit — For committing README changes
 - develop-skill — For updating this skill itself
-

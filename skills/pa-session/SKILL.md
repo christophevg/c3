@@ -1,6 +1,7 @@
 ---
 name: pa-session
-description: Manage session state for personal assistant workflow continuity. Use when starting/ending inbox processing, or when user asks for session status. Examples: "/pa-session init", "/pa-session status", "what's the session status".
+description: |
+  Manage session state for personal assistant workflow continuity. Use when starting/ending inbox processing, or when user asks for session status. Examples: "/pa-session init", "/pa-session status", "what's the session status".
 ---
 
 # Session State (pa-session)

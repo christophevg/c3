@@ -1,6 +1,7 @@
 ---
 name: project
-description: Dispatcher for project management skills. Routes to appropriate project-* skill based on intent. Use when user says "/project" with any project-related content. Examples: "/project feature add auth", "/project status", "/project manage".
+description: |
+  Dispatcher for project management skills. Routes to appropriate project-* skill based on intent. Use when user says "/project" with any project-related content. Examples: "/project feature add auth", "/project status", "/project manage".
 ---
 
 # Project

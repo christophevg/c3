@@ -1,6 +1,7 @@
 ---
 name: project-status
-description: Generate and maintain project status reports in STATUS.md with executive summary, task metrics, dependencies, blockers, and risks. Use when user says "/project status" or asks about project health. Examples: "/project status", "show project status", "what's the project status".
+description: |
+  Generate and maintain project status reports in STATUS.md with executive summary, task metrics, dependencies, blockers, and risks. Use when user says "/project status" or asks about project health. Examples: "/project status", "show project status", "what's the project status".
 ---
 
 # Project Status
