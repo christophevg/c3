@@ -81,9 +81,11 @@ help-intro:
 	@echo "Available targets:"
 
 help-global:
-	@echo ""
-	@echo "$(GREEN_BOLD)C3$(NC)"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' ~/.yoker/Makefile | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(BLUE_BOLD)%-15s$(NC) %s\n", $$1, $$2}'
+	@if [ -f ~/.yoker/Makefile ]; then \
+		echo ""; \
+		echo "$(GREEN_BOLD)C3$(NC)"; \
+		grep -E '^[a-zA-Z_-]+:.*?## .*$$' ~/.yoker/Makefile | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(BLUE_BOLD)%-15s$(NC) %s\n", $$1, $$2}'; \
+	fi
 
 help-local:
 	@echo ""
