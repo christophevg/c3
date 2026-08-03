@@ -58,6 +58,29 @@ Topics for cross-project standardization:
 
 ### P3 - Medium
 
+- [ ] **Convert bash code blocks to Yoker tool calls in skills & agents**
+  - Replace bash instructions to agents with Yoker tool call equivalents
+  - Scope: 249 bash blocks in skills/, 16 in agents/ across 58 files
+  - Categories to convert: agent instructions (git, file ops, search, make)
+  - Categories to keep as-is: user terminal commands, CI config, Makefile snippets, example output
+  - Approach:
+    - Start with `commit` skill (SKILL.md + patterns/ — 19 blocks) as reference
+    - Then high-impact skills: github (46 blocks), release (18), python-project (29), pypi-publish (12), git-activity-report (18), git-scripting (10)
+    - Then remaining skills in batches by area
+    - Then agents (16 blocks across 5 files)
+  - Conversion patterns:
+    - `git status` → `git` tool with `status` operation
+    - `git diff` → `git` tool with `diff` operation
+    - `git log` → `git` tool with `log` operation
+    - `grep -r pattern dir/` → `search` tool
+    - `cat file` → `read` tool
+    - `find dir -name pattern` → `list` tool with pattern
+    - `make target` → `make` tool
+    - `echo "text" > file` → `write` tool
+    - `sed -i 's/old/new/' file` → `update` tool
+    - `gh issue view N` → `github` tool with `issue_view` operation
+  - Acceptance: No ```bash blocks remain that instruct agents to use shell commands instead of Yoker tools
+
 - [ ] **Document scripts centralization pattern in C3 documentation**
   - Explain distinction between:
     - `bin/` - simple shell scripts (statusline, etc.)
