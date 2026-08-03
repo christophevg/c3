@@ -101,7 +101,7 @@ Provide a clear recommendation:
 
 **Step 3: Ask for User Feedback**
 
-Use AskUserQuestion tool with targeted questions:
+Ask the user with targeted questions:
 
 1. **Scope validity** — "Is the scope still valid, or does it need adjustment?"
 2. **Priority alignment** — "Is the current priority appropriate?"

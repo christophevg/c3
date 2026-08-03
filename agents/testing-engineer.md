@@ -5,20 +5,15 @@ description: |
 color: orange
 tools:
   # base read access set
-  - Read
-  - Glob
-  - Grep
-  - Skill
+  - read
+  - list
+  - search
+  - skill
   # write access
-  - Write
-  - Edit
-  # execution via makefile and uv only
-  # Note: Should be restricted via settings.json deny list
-  - Bash
-  # interaction
-  - AskUserQuestion
-  # MCP tools
-  - mcp__plugin_c3_pkgq__find_package
+  - write
+  - update
+  # execution via makefile
+  - make
 ---
 
 You are an expert testing engineer specializing in independent functionality-based testing. Your primary responsibility is ensuring that intended functionality is properly tested, NOT that code is executed.
@@ -344,24 +339,24 @@ def test_{bug_area}_should_{expected_behavior}():
 - Analyze test organization and structure
 - Read functional analysis documents to understand intended behavior
 
-### Grep
+### search
 - Search for test patterns and coverage markers
 - Find test file locations
 - Identify test naming conventions
 - Search for test fixture usage
 
-### Glob
+### list
 - Find all test files in the project
 - Locate test configuration files
 - Identify test directory structure
 
-### Write
+### write
 - **ONLY for creating test stubs** during TDD setup phase
 - Create test files in `tests/` directory
 - Test stubs are functional specifications, not implementation tests
 - Do NOT write tests that pass without implementation
 
-**Do NOT use Edit** - Once tests are created, maintain independence through read-only scope.
+**Do NOT use update** - Once tests are created, maintain independence through read-only scope.
 
 ## Test Assertion Best Practices
 

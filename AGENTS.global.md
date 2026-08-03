@@ -1,4 +1,4 @@
-# Global Claude Code Instructions
+# Global Agent Instructions
 
 These instructions are mandatory for all agents!
 
@@ -13,7 +13,7 @@ The goal is that all of our Python projects adhere to our standards as defined i
 
 ### Makefile Usage
 
-**Prefer Makefile targets over constructing custom Bash commands.**
+**Prefer Makefile targets over constructing custom commands.**
 
 When a project has a `Makefile`, check it first and use its targets:
 
@@ -38,6 +38,7 @@ Targets:
   env-run         Install runtime dependencies only
   format          Format code and fix linting issues
   help            Show this help message
+  install         Install project (editable, in local environment)
   lint            Check code for linting issues
   pre-publish     Pre-publication checks (run before publishing)
   publish         Publish to PyPI (runs pre-publish checks)
@@ -48,7 +49,7 @@ Targets:
   typecheck       Run type checking
 ```
 
-**Why**: Makefile targets encapsulate project-specific knowledge, ensure consistent execution, and are already documented for the project. Constructing Bash calls bypasses this and risks missing setup steps.
+**Why**: Makefile targets encapsulate project-specific knowledge, ensure consistent execution, and are already documented for the project. Constructing custom shell commands bypasses this and risks missing setup steps.
 
 ### uv
 
@@ -58,19 +59,19 @@ If a project contains a `pyproject.toml` file, it is managed using `uv`. This me
 
 ### Tool Selection
 
-**NEVER use Bash for file operations when a dedicated tool exists** — this is not negotiable:
+**NEVER use shell commands for file operations when a dedicated tool exists** — this is not negotiable:
 
 | Operation | Use | Never |
 |-----------|-----|-------|
-| Search for files | Glob | `find`, `ls` |
-| Search file contents | Grep | `grep`, `rg` |
-| Read files | Read | `cat`, `head`, `tail` |
-| Edit existing files | Edit | `sed`, `awk` |
-| Create new files | Write | `echo >`, `cat >`, heredocs |
-| Fetch web content | WebFetch | `curl`, `wget` (for simple fetches) |
-| Search the web | WebSearch | manual browser lookup |
+| Search for files | `list` | `find`, `ls` |
+| Search file contents | `search` | `grep`, `rg` |
+| Read files | `read` | `cat`, `head`, `tail` |
+| Edit existing files | `update` | `sed`, `awk` |
+| Create new files | `write` | `echo >`, `cat >`, heredocs |
+| Fetch web content | `webfetch` | `curl`, `wget` |
+| Search the web | `websearch` | manual browser lookup |
 
-**Why**: Dedicated tools provide structured output, proper permission handling, and make your actions transparent and reviewable. Bash commands bypass these controls.
+**Why**: Dedicated tools provide structured output, proper permission handling, and make your actions transparent and reviewable. Shell commands bypass these controls.
 
 ### Research
 
@@ -89,13 +90,13 @@ If a project contains a `pyproject.toml` file, it is managed using `uv`. This me
 **Example**:
 ```
 # Launch functional-analyst for interview
-→ Agent responds with: agentId: abc123
+-> Agent responds with: agentId: abc123
 
 # User answers question
-→ Use SendMessage to: abc123 (NOT new Agent)
+-> Use SendMessage to: abc123 (NOT new Agent)
 
 # Continue conversation...
-→ Use SendMessage to: abc123
+-> Use SendMessage to: abc123
 ```
 
 ### Task → Skill/Agent Mapping
@@ -110,14 +111,13 @@ When the user asks you to work on a task, select the appropriate skill or delega
 | Research a topic, investigate, gather information | c3:researcher agent |
 | Review code for quality, best practices | c3:code-reviewer agent |
 | Create Python code | c3:python-developer agent |
-| Learn from session, improve skills | lessons-learned skill (/c3:lessons-learned) |
-| Commit changes | commit skill (/c3:commit) |
+| Learn from session, improve skills | lessons-learned skill |
+| Commit changes | commit skill |
 
 ### Asking Questions
 
 **Ask one question at a time.** Never present a numbered or bulleted list of questions.
 
-- Use the **AskUserQuestion tool** for choice-based questions — it provides a clean selection menu with an "Other" option for custom input
 - For open questions, ask one, wait for the answer, then ask the next
 - Only present multiple questions at once if the user explicitly requests an overview first
 
@@ -136,4 +136,3 @@ When the user asks you to work on a task, select the appropriate skill or delega
 
 * Ignore the `local` folder
 * Ignore files with `.local` extension
-

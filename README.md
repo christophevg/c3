@@ -1,11 +1,11 @@
-# C3 - Christophe’s Agentic Collective
+# C3 - Christophe's Agentic Collective
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)][python]
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)][uv]
 [![License](https://img.shields.io/github/license/christophevg/c3.svg)][license]
 [![Agentic](https://img.shields.io/badge/workflow-agentic-blueviolet?style=flat-square)](https://christophe.vg/about/Agentic-Workflow)
 
-> C3, short for Christophe Agentic Collective, is a personal collective of agents and skills designed for agentic coding and various other purposes. It originated as Christophe’s Coding Crew, which is how the name C3 came to be. Over time, it has undergone significant evolution and has now become known as Christophe’s Agentic Collective. The C3 name has remained consistent throughout its journey. 😉
+> C3, short for Christophe Agentic Collective, is a personal collective of agents and skills designed for agentic coding and various other purposes. It originated as Christophe's Coding Crew, which is how the name C3 came to be. Over time, it has undergone significant evolution and has now become known as Christophe's Agentic Collective. The C3 name has remained consistent throughout its journey. 😉
 
 > [!CAUTION]
 > **Before installing any plugin**: Plugins can execute arbitrary commands on your machine. Always review a plugin's code before installing it.
@@ -25,7 +25,7 @@ flowchart LR
     A --> C(["/develop-agent"])
     B --> D[skills/]
     C --> E[agents/]
-    D --> F["claude --plugin-dir ./"]
+    D --> F["yoker chat"]
     E --> F
     F --> G[Use in Sessions]
     G --> H(["/lessons-learned"])
@@ -36,7 +36,7 @@ flowchart LR
 ```
 
 - **Create**: Use `/develop-skill` or `/develop-agent` to design new skills/agents
-- **Test locally**: `claude --plugin-dir ./` loads skills/agents from current directory
+- **Test locally**: `yoker chat` loads skills/agents from the configured directories
 - **Use/Refine loop**: Use in sessions, run `/lessons-learned` to capture improvements
 - **Distribute**: Push to GitHub when stable
 
@@ -44,19 +44,18 @@ flowchart LR
 
 ## Installation
 
-### As a Plugin (End Users)
+### As a Yoker Plugin
 
-Install from the christophe.vg marketplace:
+C3 is configured as a Yoker plugin via `yoker.toml`:
 
-```bash
-# Add the marketplace
-claude plugin marketplace add christophevg/marketplace
+```toml
+[agents]
+directories = ["./agents"]
 
-# Install C3
-claude plugin install c3@christophe.vg
+[skills]
+directories = ["./skills"]
+discovery = true
 ```
-
-Skills and agents are namespaced (e.g., `/c3:python`, `/c3:commit`).
 
 ### Local Development
 
@@ -67,27 +66,20 @@ To develop or test the latest version locally:
 git clone https://github.com/christophevg/c3.git
 cd c3
 
-# Use in Claude Code session
-claude --plugin-dir ./
+# Start a Yoker session
+make yoker-chat
 ```
 
-This loads all skills and agents from the current directory into your Claude Code session.
+This loads all skills and agents from the `skills/` and `agents/` directories into your Yoker session.
 
 > [!NOTE]
-> For project-specific Makefile integration, you can still use `make install` to symlink the global `CLAUDE.md` and `Makefile` into `~/.claude/`. This provides utility targets for working with Claude Code (e.g., `make` runs Claude Code using Ollama). However, for local development of C3 itself, `--plugin-dir` is the recommended approach — skills and agents are picked up directly from `skills/` and `agents/`, with no symlink step.
+> For project-specific Makefile integration, use `make install` to symlink the global `Makefile.yoker` into `~/.yoker/`. This provides utility targets for working with Yoker (e.g., `make` starts a Yoker chat session).
 
 ---
 
-## Skills (60)
+## Skills
 
 Skills provide focused guidance for specific technologies and workflows.
-
-### Plugin & MCP Development (2)
-
-| Skill | Description |
-|-------|-------------|
-| `/mcp-server` | Guide for designing and building MCP servers (FastMCP, security, deployment). |
-| `/plugin-development` | Guide for creating Claude Code plugins (structure, manifest, distribution). |
 
 ### Project Management (10)
 
@@ -112,15 +104,6 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/wsjf` | Interactive WSJF (Weighted Shortest Job First) scoring for prioritization. |
 | `/bug-hunting` | Systematic debugging with patterns, templates, and integration guides. |
 
-### Personal Assistant (4)
-
-| Skill | Description |
-|-------|-------------|
-| `/pa` | Main dispatcher for personal assistant workflow. |
-| `/pa-inbox` | Process inbox files into actionable TODOs. |
-| `/pa-session` | Manage session state for workflow continuity. |
-| `/pa-outbox` | Generate formatted replies and manage archive. |
-
 ### Domain Expertise (9)
 
 | Skill | Description |
@@ -139,8 +122,8 @@ Skills provide focused guidance for specific technologies and workflows.
 
 | Skill | Description |
 |-------|-------------|
-| `/develop-skill` | Create and refine Claude Code skills. |
-| `/develop-agent` | Develop Claude Code agents. |
+| `/develop-skill` | Create and refine skills. |
+| `/develop-agent` | Develop agents. |
 
 ### Utility (21)
 
@@ -161,45 +144,37 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/spec2mod` | Generate Python from OpenAPI specs. |
 | `/vue-form-generator` | Schema-based Vue.js forms. |
 | `/ollama` | Python ollama library for LLM integration. |
-| `/pyenv` | Manage Python versions. |
+| `/python-project` | Python project setup with uv. |
 | `/pypi-publish` | Publish packages to PyPI. |
 | `/mcp-tools` | Work with MCP tools: discovery, naming, sub-agent config. |
 | `/release` | Release workflow and version management. |
 | `/github` | GitHub operations and PR management. |
 | `/research` | Comprehensive research with provenance tracking and source citations. |
 
-### Framework-Specific (6)
+### Framework-Specific (5)
 
 | Skill | Description |
 |-------|-------------|
 | `/vue` | Vue.js framework patterns. |
 | `/vuetify-v4` | Vuetify V4 components and patterns. |
 | `/quart-webapp` | Quart web application patterns. |
-| `/python-project` | Python project setup with uv. |
-| `/copy-writer` | Content writing and copy editing. |
+| `/plugin-development` | Guide for creating plugins (structure, manifest, distribution). |
 | `/prepare-for-exam` | Interactive study material generation. |
 
-### Writing (6)
+### Other (2)
 
 | Skill | Description |
 |-------|-------------|
-| `/writing-review` | Developmental review: claim verification, gap/perspective analysis, advisory reports. |
-| `/writing-continuity` | Check continuity: references resolve, concepts introduced before use, themes in sync. |
-| `/writing-voice` | Voice drift and ChatGPT-smell checks against the author's voice profile. |
-| `/writing-mistakes` | Flag common writing mistakes (canonical errors + craft patterns) as TODO notes. |
-| `/writing-idioms` | Flag misused idioms/proverbs and propose the canonical form. |
-| `/writing-split` | Split a long-form article into a sequential social-post series. |
-| `/writing-order` | Reorder raw material (written sections + TODO stubs) into a smooth argument flow. |
+| `/mcp-server` | Guide for designing and building MCP servers (FastMCP, security, deployment). |
+| `/python-comments` | Python code comments and docstrings guidelines. |
 
 ---
 
-## Agents (17)
+## Agents (13)
 
 | Agent | Description |
 |-------|-------------|
-| `assistant` | Personal assistant for inbox processing and workflow coordination. |
 | `project-manager` | Project workflow orchestration with multi-task execution. |
-| `git-manager` | Git operations via c3:commit skill. |
 | `functional-analyst` | Requirements extraction, task planning, and MBI intake. |
 | `business-analyst` | Business requirements documents and stakeholder analysis. |
 | `researcher` | Comprehensive research with provenance tracking. |
@@ -210,39 +185,8 @@ Skills provide focused guidance for specific technologies and workflows.
 | `testing-engineer` | Test planning and coverage with tight tests philosophy. |
 | `security-engineer` | Security vulnerability assessment. |
 | `end-user-documenter` | End-user documentation generation. |
-| `knowledge-agent` | Knowledge base querying and evolution. |
 | `bug-fixer` | Bug fixing workflow with TDD approach. |
 | `release-manager` | Release workflow and GitHub operations. |
-| `writing-assistant` | Writing coach + developmental editor; thin orchestrator over the writing-* skills. Never writes prose. |
-
----
-
-## MCP Servers (1)
-
-The plugin includes MCP servers that provide tools for Claude Code.
-
-| Server | Tools | Description |
-|--------|-------|-------------|
-| `email` | 9 tools | Email exchange via IMAP/SMTP with security hardening |
-
-### Email MCP Server
-
-Tools: `list_accounts`, `list_folders`, `search_emails`, `get_email`, `download_attachment`, `send_email`, `reply_email`, `move_email`, `delete_email`
-
-**Prerequisites**: [uv](https://docs.astral.sh/uv/) must be installed. The server uses `uv run` to automatically manage dependencies.
-
-Configuration via environment variables:
-```bash
-export EMAIL_IMAP_HOST=imap.gmail.com
-export EMAIL_SMTP_HOST=smtp.gmail.com
-export EMAIL_USERNAME=your-email@gmail.com
-export EMAIL_PASSWORD=your-app-password
-```
-
-Optional recipient whitelist:
-```bash
-export EMAIL_RECIPIENT_DOMAINS=example.com,company.org
-```
 
 ---
 
@@ -284,7 +228,7 @@ flowchart TB
         R -->|Skip| S
         S --> SV{"Already implemented?"}
         SV -->|Yes| S
-        SV -->|No| T["Propose Next Task (AskUser)"]
+        SV -->|No| T["Propose Next Task"]
         T -->|Approved| SC{"Scope?"}
     end
 

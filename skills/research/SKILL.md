@@ -16,12 +16,12 @@ Performs comprehensive research on any topic with full provenance tracking.
 - Technology investigations
 - Literature reviews
 - Finding information with source citations
-- General research (not Python packages - use mcp__plugin_c3_pkgq__find_package for those)
+- General research (not Python packages - use websearch for those)
 
 ## When NOT to Use
 
-- Python package research → use `mcp__plugin_c3_pkgq__find_package` instead
-- Researching specific Python libraries → use `mcp__plugin_c3_pkgq__find_package` instead
+- Python package research → use `websearch` instead
+- Researching specific Python libraries → use `websearch` instead
 
 ## Research Process
 

@@ -62,7 +62,7 @@ It owns Phases 0–5. Three phases are delegated to dedicated sub-skills:
 
 A hard rule runs through the whole skill: **the repository owner is the only
 human decision-maker.** The agent proposes; the owner approves via PR comments
-(not AskUserQuestion); only the owner merges.
+(not via interactive prompts); only the owner merges.
 
 ## ⚠️ Simplicity Principle — Avoid Wrappers is Primary
 
@@ -178,7 +178,7 @@ PHASE 2 — Task Selection
         2. Fix issues          (critical bugs)
         3. Linear TODO.md backlog
  2.3  verify task not already implemented (acceptance-criteria check)
- 2.4  propose next task (AskUserQuestion) → approved → 2.5
+ 2.4  propose next task (ask user) → approved → 2.5
  2.5  task scope classification:
         backend | frontend | full | docs | research
         (+ security-engineer if auth / PII / external API / input / files / config)
@@ -503,7 +503,7 @@ Then proceed to **Task Scope Classification** (Phase 2.5).
 | Condition | Action |
 |-----------|--------|
 | No unsorted items or MBIs | Proceed to 2.2 |
-| Unsorted items / MBIs exist | Ask the user (AskUserQuestion): sort / analyze / skip / show all |
+| Unsorted items / MBIs exist | Ask the user: sort / analyze / skip / show all |
 
 Choices:
 - **Sort unsorted items first** → functional-analyst integrates them into the backlog
@@ -535,7 +535,7 @@ satisfied by existing code — this prevents proposing already-implemented work.
 If the task appears already implemented: mark it done in TODO.md with today's
 date, move to the next task, and report to the user.
 
-### 2.4 Propose next task (AskUserQuestion)
+### 2.4 Propose next task (ask user)
 
 ```
 Question: "Project analysis complete. Next task from backlog: {task-id} - {task-title}. Proceed with this task?"
@@ -576,7 +576,7 @@ When the owner directs bundling (e.g., "bundle almost all remaining tasks"):
 3. **Exclude open-ended evaluation tasks** from bundles by default — they
    don't produce code and don't benefit from the review cycle. Flag them to
    the owner for separate triage.
-4. **Present the proposed bundle** via AskUserQuestion before proceeding.
+4. **Present the proposed bundle** to the user before proceeding.
 
 Bundled tasks share a single feature branch, PR, and review cycle. The
 implementation plan (Phase 5.2) must enumerate every task in the bundle and
@@ -640,7 +640,7 @@ Agent({ subagent_type: "c3:release-manager",
 
 ⚠️ **Implementation cannot proceed until the repository owner approves the plan
 in PR comments. This is mandatory and blocking — not optional, not an
-AskUserQuestion.**
+asking the user.**
 
 Delegate to release-manager to monitor PR comments:
 
@@ -693,7 +693,7 @@ to rejected plans.
 
 Invoke `c3:python-developer` (or appropriate specialized agent) to:
 - Implement the task following the plan
-- Follow `AGENTS.md` and `CLAUDE.md`
+- Follow `AGENTS.md` and `AGENTS.global.md`
 - Follow domain skills (python, baseweb, fire, pymongo, etc.)
 - Run `make check` and verify all pass before reporting done
 - Receive task details from TODO.md and relevant analysis documents
@@ -958,13 +958,13 @@ analyzed; optional — only present when the user has captured unsorted ideas.
 - Summarize agent findings and decisions
 - When the project is ready for work, propose the next task from the backlog
 
-### Using AskUserQuestion
+### Asking the User
 
 **CRITICAL**: when asking the user for input and there are **limited possible
-answers (<7)**, use the AskUserQuestion tool instead of plain text prompts. This
-applies to task approval, workflow selection, priority decisions, conflict
-resolution, branch selection — but **never** to owner-approval gates, which
-happen in PR comments.
+answers (<7)**, ask the user directly with clear options instead of open-ended
+prompts. This applies to task approval, workflow selection, priority decisions,
+conflict resolution, branch selection — but **never** to owner-approval gates,
+which happen in PR comments.
 
 ## Reference Files
 

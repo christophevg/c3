@@ -259,4 +259,4 @@ To improve this skill:
 
 ## License
 
-Part of the C3 plugin for Claude Code. See main plugin LICENSE file.
+Part of the C3 plugin. See main plugin LICENSE file.

@@ -54,14 +54,7 @@ Topics for cross-project standardization:
     - User replies → assistant provides answers to agents
   - Pattern must be generic for all agents requiring input during project-management
   - Acceptance: Documented async pattern with implementation guide
-  - Depends on: pa-email update, CronCreate/ScheduleWakeup tools
-
-- [ ] **CronCreate, ScheduleWakeup tools for c3:assistant**
-  - Add CronCreate tool to create scheduled tasks/cron jobs
-  - Add ScheduleWakeup tool to schedule agent reactivation at specific times
-  - Enable assistant to handle time-based automation and follow-ups
-  - Acceptance: Tool definitions integrated into assistant agent
-  - Blocks: Async communication pattern follow-up handling
+  - Depends on: Scheduling/wakeup tool support in Yoker
 
 ### P3 - Medium
 
@@ -70,7 +63,7 @@ Topics for cross-project standardization:
     - `bin/` - simple shell scripts (statusline, etc.)
     - `scripts/` - self-contained Python packages with pyproject.toml
     - Skill-specific scripts - scripts bundled within skills
-  - Update CLAUDE.md and README.md
+  - Update AGENTS.md and README.md
   - Acceptance: Documentation clearly explains when to use each approach
 
 - [ ] **Improve README skill**

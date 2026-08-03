@@ -6,7 +6,6 @@ This script validates:
 - Skill SKILL.md files have valid frontmatter
 - Agent files have valid frontmatter
 - Cross-references between skills/agents exist
-- Symlinks in installation directory are valid
 """
 
 import re
@@ -173,44 +172,6 @@ def validate_cross_references(skills: list[Path], agents: list[Path]) -> list[Va
   return results
 
 
-def validate_symlinks(home_dir: Path) -> list[ValidationResult]:
-  """Validate symlinks in ~/.claude directory."""
-  results = []
-  claude_dir = home_dir / ".claude"
-
-  if not claude_dir.exists():
-    results.append(ValidationResult(
-      file=str(claude_dir),
-      status="WARN",
-      message="~/.claude directory doesn't exist (run 'make install' first)"
-    ))
-    return results
-
-  # Check agents symlinks
-  agents_dir = claude_dir / "agents"
-  if agents_dir.exists():
-    for link in agents_dir.iterdir():
-      if link.is_symlink() and not link.exists():
-        results.append(ValidationResult(
-          file=str(link),
-          status="ERROR",
-          message=f"Broken symlink: {link.name}"
-        ))
-
-  # Check skills symlinks
-  skills_dir = claude_dir / "skills"
-  if skills_dir.exists():
-    for link in skills_dir.iterdir():
-      if link.is_symlink() and not link.exists():
-        results.append(ValidationResult(
-          file=str(link),
-          status="ERROR",
-          message=f"Broken symlink: {link.name}"
-        ))
-
-  return results
-
-
 def print_results(results: list[ValidationResult]) -> int:
   """Print results and return error count."""
   errors = 0
@@ -235,7 +196,6 @@ def print_results(results: list[ValidationResult]) -> int:
 def main():
   """Run all validations."""
   repo_root = Path(__file__).parent.parent
-  home_dir = Path.home()
 
   results = []
 
@@ -260,10 +220,6 @@ def main():
   skills = [d for d in skills_dir.iterdir() if d.is_dir()] if skills_dir.exists() else []
   agents = [f for f in agents_dir.iterdir() if f.suffix == ".md"] if agents_dir.exists() else []
   results.extend(validate_cross_references(skills, agents))
-
-  # Validate symlinks
-  print("\nValidating symlinks...")
-  results.extend(validate_symlinks(home_dir))
 
   # Print results
   print("\n" + "=" * 60)

@@ -131,7 +131,7 @@ Agent({
   Task: {task-id} — {criteria}
   Files: {files to modify}
 
-  Follow AGENTS.md, CLAUDE.md, and relevant domain skills.
+  Follow AGENTS.md and relevant domain skills.
   Make one change at a time and verify each. Run make check before reporting done.
   """,
   description: "Implement PR feedback change"

@@ -1,5 +1,14 @@
-C3_FOLDER = ./
--include Makefile.claude
+-include Makefile.yoker
+
+install: $(HOME)/.yoker/Makefile ## Install a Yoker supporting Makefile
+
+$(HOME)/.yoker/Makefile: Makefile.yoker
+	@echo "Installing Makefile.yoker in $@"
+	@mkdir -p $(HOME)/.yoker
+	@ln -sf $(realpath Makefile.yoker) $@
+
+
+# TODO: review targets below if they are still relevant/used in skills or by agent defintions
 
 SRC = $(PWD)
 
@@ -9,11 +18,11 @@ validate:
 
 # Validate plugin structure
 validate-plugin:
-	@claude plugin validate .
+	@echo "Plugin validation not yet implemented for Yoker"
 
 # Test plugin locally (overrides installed plugin)
 test-plugin:
-	@claude --plugin-dir $(SRC)
+	@$(YOKER) chat
 
 # Version management
 version-current:

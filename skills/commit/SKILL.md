@@ -261,9 +261,9 @@ Show user:
 - Suggested commit boundaries
 - Proposed commit message(s)
 
-Then use AskUserQuestion to confirm the approach:
+Then ask the user to confirm the approach:
 ```
-AskUserQuestion with:
+Ask the user with:
   question: "How would you like to proceed with these changes?"
   header: "Commit plan"
   options:
@@ -337,12 +337,12 @@ Run `git status` and `git log -1 --format=%B` to verify commit success, then:
 
 **CRITICAL:** Never commit without user verification.
 
-### Using AskUserQuestion for Confirmation
+### Asking the User for Confirmation
 
-Always use the AskUserQuestion tool to request commit confirmation. This provides a clean UX with multiple choice options:
+Always ask the user to confirm commits. Present clear options:
 
 ```
-AskUserQuestion with:
+Ask the user with:
   question: "Ready to commit? [commit message preview]"
   header: "Commit"
   options:
@@ -362,7 +362,7 @@ The tool automatically provides an "Other" option for custom input, allowing the
 Per user memory (`commit_after_testing.md`):
 1. Wait for visual confirmation of changes
 2. User runs incremental builds locally
-3. Request explicit approval via AskUserQuestion
+3. Request explicit approval from the user
 4. Only proceed after user selects "Yes, proceed"
 
 ## Edge Cases

@@ -48,7 +48,7 @@ docs(readme): add requirements section
 
 ## Adding a New Skill
 
-1. Use the `/develop-skill` skill in Claude Code for guided creation
+1. Use the `/develop-skill` skill for guided creation
 2. Create directory: `skills/<skill-name>/`
 3. Add required files:
 
@@ -89,7 +89,7 @@ Brief description and when to use.
 
 ## Adding a New Agent
 
-1. Use the `/develop-agent` skill in Claude Code for guided creation
+1. Use the `/develop-agent` skill for guided creation
 2. Create file: `agents/<agent-name>.md`
 
 ### Agent Structure
@@ -124,7 +124,7 @@ You are a specialist in [domain]. Your role is to...
 
 Currently, C3 relies on manual testing through usage. When contributing:
 
-1. **Test your skill/agent** in a real Claude Code session
+1. **Test your skill/agent** in a real Yoker session
 2. **Document edge cases** in the skill's SKILL.md
 3. **Add examples** in the workflow steps
 

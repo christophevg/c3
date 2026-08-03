@@ -74,7 +74,7 @@ Before processing the feature, determine if it's an MBI:
 **Ask the user:**
 
 ```
-Use AskUserQuestion tool:
+Ask the user:
 
 Question: "Is this feature an MBI (Minimal Business Increment) that delivers user-facing value, or a linear task (internal improvement)?"
 
@@ -214,7 +214,7 @@ Determine if the description is **detailed enough** for proper scoping:
 If the description is minimal or partial, ask the user:
 
 ```
-Use AskUserQuestion tool:
+Ask the user:
 
 Question: "Would you like to provide more details for this feature now?"
 

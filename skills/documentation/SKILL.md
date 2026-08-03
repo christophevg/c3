@@ -72,7 +72,7 @@ When adding new features:
 
 1. Update `docs/quickstart.md` if API changes
 2. Add examples to `docs/api/{module}.md`
-3. Update `CLAUDE.md` if workflow changes
+3. Update `AGENTS.md` if workflow changes
 
 ### 5. Build and Verify
 

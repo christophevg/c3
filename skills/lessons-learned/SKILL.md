@@ -5,7 +5,7 @@ description: Use this skill any time when reviewing a session to improve existin
 
 # Lessons Learned
 
-Review everything you have done and learned in this session. Propose improvements to skills, agents, `CLAUDE.md`, `AGENTS.md` and/or propose the creation of any new skills/agents to better support you in the future.
+Review everything you have done and learned in this session. Propose improvements to skills, agents, `AGENTS.md`, `AGENTS.global.md` and/or propose the creation of any new skills/agents to better support you in the future.
 
 ## When to Use This Skill
 
@@ -154,7 +154,7 @@ Should I proceed with implementing these updates?
 
 **DO NOT proceed without explicit user approval.**
 
-Use the AskUserQuestion tool with options:
+Ask the user with options (if available, otherwise ask directly):
 - "Yes, implement all proposed changes"
 - "Yes, but let me select which changes to implement"
 - "No, I want to modify the proposals first"

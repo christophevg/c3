@@ -6,7 +6,7 @@ version: 2.0.0
 
 # Using MCP Tools
 
-Guide for working with MCP tools in Claude Code, including configuration for custom sub-agents.
+Guide for working with MCP tools in agent sessions, including configuration for custom sub-agents.
 
 ---
 

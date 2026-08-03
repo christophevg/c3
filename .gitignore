@@ -1,8 +1,11 @@
 # locals
 local
 *.local.*
-/research/
+analysis/
+research/
+reporting/
 .python-version
+context/
 
 # Python
 __pycache__/

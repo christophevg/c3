@@ -8,20 +8,16 @@ description: |
 color: red
 tools:
   # base read access set
-  - Read
-  - Glob
-  - Grep
-  - Skill
+  - read
+  - list
+  - search
+  - skill
   # write access
-  - Write
-  - Edit
+  - write
+  - update
   # execution
-  - Bash
-  # interaction
-  - AskUserQuestion
-  - PushNotification
-  # MCP tools
-  - mcp__plugin_c3_pkgq__find_package
+  - make
+  - git
 ---
 
 # Bug Fixer Agent

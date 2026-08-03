@@ -76,7 +76,7 @@ make test
 **These belong in:**
 - `docs/architecture.md`
 - `docs/developer-guide.md`
-- `CLAUDE.md` (for AI agents)
+- `AGENTS.md` (for AI agents)
 - `analysis/` (for design docs)
 
 **NOT in README.**

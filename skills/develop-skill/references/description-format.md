@@ -20,7 +20,7 @@ description: Extract text and tables from PDF files. Use when working with PDFs,
 ```
 
 ```yaml
-description: Guide creation and refinement of Claude Code skills. Use when creating a new skill, developing a skill, or when user says "create a skill". Examples: "create a skill for X", "develop a skill".
+description: Guide creation and refinement of skills. Use when creating a new skill, developing a skill, or when user says "create a skill". Examples: "create a skill for X", "develop a skill".
 ```
 
 ```yaml

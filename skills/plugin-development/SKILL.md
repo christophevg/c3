@@ -1,20 +1,20 @@
 ---
 name: plugin-development
-description: This skill should be used when the user asks to "create a plugin", "scaffold a plugin", "understand plugin structure", "organize plugin components", "set up plugin.json", "add commands, agents, skills, hooks", "configure auto-discovery", or needs guidance on plugin directory layout, manifest configuration, component organization, file naming conventions, or Claude Code plugin architecture best practices.
+description: This skill should be used when the user asks to "create a plugin", "scaffold a plugin", "understand plugin structure", "organize plugin components", "set up plugin.json", "add commands, agents, skills, hooks", "configure auto-discovery", or needs guidance on plugin directory layout, manifest configuration, component organization, file naming conventions, or plugin architecture best practices.
 version: 1.0.0
 ---
 
-# Plugin Development for Claude Code
+# Plugin Development
 
-Guide for designing, creating, maintaining, and improving Claude Code plugins that bundle skills, agents, hooks, and MCP servers.
+Guide for designing, creating, maintaining, and improving plugins that bundle skills, agents, hooks, and MCP servers.
 
 ## When to Use
 
-Use this skill when the user asks to create or scaffold a Claude Code plugin, configure `plugin.json`, organize skills/agents/hooks/MCP servers, or needs guidance on plugin structure, auto-discovery, or distribution.
+Use this skill when the user asks to create or scaffold a plugin, configure `plugin.json`, organize skills/agents/hooks/MCP servers, or needs guidance on plugin structure, auto-discovery, or distribution.
 
 ## Overview
 
-Claude Code plugins are self-contained extension packages that follow a standardized structure with automatic component discovery. They differ from standalone `.claude/` configurations in three key ways:
+Plugins are self-contained extension packages that follow a standardized structure with automatic component discovery. They differ from standalone configurations in three key ways:
 
 1. **Namespacing** - Plugin skills are prefixed (e.g., `/my-plugin:hello`)
 2. **Distribution** - Shared via marketplaces with version control
@@ -343,6 +343,6 @@ Skills use a three-level loading system:
 
 ### External Links
 
-- [Claude Code Plugins Documentation](https://code.claude.com/docs/en/plugins)
+- [Plugins Documentation](https://code.claude.com/docs/en/plugins)
 - [Plugins Reference](https://code.claude.com/docs/en/plugins-reference)
 - [Plugin Marketplaces](https://code.claude.com/docs/en/plugin-marketplaces)

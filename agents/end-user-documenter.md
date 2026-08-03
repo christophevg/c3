@@ -5,23 +5,16 @@ description: |
 color: pink
 tools:
   # base read access set
-  - Read
-  - Glob
-  - Grep
-  - Skill
+  - read
+  - list
+  - search
+  - skill
   # write access
-  - Write
-  - Edit
+  - write
+  - update
   # online access
-  - WebSearch
-  - WebFetch
-  # execution
-  - Bash
-  # interaction
-  - AskUserQuestion
-  - PushNotification
-  # MCP tools
-  - mcp__plugin_c3_pkgq__find_package
+  - websearch
+  - webfetch
 ---
 
 # End User Documenter Agent

@@ -1,0 +1,151 @@
+[harness]
+name = "yoker"
+version = "1.0"
+
+[backend]
+provider = "ollama"
+
+[backend.ollama]
+base_url = "http://localhost:11434"  # URL of the Ollama API server
+model = "glm-5.2:cloud"  # Default model to use
+timeout_seconds = 60  # Request timeout in seconds
+
+[backend.ollama.parameters]
+
+[context]
+manager = "basic_persistence"
+storage_path = "./context"
+session_id = "auto"
+persist_after_turn = true
+filename = "{session_id}-{agent_id}"
+fresh = false
+max_tokens = 200000
+overflow_keep_first_user = true
+
+[permissions]
+filesystem_paths = ["."]
+network_access = "none"
+max_file_size_kb = 500
+protected_files = ["Makefile", "makefile", "GNUmakefile", "Justfile", "justfile", "Taskfile.yml", "pyproject.toml", "tox.ini", "setup.py", "setup.cfg", "yoker.toml", ".git/config", ".git/hooks/*", ".github/workflows/*.yml", "uv.lock", "poetry.lock"]
+
+[tools]
+
+[tools.list]
+enabled = true
+max_depth = 5
+max_entries = 2000
+
+[tools.read]
+enabled = true
+allowed_extensions = [".txt", ".md", ".json", ".yaml", ".yml", ".toml", ".py", ".js", ".ts", ".html", ".css"]
+blocked_patterns = ["\\.env", "\\.git", "\\.ssh", "\\.aws", "\\.gnupg", "credentials", "secrets?", "\\.pem$", "\\.key$", "id_rsa", "id_ed25519", "\\.bak$", "\\.old$"]
+
+[tools.write]
+enabled = true
+allow_overwrite = false
+max_size_kb = 1000
+blocked_extensions = [".exe", ".sh", ".bat"]
+
+[tools.update]
+enabled = true
+require_exact_match = true
+max_diff_size_kb = 100
+
+[tools.search]
+enabled = true
+max_regex_complexity = "medium"
+max_results = 500
+timeout_ms = 10000
+
+[tools.agent]
+enabled = true
+timeout_seconds = 300
+
+[tools.git]
+enabled = true
+allowed_commands = ["status", "log", "diff", "branch", "show", "add", "commit", "push", "checkout"]
+auto_permission = ["status", "log", "diff", "branch", "show", "add"]
+
+[tools.mkdir]
+enabled = true
+max_depth = 20
+
+[tools.existence]
+enabled = true
+
+[tools.websearch]
+enabled = true
+backend = "ollama"
+max_results = 10
+max_query_length = 500
+timeout_seconds = 30
+requests_per_minute = 60
+requests_per_hour = 1000
+block_private_cidrs = true
+
+[tools.webfetch]
+enabled = true
+backend = "ollama"
+timeout_seconds = 30
+max_size_kb = 2048
+max_redirects = 5
+content_type = "markdown"
+block_private_cidrs = true
+block_metadata_endpoints = true
+require_https = true
+follow_redirects = true
+validate_redirects = true
+
+[tools.skill]
+enabled = true
+
+[tools.make]
+enabled = true
+timeout_ms = 300000
+max_output_kb = 100
+max_env_var_bytes = 4096
+
+[tools.github]
+enabled = true
+allowed_operations = ["repo_view", "issue_list", "issue_view", "pr_list", "pr_view", "workflow_list", "workflow_view", "release_list", "release_view"]
+timeout_ms = 30000
+max_results = 100
+require_explicit_repo = false
+max_output_kb = 100
+
+[tools_shared]
+
+[tools_shared.content_display]
+verbosity = "summary"
+max_content_lines = 50
+max_content_bytes = 4096
+show_diff_for_updates = true
+max_diff_lines = 30
+
+[agents]
+directories = ["./agents"]
+
+[skills]
+directories = ["./skills"]
+discovery = true
+
+[plugins]
+enabled = false  # Whether plugins are enabled globally
+
+[logging]
+level = "INFO"
+format = "text"
+include_tool_calls = true
+include_permission_checks = true
+timestamp_format_string = "iso"
+
+[ui]
+mode = "interactive"  # UI mode ('interactive' or 'batch')
+show_thinking = true  # Display thinking output
+show_tool_calls = true  # Display tool call information
+show_stats = true  # Display turn statistics
+
+[session]
+max_agents = 10
+default_isolation_policy = "fresh"
+event_aggregation = true

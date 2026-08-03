@@ -166,7 +166,7 @@ For each unsorted MBI:
 
 1. **Ask about scope:**
    ```
-   Use AskUserQuestion tool:
+   Ask the user:
    
    Question: "I found '{mbi_name}' in Unsorted MBIs. Would you like to analyze it now, or leave it for later?"
    

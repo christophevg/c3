@@ -1,12 +1,12 @@
 ---
 name: develop-agent
 description: |
-  Develop new Claude Code agents. Use when creating, developing, reviewing, improving, or working on agents. Examples: "create an agent for X", "review the researcher agent", "improve the code-reviewer agent", "work on the python-developer agent".
+  Develop new agents. Use when creating, developing, reviewing, improving, or working on agents. Examples: "create an agent for X", "review the researcher agent", "improve the code-reviewer agent", "work on the python-developer agent".
 ---
 
 # Develop Agent Skill
 
-Guides the complete workflow for developing new Claude Code agents, from initial description to tested, documented agent ready for use.
+Guides the complete workflow for developing new agents, from initial description to tested, documented agent ready for use.
 
 ## Overview
 

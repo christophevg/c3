@@ -2,17 +2,16 @@
 name: ui-ux-designer
 description: |
   Focuses on user experience, creating intuitive, accessible, and aesthetically pleasing user interfaces.
-tools: Read, Glob, Grep, Write, Edit
 color: blue
 tools:
   # base read access set
-  - Read
-  - Glob
-  - Grep
-  - Skill
+  - read
+  - list
+  - search
+  - skill
   # write access
-  - Write
-  - Edit
+  - write
+  - update
 ---
 
 # UI/UX Designer

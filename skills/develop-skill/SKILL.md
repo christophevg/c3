@@ -1,12 +1,12 @@
 ---
 name: develop-skill
 description: |
-  Guide creation and refinement of Claude Code skills. Use when creating, developing, reviewing, improving, or working on skills. Examples: "create a skill for X", "review the pymongo skill", "improve the commit skill", "work on the python skill".
+  Guide creation and refinement of skills. Use when creating, developing, reviewing, improving, or working on skills. Examples: "create a skill for X", "review the pymongo skill", "improve the commit skill", "work on the python skill".
 ---
 
 # develop-skill
 
-Guide users through creating and refining Claude Code skills with proper structure, writing style, and validation methodology.
+Guide users through creating and refining skills with proper structure, writing style, and validation methodology.
 
 ## Overview
 
@@ -429,7 +429,7 @@ After creating or modifying a skill/agent, update the catalog in README.md:
 2. **Update README.md** Skills or Agents section
 3. **Organize by category** — Project, Domain, Development, Utility
 4. **Keep descriptions concise** — From frontmatter description field
-5. **Verify cross-references** — CLAUDE.md links to README.md
+5. **Verify cross-references** — AGENTS.md links to README.md
 
 **Catalog structure in README.md:**
 

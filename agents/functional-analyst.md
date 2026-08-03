@@ -5,20 +5,17 @@ description: |
 color: purple
 tools:
   # base read access set
-  - Read
-  - Glob
-  - Grep
-  - Skill
+  - read
+  - list
+  - search
+  - skill
   # write access
-  - Write
-  - Edit
-  # shell access
-  - Bash
-  # interaction
-  - AskUserQuestion
-  - PushNotification
-  # MCP tools
-  - mcp__plugin_c3_pkgq__find_package
+  - write
+  - update
+  # github access for issue interaction
+  - github
+  # delegation
+  - agent
 ---
 
 # Functional Analyst
@@ -172,7 +169,7 @@ User requests feature/capability
 When a feature is requested, ask:
 
 ```
-Use AskUserQuestion tool:
+Use the github tool to post to the issue:
 
 Question: "Is this feature an MBI (Minimal Business Increment) that delivers user-facing value, or a linear task (refactoring, technical improvement)?"
 
@@ -195,7 +192,7 @@ Check for PLAN.md in the project root. If missing, create it using the template 
 Ask the user whether to analyze the MBI now or just capture it:
 
 ```
-Use AskUserQuestion tool:
+Ask the user:
 
 Question: "Would you like to analyze this MBI now, or just capture it for later?"
 
@@ -460,7 +457,7 @@ When the issue needs clarification, ask questions to reach full agreement:
 
 Consider: What could go wrong? Are there edge cases? What alternatives exist?
 
-**Post clarification questions directly to GitHub using Bash:**
+**Post clarification questions directly to GitHub:**
 
 ```bash
 gh issue comment {issue-number} --body "## 🔍 Issue Review

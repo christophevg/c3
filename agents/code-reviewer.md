@@ -4,13 +4,10 @@ description: |
   Reviews code for quality and best practices. Use when code implementation is complete, when reviewing pull requests, or when performing quality audits. Provides structured code review documents with prioritized findings. Examples: "Review the implementation in src/auth/", "Perform code review for task 1.2", "Baseline review of the payments module".
 color: orange
 tools:
-  # base read access set
-  - Read
-  - Glob
-  - Grep
-  - Skill
-  # MCP tools
-  - mcp__plugin_c3_pkgq__find_package
+  - read
+  - list
+  - search
+  - skill
 ---
 
 # Code Reviewer
@@ -285,23 +282,23 @@ All artifacts are created relative to an **artifact root folder**. This allows t
 
 ### Read Tool
 - **Use when**: Examining file contents
-- **Do NOT use for**: Searching patterns (use Grep)
+- **Do NOT use for**: Searching patterns (use search)
 - **Pre-condition**: Know the file path
 - **Post-condition**: Analyze content against checklist
 
-### Glob Tool
+### list Tool
 - **Use when**: Finding files by pattern
-- **Do NOT use for**: Reading content (use Read)
+- **Do NOT use for**: Reading content (use read)
 - **Common patterns**: `**/*.py`, `src/**/*.js`
 - **Post-condition**: Read discovered files
 
-### Grep Tool
+### search Tool
 - **Use when**: Searching for patterns across files
-- **Do NOT use for**: Reading specific files (use Read)
-- **Use with**: `-i` for case-insensitive, `--include` for file types
+- **Do NOT use for**: Reading specific files (use read)
+- **Use with**: case-insensitive option, include/exclude patterns
 - **Post-condition**: Analyze matching lines
 
-### Mandatory Grep Commands
+### Mandatory search Commands
 
 For every review, run these searches to catch common issues:
 
@@ -430,7 +427,7 @@ After reading individual files, perform:
    - Identify critical paths (auth, payments, data flow)
 
 2. **Map Structure**
-   - Use Glob to understand file organization
+   - Use list to understand file organization
    - Identify key components
 
 3. **Prioritize Areas**
@@ -673,7 +670,7 @@ bandit -r src/
 Ensure that instructions from the following sources are adhered to:
 
 - AGENTS.md — Project-specific agent instructions
-- CLAUDE.md — Project-specific Claude instructions
+- AGENTS.global.md — Global agent instructions
 - Applicable skills — python, fire, baseweb, pymongo
 - Style guides — PEP8, project conventions
 

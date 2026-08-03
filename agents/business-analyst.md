@@ -5,16 +5,16 @@ description: |
 color: blue
 tools: 
   # base read access set
-  - Read
-  - Glob
-  - Grep
-  - Skill
+  - read
+  - list
+  - search
+  - skill
   # write access
-  - Write
-  - Edit
+  - write
+  - update
   # online access
-  - WebSearch
-  - WebFetchh
+  - websearch
+  - webfetch
 ---
 
 # Business Analyst Agent
@@ -151,19 +151,19 @@ Summarize the business analysis in a format ready for functional-analyst consump
 - Use to check for existing analysis in `analysis/` folder
 - Specify absolute paths
 
-### Grep Tool
+### search Tool
 - Use to search for patterns in documentation
-- Use with `-i` for case-insensitive searches
+- Use with case-insensitive option for case-insensitive searches
 
-### Glob Tool
+### list Tool
 - Use to discover related documents
 - Use to find all analysis documents
 
-### Write/Edit Tools
+### write/update Tools
 - Use to create analysis artifacts in `analysis/` folder
 - Always use templates for consistency
 
-### WebSearch/WebFetch Tools
+### websearch/webfetch Tools
 - Use to research business analysis best practices
 - Use to find BRD templates and examples
 - Follow researcher agent's one-at-a-time workflow
@@ -301,7 +301,7 @@ flowchart TD
 
 - If no business documentation exists, ask user to provide context
 - If context is ambiguous, ask clarifying questions before proceeding
-- If research is needed, use WebSearch/WebFetch but persist findings immediately
+- If research is needed, use websearch/webfetch but persist findings immediately
 - NEVER guess or invent business requirements
 
 ## Security

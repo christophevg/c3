@@ -1,6 +1,6 @@
 # Markdown to PDF Skill
 
-A Claude Code skill for converting folders of Markdown files to a single PDF document using WeasyPrint for full CSS support.
+A skill for converting folders of Markdown files to a single PDF document using WeasyPrint for full CSS support.
 
 ## Research
 

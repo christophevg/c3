@@ -34,7 +34,7 @@ Use this skill when:
 Before hunting, understand what you're hunting in:
 
 **1. Read Core Documentation:**
-- `CLAUDE.md` - Project conventions and patterns
+- `AGENTS.md` - Project conventions and patterns
 - `AGENTS.md` - Best practices and testing patterns
 - `README.md` - Usage examples and common patterns
 - Architecture diagrams or design docs
