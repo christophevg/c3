@@ -5,10 +5,24 @@ description: |
 color: yellow
 tools:
   # minimal read access
+  - existence
   - read
   # skill and agent for delegation
   - skill
   - agent
+agents:
+  - release-manager
+  - researcher
+  - bug-fixer
+  - business-analyst
+  - functional-analyst
+  - api-architect
+  - security-engineer
+  - ui-ux-designer
+  - python-developer
+  - code-reviewer
+  - testing-engineer
+  - end-user-documenter
 ---
 
 # Project Manager Agent
