@@ -61,11 +61,6 @@ timeout_ms = 10000
 enabled = true
 timeout_seconds = 300
 
-[tools.git]
-enabled = true
-allowed_commands = ["status", "log", "diff", "branch", "show", "add", "commit", "push", "checkout"]
-auto_permission = ["status", "log", "diff", "branch", "show", "commit", "add", "checkout"]
-
 [tools.mkdir]
 enabled = true
 max_depth = 20
@@ -105,9 +100,20 @@ timeout_ms = 300000
 max_output_kb = 100
 max_env_var_bytes = 4096
 
+[tools.git]
+enabled = true
+allowed_commands = ["status", "log", "diff", "branch", "show", "add", "commit", "push", "checkout", "pull", "tag"]
+auto_permission = ["status", "log", "diff", "branch", "show", "commit", "add", "checkout", "pull", "tag"]
+
 [tools.github]
 enabled = true
-allowed_operations = ["repo_view", "issue_list", "issue_view", "pr_list", "pr_view", "workflow_list", "workflow_view", "release_list", "release_view"]
+allowed_operations = [
+  "repo_view", "issue_list", "issue_view", "pr_list", "pr_view",
+  "pr_reviews", "pr_comments",
+  "workflow_list", "workflow_view",
+  "release_list", "release_view",
+  "pr_create", "release_create"
+]
 timeout_ms = 30000
 max_results = 100
 require_explicit_repo = false
