@@ -187,12 +187,12 @@ type(scope): description
 
 [optional body]
 
-🤖 Implemented together with a coding agent.
+🤖 Implemented together with Yoker.
 ```
 
 **CRITICAL:** Every commit MUST end with the attribution line:
 ```
-🤖 Implemented together with a coding agent.
+🤖 Implemented together with Yoker.
 ```
 
 This attribution is mandatory. If a commit is created without it, use `git commit --amend` to add it.
@@ -435,5 +435,3 @@ When this skill is invoked via `project-manage`:
 | User didn't review changes | Present diff, wait for explicit approval |
 | Accidentally staged sensitive file | Use `git restore --staged <file>` to unstage |
 | Missing attribution in commit | Use `git commit --amend` to add attribution line |
-
-
