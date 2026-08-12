@@ -261,10 +261,26 @@ EOF
 
 ### Step 12: Upload to PyPI
 
+**Use the granular upload target, not the full publish pipeline:**
+
 ```bash
-# Upload to PyPI
+# Upload to PyPI (if make publish was already run for pre-publish checks)
+make upload
+
+# Or directly:
 uv run twine upload dist/*
 ```
+
+**If the upload fails (e.g. HTTP 400):**
+
+1. **Check PyPI first** — the upload may have partially succeeded (one file
+   uploaded, the second rejected). Visit
+   `https://pypi.org/project/package-name/` to verify before retrying.
+2. **Do NOT re-run `make publish`** — it re-executes the entire test suite,
+   build, and pre-publish cycle. Use `make upload` or
+   `uv run twine upload dist/*` directly to retry just the upload.
+3. **Max 3 retries** — after 3 failed attempts, stop and ask the user to
+   investigate (per the retry policy in AGENTS.md).
 
 **Verify publication:**
 ```bash
@@ -289,7 +305,7 @@ pip install package-name==X.Y.Z
 # 9. Tag: git tag -a vX.Y.Z -m "Release X.Y.Z"
 # 10. Push tag: git push origin vX.Y.Z
 # 11. GitHub release: gh release create vX.Y.Z
-# 12. Upload: uv run twine upload dist/*
+# 12. Upload: make upload (or uv run twine upload dist/*)
 ```
 
 ## Common Issues
@@ -299,7 +315,8 @@ pip install package-name==X.Y.Z
 | CI fails after push | Fix issue, commit, push, wait again |
 | Package empty in wheel | Check hatch `packages` configuration |
 | Version already on PyPI | Cannot overwrite - bump version again |
-| PyPI upload fails | Check for `[tool.uv.sources]` in pyproject.toml |
+| PyPI upload returns HTTP 400 | Upload may have partially succeeded. Check `https://pypi.org/project/<name>/` before retrying. Use `make upload` (not `make publish`) to retry — avoids re-running tests. Max 3 retries, then ask user. |
+| PyPI upload fails (other) | Check for `[tool.uv.sources]` in pyproject.toml |
 
 ## Related Skills
 
