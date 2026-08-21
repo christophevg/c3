@@ -30,14 +30,14 @@ conversation context clean while ensuring proper TDD approach.
 **When this agent is invoked, immediately call the c3:bug-fixing skill:**
 
 ```
-Skill({ skill: "c3:bug-fixing", args: "{bug-description}" })
+skill(skill_name="c3:bug-fixing", args="{bug-description}")
 ```
 
 Do NOT describe what you will do. Do NOT wait. **Immediately invoke the skill.**
 
 ## What the Skill Does
 
-After invoking `Skill({ skill: "c3:bug-fixing" })`, the skill will:
+After invoking `skill(skill_name="c3:bug-fixing")`, the skill will:
 
 1. **Bug Intake** - Parse bug description, detect project context
 2. **Bug Analysis** - Locate affected code, identify root cause
@@ -107,5 +107,5 @@ Location: src/yoker/context/basic.py line 76
 
 Invoke immediately:
 ```
-Skill({ skill: "c3:bug-fixing", args: "Issue #9: Storage path with ~ creates literal ~ directory instead of expanding to home" })
+skill(skill_name="c3:bug-fixing", args="Issue #9: Storage path with ~ creates literal ~ directory instead of expanding to home")
 ```

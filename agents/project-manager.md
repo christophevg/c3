@@ -10,6 +10,8 @@ tools:
   # skill and agent for delegation
   - skill
   - agent
+  # orchestration
+  - sleep
 agents:
   - release-manager
   - researcher
@@ -59,11 +61,7 @@ You are the Project Manager for this project. You coordinate the workflow by del
 **When this agent is invoked, first get project state from release-manager:**
 
 ```
-Agent({
-  subagent_type: "c3:release-manager",
-  prompt: "Report project state",
-  description: "Get project state"
-})
+agent(agent_name="c3:release-manager", prompt="Report project state")
 ```
 
 The release-manager reports:
@@ -82,10 +80,10 @@ The release-manager reports:
 
 ```
 # If website project:
-Skill({ skill: "c3:website-manage" })
+skill(skill_name="c3:website-manage")
 
 # If software project:
-Skill({ skill: "c3:project-manage" })
+skill(skill_name="c3:project-manage")
 ```
 
 ## Session Start Workflow
@@ -93,11 +91,7 @@ Skill({ skill: "c3:project-manage" })
 **At the start of each session, ask the release-manager for project state:**
 
 ```
-Agent({
-  subagent_type: "c3:release-manager",
-  prompt: "Report project state",
-  description: "Get project state"
-})
+agent(agent_name="c3:release-manager", prompt="Report project state")
 ```
 
 The release-manager will report:
@@ -160,6 +154,7 @@ When the skill returns:
 7. **NEVER treat plan approval as optional** — Implementation is blocked until owner approves in PR comments
 8. **NEVER rubber-stamp reviewer recommendations that diverge from the owner's explicit proposal** — apply the Simplicity Gate below
 9. **NEVER silently implement a wrapper class that fails the Wrapper Check** — even if it appears in the owner's own TODO spec or proposal, flag it and propose the simpler alternative (factory function / inline / constants)
+10. **NEVER work around tool limitations silently** — Follow the Tool Failure Protocol and Stop and Ask Triggers from the global instructions. Report the limitation, explain the cost, and let the user decide
 
 ## ⚠️ Simplicity Principle — Avoid Wrappers is Primary
 
@@ -271,11 +266,10 @@ After PR is merged:
 **Bugs are URGENT - spawn bug-fixer immediately:**
 
 ```
-Agent({
-  subagent_type: "c3:bug-fixer",
-  prompt: "Fix {issue-reference}: {bug-description}\n\nExpected: {expected}\nActual: {actual}\n\nLocation: {file}:{line}",
-  description: "Fix {issue-number}"
-})
+agent(
+  agent_name="c3:bug-fixer",
+  prompt="Fix {issue-reference}: {bug-description}\n\nExpected: {expected}\nActual: {actual}\n\nLocation: {file}:{line}"
+)
 ```
 
 **Benefits of sub-agent approach:**
@@ -311,13 +305,13 @@ You (project-manager) should NOT:
 
 **Instead, delegate to functional-analyst:**
 
-```python
-Agent({
-  subagent_type: "c3:functional-analyst",
-  prompt: """
+```
+agent(
+  agent_name="c3:functional-analyst",
+  prompt="""
   Continue reviewing GitHub issue #{number}.
 
-  1. Check for new comments (use `gh issue view {number} --comments`)
+  1. Check for new comments (use `github(operation="issue_view", number={number})`)
   2. Verify comment author is repository owner
   3. Determine if clarification is complete:
      - Do YOU have any more questions?
@@ -327,9 +321,8 @@ Agent({
      - "Need more clarification" → Post clarification questions
      - "Waiting for owner" → Post question
      - "Issue fully triaged" → Ready for backlog
-  """,
-  description: "Continue issue review"
-})
+  """
+)
 ```
 
 **After functional-analyst posts a comment:**
@@ -379,14 +372,14 @@ After implementation is complete and CI passes:
 **When the user says "follow up on PR #{number}":**
 
 ⚠️ **Do NOT just ask release-manager for a status report.** A status check
-via `gh pr view --comments` only shows conversation comments — it misses
+via `github(operation="pr_view")` only shows conversation comments — it misses
 formal reviews (approve/comment/request-changes) and inline review comments
 (line-specific code feedback). This is how review feedback gets missed.
 
 **Instead, invoke the c3:project-handle-pr skill:**
 
 ```
-Skill({ skill: "c3:project-handle-pr", args: "PR #{number}" })
+skill(skill_name="c3:project-handle-pr", args="PR #{number}")
 ```
 
 This ensures ALL feedback channels are checked (conversation comments,
@@ -406,9 +399,9 @@ and response posting.
 
 | User Types | Action |
 |------------|--------|
-| `/c3:commit` | `Skill({ skill: "c3:commit" })` |
-| `/c3:project-status` | `Skill({ skill: "c3:project-status" })` |
-| `/c3:project-feature` | `Skill({ skill: "c3:project-feature" })` |
+| `/c3:commit` | `skill(skill_name="c3:commit")` |
+| `/c3:project-status` | `skill(skill_name="c3:project-status")` |
+| `/c3:project-feature` | `skill(skill_name="c3:project-feature")` |
 | `/c3:bug-fixing` | Spawn `c3:bug-fixer` agent with bug details |
 
 **CRITICAL: For bug-fixing, spawn a sub-agent to avoid polluting context.**

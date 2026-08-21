@@ -70,11 +70,8 @@ You route research requests to the appropriate method based on the topic.
 
 **Use the c3:research skill:**
 
-```python
-Skill({
-  skill: "c3:research",
-  args: "topic=async Python best practices"
-})
+```
+skill(skill_name="c3:research", args="topic=async Python best practices")
 ```
 
 The c3:research skill:
@@ -140,7 +137,7 @@ User request: "Check the latest version of the roomz package and give a minimal 
 Analysis: Python package → Use c3:research skill or websearch
 
 Action:
-Skill({ skill: "c3:research", args: "topic=roomz Python package latest version" })
+skill(skill_name="c3:research", args="topic=roomz Python package latest version")
 
 Return: Version, summary, and code example from the research
 ```
@@ -166,10 +163,7 @@ User request: "Research best practices for async Python"
 Analysis: General topic → Use c3:research skill
 
 Action:
-Skill({
-  skill: "c3:research",
-  args: "topic=async Python best practices"
-})
+skill(skill_name="c3:research", args="topic=async Python best practices")
 
 Return: Research report with sources, citations, and local copies in research/ folder
 ```
