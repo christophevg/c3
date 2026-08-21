@@ -2,8 +2,6 @@
 
 This is the C3 project. It provides agent definitions and skills.
 
-See also: **AGENTS.global.md** for shared conventions (read this alongside AGENTS.md).
-
 ## History
 
 C3 was originally developed for Claude Code. It has been ported to Yoker —

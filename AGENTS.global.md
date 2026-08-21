@@ -99,6 +99,45 @@ If a project contains a `pyproject.toml` file, it is managed using `uv`. This me
 -> Use SendMessage to: abc123
 ```
 
+### Tool Failure Protocol
+
+**When a tool returns unexpected results** (empty, error, wrong data):
+
+1. **First attempt:** Use the tool as intended. If it returns unexpected results, note the discrepancy.
+2. **One retry with a variation:** Try ONE alternative approach (different parameters, different tool). If it also fails, STOP.
+3. **Report to user:** State clearly: "Tool X returned Y when I expected Z. This may be a tooling limitation. Could you verify or run this manually?"
+4. **Do NOT try a third variation.** Do NOT spawn new agents to retry. Do NOT ask the user to run a battery of diagnostic commands. One question, one command, then wait.
+
+**When a tool lacks a needed capability:**
+
+1. **Acknowledge immediately:** "The X tool cannot do Y."
+2. **Ask the user:** "Could you perform Y manually, or should we work around it?"
+3. **Do NOT silently continue** with a degraded workflow unless the user says so.
+4. **Do NOT try to hack around it** with unrelated tool operations.
+
+**This complements the project-level Tool Limitation Protocol** — that protocol covers the Yoker-specific context (active dev sessions, missing tool capabilities). This global protocol is the behavioral rule that applies in ALL projects.
+
+### Stop and Ask Triggers
+
+**BLOCKING — must pause and ask the user before continuing:**
+
+- A tool returns empty results when data is expected to exist
+- A tool lacks a capability needed for the workflow (e.g., can't create draft PRs, can't assign reviewers)
+- A git operation produces unexpected state (wrong branch, extra commits, merge conflicts)
+- The same operation fails twice with different approaches
+- Any situation where you're considering asking the user to run a shell command
+
+**In ALL these cases:** STOP, report the issue clearly, and ask for direction. Do NOT continue with a workaround unless the user explicitly approves it.
+
+### Investigation Discipline
+
+When investigating an issue:
+
+1. **Start with the simplest diagnostic** (e.g., `git status`, not a 9-command battery)
+2. **Form a hypothesis from the first result** before running more commands
+3. **Maximum 3 diagnostic commands** before reporting to the user with findings
+4. **Prefer asking the user** over running extensive diagnostics — they have direct access and can often answer faster
+
 ### Task → Skill/Agent Mapping
 
 When the user asks you to work on a task, select the appropriate skill or delegate to the best agent:
