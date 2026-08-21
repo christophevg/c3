@@ -50,8 +50,11 @@ NC=\033[0m
 project: YOKER_ARGS += --agent project-manager
 project: yoker-chat  ## Work on this project with the project-manager agent.
 
-analyst: YOKER_ARGS += --agent "functional-analyst"
+analyst: YOKER_ARGS += --agent functional-analyst
 analyst: yoker-chat  ## Work on this project with the functional-analyst agent.
+
+documenter: YOKER_ARGS += --agent end-user-documenter
+documenter: yoker-chat ## Work on this project with the end-user-documenter
 
 # the following targets select an agent and inject also an initial prompt to start
 # NOTE: this doesn't work right now, due to missing CLI prompt support in Yoker

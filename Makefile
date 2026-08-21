@@ -1,12 +1,17 @@
+YOKER_FROM = ../yoker
 -include Makefile.yoker
 
-install: $(HOME)/.yoker/Makefile ## Install a Yoker supporting Makefile
+install: $(HOME)/.yoker/Makefile $(HOME)/.yoker/AGENTS.md ## Install a Yoker supporting Makefile and global AGENTS.md
 
 $(HOME)/.yoker/Makefile: Makefile.yoker
-	@echo "Installing Makefile.yoker in $@"
+	@echo "Installing $< in $@"
 	@mkdir -p $(HOME)/.yoker
-	@ln -sf $(realpath Makefile.yoker) $@
+	@ln -sf $(realpath $<) $@
 
+$(HOME)/.yoker/AGENTS.md: AGENTS.global.md
+	@echo "Installing $< in $@"
+	@mkdir -p $(HOME)/.yoker
+	@ln -sf $(realpath $<) $@
 
 # TODO: review targets below if they are still relevant/used in skills or by agent defintions
 
