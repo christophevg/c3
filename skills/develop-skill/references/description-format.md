@@ -6,7 +6,7 @@ Detailed requirements for writing skill descriptions.
 
 The `description` field in skill frontmatter must follow these rules:
 
-1. **Single-line format**: Description must be ONE line
+1. **Format**: Use a single-line string for short descriptions, or a YAML block scalar (`|`) for longer ones. Block scalar is preferred when the description includes multiple trigger conditions or many examples.
 2. **Inline examples**: Format as `Examples: "Example 1", "Example 2"`
 3. **Third-person voice**: "This skill guides..." not "You can..."
 4. **Include WHAT and WHEN**: What the skill does, when to use it
@@ -15,21 +15,22 @@ The `description` field in skill frontmatter must follow these rules:
 
 ## Good Examples
 
+**Single-line:**
 ```yaml
 description: Extract text and tables from PDF files. Use when working with PDFs, documents, or when user mentions PDF. Examples: "Extract tables from invoice.pdf", "Read PDF content".
 ```
 
+**Block scalar (for longer descriptions):**
 ```yaml
-description: Guide creation and refinement of skills. Use when creating a new skill, developing a skill, or when user says "create a skill". Examples: "create a skill for X", "develop a skill".
-```
-
-```yaml
-description: Systematic bug fixing with TDD approach. Use when fixing bugs, debugging issues, or when user says "fix bug". Examples: "fix the login bug", "there's an issue with auth".
+description: |
+  Systematic bug fixing with TDD approach. Use when fixing bugs, debugging
+  issues, or when user says "fix bug". Examples: "fix the login bug", "there's
+  an issue with auth".
 ```
 
 ## Bad Examples (DO NOT USE)
 
-**Multi-line with newlines:**
+**Multi-line with unstructured content (breaks YAML parsing):**
 ```yaml
 description: Extract text from PDFs. Examples:
 
@@ -61,9 +62,9 @@ description: Helps with PDFs when needed.
 
 Should include: "Use when user mentions PDF or asks to extract from documents"
 
-## YAML Parsing Issue
+## YAML Parsing Notes
 
-Multi-line content in frontmatter causes YAML parsing failures:
+Unstructured multi-line content in frontmatter (raw text, `<example>` blocks) causes YAML parsing failures. Use a block scalar (`|`) if you need multi-line descriptions.
 
 ❌ **Broken format:**
 ```yaml
@@ -79,13 +80,23 @@ user: "..."
 ---
 ```
 
-The `<example>` blocks are NOT parsed as part of the description - they're treated as unknown YAML keys and ignored.
+The `<example>` blocks are NOT parsed as part of the description — they're treated as unknown YAML keys and ignored.
 
-✅ **Correct format:**
+✅ **Single-line format:**
 ```yaml
 ---
 name: my-skill
 description: One-line description. Use when X. Examples: "Example 1", "Example 2".
+---
+```
+
+✅ **Block scalar format:**
+```yaml
+---
+name: my-skill
+description: |
+  Longer description that may span multiple lines. Use when X.
+  Examples: "Example 1", "Example 2".
 ---
 ```
 

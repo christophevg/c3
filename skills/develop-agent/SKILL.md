@@ -204,7 +204,8 @@ See `references/system-prompt.md` for the complete framework. Every agent must i
 ```markdown
 ---
 name: {agent-name}
-description: [One-line purpose]. Use when [trigger conditions]. Examples: "[Example request 1]", "[Example request 2]", "[Example request 3]".
+description: |
+  [Purpose]. Use when [trigger conditions]. Examples: "[Example request 1]", "[Example request 2]", "[Example request 3]".
 model: inherit
 color: [blue|cyan|green|yellow|magenta|red|orange|purple|indigo]
 tools: [list of tools]
@@ -217,13 +218,25 @@ tools: [list of tools]
 
 **IMPORTANT: YAML Frontmatter Format**
 
-The frontmatter must use **single-line descriptions** with inline examples. Multi-line content breaks YAML parsing:
+The description field may use either a single-line string or a YAML block scalar (`|`) for longer descriptions. Both are valid YAML and parsed correctly.
 
-✅ **Correct format:**
+✅ **Single-line format:**
 ```yaml
 ---
 name: my-agent
 description: One-line description. Use when X. Examples: "Example 1", "Example 2", "Example 3".
+tools: Read, Grep
+color: blue
+---
+```
+
+✅ **Block scalar format (preferred for longer descriptions):**
+```yaml
+---
+name: my-agent
+description: |
+  Longer description that may span multiple lines. Use when X.
+  Examples: "Example 1", "Example 2", "Example 3".
 tools: Read, Grep
 color: blue
 ---
@@ -243,15 +256,22 @@ tools: Read
 ---
 ```
 
-The `<example>` blocks are NOT parsed as part of the description field - they're treated as unknown YAML keys and ignored.
+The `<example>` blocks are NOT parsed as part of the description field — they're treated as unknown YAML keys and ignored. If you need examples in the description, put them inline (single-line) or in the block scalar body.
 
 #### Description Best Practices
 
-The description field is **critical**—Claude uses it to decide when to delegate.
+The description field is **critical** — the harness uses it to decide when to delegate.
 
-1. **Single-line format**: Description must be ONE line. Use inline examples.
+1. **Format**: Use a single-line string for short descriptions, or a YAML block scalar (`|`) for longer ones. Block scalar is preferred when the description includes multiple trigger conditions or many examples.
    ```yaml
+   # Short — single line
    description: Reviews code for quality. Use after implementation. Examples: "Review src/auth/", "Check PR #42".
+
+   # Long — block scalar
+   description: |
+     Reviews code for quality and best practices. Use when code implementation
+     is complete, when reviewing pull requests, or when performing quality audits.
+     Examples: "Review the implementation in src/auth/", "Perform code review for task 1.2".
    ```
 2. Include specific conditions: "Use proactively after code changes"
 3. Add trigger examples: "When reviewing Python files"
