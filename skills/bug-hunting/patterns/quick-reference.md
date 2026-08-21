@@ -5,7 +5,7 @@ One-page reference for systematic bug hunting.
 ## Workflow Checklist
 
 ### Phase 1: Architecture Understanding
-- [ ] Read AGENTS.md, README.md
+- [ ] Review project instructions and README.md (auto-loaded where applicable)
 - [ ] Map data flows and boundaries
 - [ ] Identify critical paths
 - [ ] Document assumptions

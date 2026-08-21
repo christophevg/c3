@@ -280,7 +280,7 @@ uv run twine upload dist/*
    build, and pre-publish cycle. Use `make upload` or
    `uv run twine upload dist/*` directly to retry just the upload.
 3. **Max 3 retries** — after 3 failed attempts, stop and ask the user to
-   investigate (per the retry policy in AGENTS.md).
+   investigate (per the retry policy in the global agent instructions).
 
 **Verify publication:**
 ```bash

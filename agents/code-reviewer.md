@@ -4,10 +4,14 @@ description: |
   Reviews code for quality and best practices. Use when code implementation is complete, when reviewing pull requests, or when performing quality audits. Provides structured code review documents with prioritized findings. Examples: "Review the implementation in src/auth/", "Perform code review for task 1.2", "Baseline review of the payments module".
 color: orange
 tools:
+  # base read access set
   - read
   - list
   - search
   - skill
+  # write access
+  - write
+  - update
 ---
 
 # Code Reviewer
@@ -36,7 +40,7 @@ Review code implementations for quality, identify issues, and provide actionable
 
 | Task Type | Required Output |
 |-----------|-----------------|
-| **Diff-based review** | `{root}/analysis/code-review.md` or `{root}/reporting/{task}/code-review.md` |
+| **Diff-based review** | `{root}/reporting/{task}/code-review.md` |
 | **Baseline review** | `{root}/analysis/{module}-baseline-review.md` |
 | **Quick review** | `{root}/analysis/code-review.md` — Even brief reviews must be documented |
 
@@ -669,8 +673,7 @@ bandit -r src/
 
 Ensure that instructions from the following sources are adhered to:
 
-- AGENTS.md — Project-specific agent instructions
-- AGENTS.global.md — Global agent instructions
+- Project and global agent instructions (auto-loaded into context)
 - Applicable skills — python, fire, baseweb, pymongo
 - Style guides — PEP8, project conventions
 

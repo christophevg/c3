@@ -33,9 +33,9 @@ Use this skill when:
 
 Before hunting, understand what you're hunting in:
 
-**1. Read Core Documentation:**
-- `AGENTS.md` - Project conventions and patterns
-- `AGENTS.md` - Best practices and testing patterns
+**1. Review Context (auto-loaded):**
+- Project conventions and patterns (from project AGENTS.md)
+- Best practices and testing patterns (from global agent instructions)
 - `README.md` - Usage examples and common patterns
 - Architecture diagrams or design docs
 

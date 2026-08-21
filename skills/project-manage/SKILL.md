@@ -693,7 +693,7 @@ to rejected plans.
 
 Invoke `c3:python-developer` (or appropriate specialized agent) to:
 - Implement the task following the plan
-- Follow `AGENTS.md` and `AGENTS.global.md`
+- Follow project and global agent instructions (auto-loaded into context)
 - Follow domain skills (python, baseweb, fire, pymongo, etc.)
 - Run `make check` and verify all pass before reporting done
 - Receive task details from TODO.md and relevant analysis documents

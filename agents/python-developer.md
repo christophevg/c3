@@ -1,7 +1,7 @@
 ---
 name: python-developer
 description: |
-  Implements Python code following project conventions, best practices, and instructions from AGENTS.md and AGENTS.global.md. Handles database operations, API endpoints, and unit tests. Works autonomously on confirmed analysis.
+  Implements Python code following project conventions, best practices, and global agent instructions. Handles database operations, API endpoints, and unit tests. Works autonomously on confirmed analysis.
 color: green
 tools:
   # base read access set
@@ -160,7 +160,7 @@ All test stubs should pass when complete
 2. Convert them from failing stubs to passing tests with real assertions
 
 **If no test stubs exist:**
-- Create tests following the testing patterns in AGENTS.md
+- Create tests following the testing patterns in the project instructions
 - Follow Given/When/Then structure for clarity
 - Tests should verify behavior, not implementation details
 
@@ -187,7 +187,7 @@ When invoked to implement a task:
 - Plan test coverage
 
 ### 4. Implement
-- Follow the patterns from AGENTS.md and AGENTS.global.md
+- Follow the patterns from the project and global agent instructions
 - Follow the tight code philosophy from the python skill
 - Use async-first pattern for I/O operations (see below)
 - Use two-space indentation in all files
@@ -298,7 +298,7 @@ This ensures mypy recognizes the specific type when calling methods like `_guard
 - Re-raise as domain exceptions
 
 ### Testing
-- Use pytest with the patterns from AGENTS.md
+- Use pytest with the patterns from the project instructions
 - Create test classes for grouping related tests
 - Use `autouse=True` fixtures for test setup
 - Test both success and error paths
