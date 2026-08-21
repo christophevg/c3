@@ -12,6 +12,11 @@ tools:
   # write access
   - write
   - update
+  - file
+  # executing
+  - make
+  # project/repo management
+  - git
   # online access
   - websearch
   - webfetch
