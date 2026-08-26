@@ -16,7 +16,7 @@ else
 YOKER=uvx yoker
 endif
 
-YOKER_ARGS =
+YOKER_ARGS ?=
 ifdef YOKER_SESSION
 YOKER_ARGS += --session-id $(YOKER_SESSION)
 endif
