@@ -1,7 +1,7 @@
 # Makefile Template
 
 ```makefile
--include ~/.claude/Makefile
+-include ~/.yoker/Makefile
 
 .PHONY: env-dev env-run install-pythons test test-cov test-all format format-check lint typecheck check run docs docs-view build pre-publish publish publish-test clean clean-all help
 
@@ -91,14 +91,6 @@ clean: ## Remove build artifacts
 
 clean-all: clean ## Remove virtualenv and lock file
 	rm -rf .venv uv.lock
-
-## Help
-
-help: ## Show this help message
-	@echo "Usage: make [target]"
-	@echo ""
-	@echo "Targets:"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' Makefile | grep -v "install-pythons\|sync" | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 ```
 
 ## Key Features
