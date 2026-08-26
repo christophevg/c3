@@ -36,8 +36,9 @@ The caller (`project-manage`) provides:
   the functional-analyst must verify comment author ownership before treating
   feedback as authoritative.
 - **Do not merge.** The owner merges. This skill never proposes merging.
-- **Do not poll.** After posting, pause. The user re-invokes "follow up on PR #N"
-  to check for new responses.
+- **Polling is delegated to release-manager.** After posting, delegate
+  polling to release-manager (15min timeout). If polling times out, pause
+  and wait for the user to re-invoke "follow up on PR #N".
 
 ## ⚠️ Simplicity Principle — Owner's Proposal is the Default
 
@@ -47,7 +48,8 @@ The caller (`project-manage`) provides:
 
 ```
 6.1  release-manager: fetch new PR comments
-6.2  no new feedback → report & wait (PAUSE)
+6.2  no new feedback → delegate polling to release-manager (15min timeout)
+       timeout → report & wait (PAUSE)
 6.3  per feedback item:
        functional-analyst interprets the comment against task criteria
        python-developer implements the change (incremental)
@@ -80,12 +82,24 @@ Agent({
 
 A "commented" review with inline comments is easily missed by `gh pr view --comments` alone — it only shows conversation-level comments, not formal reviews or inline code feedback.
 
-### 6.2 No new feedback
+### 6.2 No new feedback — poll or pause
 
-If release-manager reports no new owner comments:
+If the initial check (6.1) shows no new owner comments, delegate polling to
+release-manager:
 
-- Report: `"No new feedback on PR #{number}. Waiting for owner review."`
-- **Pause.** Do not poll. The user re-invokes "follow up on PR #N" later.
+```python
+Agent({ subagent_type: "c3:release-manager",
+  prompt: "Poll PR #{number} for new owner review feedback. Check PR comments and reviews every 60 seconds for up to 15 minutes. Report when the owner provides feedback or when the timeout is reached.",
+  description: "Poll for PR feedback" })
+```
+
+| Release-manager reports | Action |
+|--------------------------|--------|
+| New owner feedback | Proceed to 6.3 |
+| Timeout (no response after 15 min) | Report: "No new feedback on PR #{number}. Say 'follow up on PR #N' to check again." Then pause. |
+
+**Fallback:** If polling times out, the push model remains available — the user
+can say "follow up on PR #N" to re-trigger the check at any time.
 
 ### 6.3 Interpret & implement each feedback item
 
@@ -196,14 +210,29 @@ Agent({
 | Requests more changes | Loop to 6.1. |
 | Rejects entirely | Per owner instruction, delegate to release-manager to close the PR (and the related issue if applicable). Report to owner. |
 
-After posting, **pause**. Do not poll for further feedback. The user re-invokes
-"follow up on PR #N" to continue.
+After posting changes, delegate polling to release-manager for further
+feedback:
+
+```python
+Agent({ subagent_type: "c3:release-manager",
+  prompt: "Poll PR #{number} for owner review feedback. Check PR comments and reviews every 60 seconds for up to 15 minutes. Report when the owner provides feedback or when the timeout is reached.",
+  description: "Poll for further PR feedback" })
+```
+
+| Release-manager reports | Action |
+|--------------------------|--------|
+| New owner feedback | Process via 6.3 → 6.4 → 6.5 |
+| Timeout (no response after 15 min) | Report: "No further feedback on PR #{number}. Say 'follow up on PR #N' to check again." Then pause. |
+
+**Fallback:** If polling times out, the push model remains available — the user
+can say "follow up on PR #N" to re-trigger the check at any time.
 
 ## Multiple PRs
 
-If the caller is processing several PRs, after this PR is paused, return control
-to the caller with a status summary so it can move to the next PR. Do not check
-this PR's feedback again until the user says "follow up on PR #N".
+If the caller is processing several PRs, after this PR's polling times out or
+completes, return control to the caller with a status summary so it can move to
+the next PR. Do not check this PR's feedback again until the user says "follow
+up on PR #N" or the caller delegates polling for it again.
 
 ## Reference
 
