@@ -81,7 +81,6 @@ The release-manager reports:
 ```
 # If website project:
 skill(skill_name="c3:website-manage")
-
 # If software project:
 skill(skill_name="c3:project-manage")
 ```
@@ -100,11 +99,51 @@ The release-manager will report:
 - Recent commits
 - Related issues
 
-**Based on the state, determine next action:**
-- Continue in-progress PR → Proceed with PR workflow
-- Start new feature → Invoke project-manage skill
-- Address review feedback → Invoke appropriate agent
-- Prepare release → Delegate to release-manager
+**Based on the state, determine next action using the State Detection**
+**Matrix below:**
+
+- PR with approved plan, no implementation → Proceed to implementation
+  (Phase 5.4) — DO NOT re-post plan or poll
+- PR with implementation, review pending → Poll for review feedback
+  (Phase 5.10)
+- PR with implementation, changes requested → Delegate to
+  `c3:project-handle-pr`
+- PR merged, on feature branch → Delegate to `c3:project-post-merge`
+- Clean main/master, no open PRs → Start new task (Phase 1)
+- Open issues → Process issues (Phase 0.3)
+## State Detection Matrix
+
+Using the release-manager's enhanced report (PR content classification +
+owner direction + comment timeline), determine the exact state of each
+open PR:
+
+| PR Content | Owner Direction | CI | Action |
+|------------|----------------|----|--------|
+| Analysis only | NO DIRECTION YET | — | Poll for plan approval (Phase 5.3) |
+| Analysis only | PLAN APPROVED | — | **Proceed directly to implementation (Phase 5.4)** — do NOT re-post plan, do NOT poll |
+| Analysis only | CHANGES REQUESTED | — | Delegate to functional-analyst to revise plan (Phase 5.2 re-post) |
+| Implementation | NO DIRECTION YET | Passing | Poll for review feedback (Phase 5.10) |
+| Implementation | NO DIRECTION YET | Failing | Delegate to developer to fix CI |
+| Implementation | CHANGES REQUESTED | — | Delegate to `c3:project-handle-pr` |
+| Implementation | PLAN APPROVED | Passing | Poll for review feedback (Phase 5.10) — plan was for initial implementation, now reviewing the result |
+| Mixed | Any | — | Treat as Implementation row (implementation is present) |
+| Merged | — | — | Delegate to `c3:project-post-merge` |
+
+⚠️ **CRITICAL — Do Not Re-Wait For Already-Given Approval:**
+
+If the release-manager's report shows the owner has already approved the
+plan (detected via owner comments containing "approved", "proceed",
+"looks good", etc.) AND the PR contains only analysis documents (no
+source files), then:
+
+1. Do NOT re-post the implementation plan
+2. Do NOT delegate polling for approval
+3. Do NOT report "waiting for approval"
+4. DO proceed directly to Phase 5.4 (check domain skills) → 5.5 (implement)
+
+This is the state that caused repeated mistakes in prior sessions. The
+approval is in the PR comments — read them, trust them, and act on them.
+
 
 ## After Skill Completes
 
@@ -250,6 +289,24 @@ agent(agent_name="c3:python-developer", prompt="Add tests for Z")  # DON'T
                   for owner response — check PR comments every 60 seconds
                   for up to 15 minutes. Report the owner's response or timeout.")
      ```
+
+## Acceptance Criteria Testability Check
+
+Before marking the review cycle as passed (Phase 5.6), verify that each
+acceptance criterion can actually be exercised with what the PR delivers:
+
+1. For each acceptance criterion, identify what inputs/dependencies it
+   requires (files, config, data, external services)
+2. Verify those inputs exist in the PR or in the repository
+3. If a criterion references a file/directory/resource that doesn't exist,
+   flag it as a BLOCKING issue — the criterion cannot be tested
+
+**Example:** If a criterion says "yoker-test eval --suite yoker_basic
+runs successfully" but no `suites/yoker_basic/suite.yaml` exists in the
+PR or repository, this is a blocking issue.
+
+This check is in addition to the code quality review — it verifies the
+end-to-end experience, not just the code correctness.
 
 ## ⚠️ Universal Post-and-Poll Principle
 

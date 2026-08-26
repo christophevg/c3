@@ -146,12 +146,16 @@ The gate fires on TWO sources:
 PHASE 0 — Session Start & Triage
 ═══════════════════════════════════════════════════════════════════════
  0.1  release-manager → project state report (project root = its wd)
- 0.2  branch on state:
-        open PR w/ feedback    → delegate to c3:project-handle-pr
-        open PR waiting        → report & wait
-        merged feature branch  → delegate to c3:project-post-merge
-        open issues            → 0.3 issue triage
-        clean main/master      → Phase 1
+ 0.2  state detection matrix:
+        analysis-only PR, no approval   → poll for plan approval (5.3)
+        analysis-only PR, approved      → proceed to implementation (5.4)
+        analysis-only PR, changes req   → revise plan (5.2)
+        implementation PR, no feedback  → poll for review (5.10)
+        implementation PR, changes req  → c3:project-handle-pr
+        implementation PR, CI failing   → fix CI
+        merged PR on feature branch     → c3:project-post-merge
+        clean main/master               → Phase 1
+        open issues                     → 0.3 issue triage
  0.3  issue triage (by type/label — all gh ops via release-manager):
         bug        → Bug Implementation Flow (bug-fixer → project-review → PR)
         feature    → functional-analyst review → owner approves → backlog
@@ -207,7 +211,8 @@ PHASE 5 — Implementation
  5.7  mark pending-review + write reporting/{task}/summary.md
  5.8  release-manager: commit → push → PR → CI (fix until green)
  5.9  release-manager: mark ready → assign / request owner review
- 5.10 PAUSE (do not poll for feedback)
+ 5.10 PAUSE → delegate polling to release-manager (15min timeout)
+       timeout → report & wait for "follow up on PR #N"
 
  → "follow up on PR #N" → delegate to c3:project-handle-pr
  → "PR merged"          → delegate to c3:project-post-merge
@@ -233,24 +238,42 @@ Agent({
 
 Based on the state reported, determine the next action (Phase 0.2):
 
-| State | Action |
-|-------|--------|
-| Open PR with pending feedback | Delegate to `c3:project-handle-pr` |
-| Open PR waiting for owner | Report status, wait for owner |
-| Merged PR on feature branch | Delegate to `c3:project-post-merge` |
-| Clean main/master | Start new task from TODO.md (Phase 1) |
-| Open issues | Process issues (Phase 0.3) |
+### 0.2 — State Detection Matrix
 
-### PR Status Handling
+Using the release-manager's enhanced report (PR content classification + 
+owner direction + comment timeline), determine the exact state of each 
+open PR:
 
-The release-manager's report includes PR status. Based on that:
+| PR Content | Owner Direction | CI | Action |
+|------------|----------------|----|--------|
+| Analysis only | NO DIRECTION YET | — | Poll for plan approval (Phase 5.3) |
+| Analysis only | PLAN APPROVED | — | **Proceed directly to implementation (Phase 5.4)** — do NOT re-post plan, do NOT poll |
+| Analysis only | CHANGES REQUESTED | — | Delegate to functional-analyst to revise plan (Phase 5.2 re-post) |
+| Implementation | NO DIRECTION YET | Passing | Poll for review feedback (Phase 5.10) |
+| Implementation | NO DIRECTION YET | Failing | Delegate to developer to fix CI |
+| Implementation | CHANGES REQUESTED | — | Delegate to `c3:project-handle-pr` |
+| Implementation | PLAN APPROVED | Passing | Poll for review feedback (Phase 5.10) — plan was for initial implementation, now reviewing the result |
+| Mixed | Any | — | Treat as Implementation row (implementation is present) |
+| Merged | — | — | Delegate to `c3:project-post-merge` |
 
-| PR Status | Action |
-|-----------|--------|
-| CI failing | Delegate to developer to fix |
-| CI passing, review pending | Wait for owner |
-| Changes requested | Delegate to `c3:project-handle-pr` |
-| Approved | Wait for owner to merge |
+**No open PRs + clean main/master** → Start new task from TODO.md (Phase 1)
+
+**Open issues** → Process issues (Phase 0.3)
+
+⚠️ **CRITICAL — Do Not Re-Wait For Already-Given Approval:**
+
+If the release-manager's report shows the owner has already approved the 
+plan (detected via owner comments containing "approved", "proceed", 
+"looks good", etc.) AND the PR contains only analysis documents (no 
+source files), then:
+
+1. Do NOT re-post the implementation plan
+2. Do NOT delegate polling for approval
+3. Do NOT report "waiting for approval"
+4. DO proceed directly to Phase 5.4 (check domain skills) → 5.5 (implement)
+
+This is the state that caused repeated mistakes in prior sessions. The 
+approval is in the PR comments — read them, trust them, and act on them.
 
 **Do NOT run `gh pr checks` or `gh pr view` directly — get this from release-manager.**
 
@@ -331,7 +354,8 @@ If CI fails, re-spawn bug-fixer to fix, then release-manager commits/pushes agai
 
 **Step 5 — Mark ready, request owner review** (release-manager, same as Phase 5.9).
 
-**Step 6 — Pause** (same as Phase 5.10). On "PR merged" → delegate to
+**Step 6 — Poll for review feedback** (same as Phase 5.10). Delegate polling
+to release-manager (15min timeout). On "PR merged" → delegate to
 `c3:project-post-merge`.
 
 ### If the task is a DEPENDENCY
@@ -642,12 +666,12 @@ Agent({ subagent_type: "c3:release-manager",
 in PR comments. This is mandatory and blocking — not optional, not an
 asking the user.**
 
-Delegate to release-manager to monitor PR comments:
+Delegate to release-manager to poll for owner approval:
 
 ```python
 Agent({ subagent_type: "c3:release-manager",
-  prompt: "Check PR #{number} for owner feedback. Report any comments or approval.",
-  description: "Check PR feedback" })
+  prompt: "Poll PR #{number} for owner approval. Check PR comments and reviews every 60 seconds for up to 15 minutes. Report when the owner approves, requests changes, or when the timeout is reached.",
+  description: "Poll for plan approval" })
 ```
 
 Report to the owner:
@@ -660,11 +684,12 @@ Please review and either:
 Implementation is blocked until you approve.
 ```
 
-| Owner response | Action |
-|----------------|--------|
-| Requests changes | functional-analyst incorporates → release-manager commits → re-post plan → wait again |
-| Rejects entirely | Close PR (+ related issue if applicable) → report to owner |
-| Approves | Proceed to 5.4 |
+| Release-manager reports | Action |
+|--------------------------|--------|
+| Owner requests changes | functional-analyst incorporates → release-manager commits → re-post plan → delegate polling again |
+| Owner rejects entirely | Close PR (+ related issue if applicable) → report to owner |
+| Owner approves | Proceed to 5.4 |
+| Timeout (no response after 15 min) | Report to owner: "No response on PR #{number} yet. Say 'follow up on PR #{number}' to check again." Then pause. |
 
 **Only proceed to 5.4 after explicit owner approval in PR comments.**
 
@@ -778,9 +803,15 @@ Agent({ subagent_type: "c3:release-manager",
   description: "Assign and request review" })
 ```
 
-### 5.10 Pause and report
+### 5.10 Poll for review feedback
 
-⚠️ **Do NOT check for feedback immediately. The workflow pauses here.**
+Delegate to release-manager to poll for PR review feedback:
+
+```python
+Agent({ subagent_type: "c3:release-manager",
+  prompt: "Poll PR #{number} for owner review feedback. Check PR comments and reviews every 60 seconds for up to 15 minutes. Report when the owner provides feedback or when the timeout is reached.",
+  description: "Poll for review feedback" })
+```
 
 Report to the owner:
 ```
@@ -790,13 +821,17 @@ Status:
 - Implementation: Complete
 - CI: Passing
 - Review: Requested from {owner}
-The PR is ready for your review. Say "follow up on PR #{number}" to check for feedback.
+The PR is ready for your review.
 ```
 
-**Do NOT:** check for PR feedback immediately; wait for owner response; block on
-feedback.
+| Release-manager reports | Action |
+|--------------------------|--------|
+| Owner approves | Wait for owner to merge. When user reports merge → delegate to `c3:project-post-merge` |
+| Owner requests changes | Delegate to `c3:project-handle-pr` |
+| Timeout (no response after 15 min) | Report: "No review feedback yet on PR #{number}. Say 'follow up on PR #{number}' to check again." Then pause. |
 
-The workflow ends here for this task. Move to the next issue/PR or pause.
+**Fallback:** If polling times out, the push model remains available — the user
+can say "follow up on PR #{number}" to re-trigger the check at any time.
 
 ---
 
@@ -808,6 +843,11 @@ After Phase 5.10, control returns to the owner. Two triggers delegate onward:
 |---------|------------|
 | "follow up on PR #N" / "check PR #N" | `Skill({ skill: "c3:project-handle-pr", args: "PR #N, task {task-id}, scope {scope}" })` |
 | Owner reports PR merged | `Skill({ skill: "c3:project-post-merge", args: "PR #N, task {task-id}, issue #{number}" })` |
+
+**Polling vs push:** The default flow uses release-manager polling (15min
+timeout) for PR approval and review feedback. When polling times out, the push
+model serves as fallback — the user says "follow up on PR #N" to re-trigger
+the check. Both paths converge on the same sub-skills.
 
 `c3:project-handle-pr` re-enters the review cycle (scoped) on every feedback
 round before push — closing the gap where PR-comment changes previously shipped
