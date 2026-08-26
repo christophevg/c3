@@ -143,6 +143,77 @@ When the skill returns:
 - User reviews changes in browser
 - Commit when approved
 
+## Agent Lifecycle Management
+
+**CRITICAL: Manage agent lifecycle explicitly to avoid exhausting session capacity.**
+
+The session has a maximum number of concurrent agents (default: 10).
+Every spawned agent occupies a slot until explicitly released. If you spawn
+agents without releasing them, you will hit the limit and be unable to
+spawn new agents.
+
+### Three Lifecycle Modes
+
+| Mode | When to Use | How |
+|------|-------------|-----|
+| **Ephemeral** | One-shot tasks: research, analysis, status checks, reviews | `ephemeral=True` in the agent tool call |
+| **Persistent** | Multi-turn work: implementation → review feedback → fixes | `ephemeral=False` (default) — keep agent_id for send_message |
+| **Release when done** | A persistent agent whose work is complete | `release_agent(agent_id="...")` |
+
+### Which Mode for Which Agent?
+
+| Agent | Default Mode | Rationale |
+|-------|-------------|-----------|
+| c3:release-manager | **Ephemeral** | Status reports are one-shot |
+| c3:researcher | **Ephemeral** | Research results are self-contained |
+| c3:business-analyst | **Ephemeral** | Analysis is one-shot |
+| c3:functional-analyst | **Ephemeral** (usually) | One-shot analysis, unless iterative review |
+| c3:api-architect | **Ephemeral** | Design output is self-contained |
+| c3:security-engineer | **Ephemeral** | Security review is one-shot |
+| c3:ui-ux-designer | **Ephemeral** | Design output is self-contained |
+| c3:code-reviewer | **Ephemeral** | Review results are self-contained |
+| c3:testing-engineer | **Ephemeral** | Test creation is one-shot |
+| c3:end-user-documenter | **Ephemeral** | Documentation is one-shot |
+| c3:bug-fixer | **Persistent** (usually) | TDD cycle may need follow-up |
+| c3:python-developer | **Persistent** | Implementation → review feedback → fixes |
+
+### Rules
+
+1. **Default to ephemeral** — Use `ephemeral=True` for all one-shot tasks.
+   Only use persistent (default) when you expect to send follow-up messages.
+
+2. **Release when done** — When a persistent agent's work is complete, call
+   `release_agent(agent_id="...")` to free the session slot.
+
+3. **Reuse before spawning** — Before spawning a new agent, check your
+   previous tool results for an active agent_id of the same type. If one
+   exists and hasn't been released, use `send_message` to continue the
+   conversation instead of spawning a new one.
+
+4. **Never exceed capacity** — If you get a "max_agents limit reached" error,
+   release agents you no longer need before spawning new ones.
+
+### Examples
+
+```
+# Ephemeral (one-shot research):
+agent(agent_name="c3:researcher", prompt="Investigate X", ephemeral=True)
+
+# Persistent (implementation with expected follow-up):
+agent(agent_name="c3:python-developer", prompt="Implement feature Y")
+# → returns agent_id: python-developer
+# ... later, send review feedback ...
+send_message(to="python-developer", message="Fix the import ordering in foo.py")
+# ... when done ...
+release_agent(agent_id="python-developer")
+
+# Reuse instead of re-spawning:
+# If python-developer is still active from a previous call:
+send_message(to="python-developer", message="Now also add tests for Z")
+# Instead of:
+agent(agent_name="c3:python-developer", prompt="Add tests for Z")  # DON'T
+```
+
 ## Guardrails
 
 1. **NEVER implement directly** — Always delegate to specialized agents
@@ -155,6 +226,83 @@ When the skill returns:
 8. **NEVER rubber-stamp reviewer recommendations that diverge from the owner's explicit proposal** — apply the Simplicity Gate below
 9. **NEVER silently implement a wrapper class that fails the Wrapper Check** — even if it appears in the owner's own TODO spec or proposal, flag it and propose the simpler alternative (factory function / inline / constants)
 10. **NEVER work around tool limitations silently** — Follow the Tool Failure Protocol and Stop and Ask Triggers from the global instructions. Report the limitation, explain the cost, and let the user decide
+11. **NEVER report "waiting for your approval/review" and pause without
+     first delegating to release-manager to post AND poll in a single
+     instruction** — Polling is the default mechanism for all PR approval
+     and review feedback waiting points. The release-manager posts the
+     comment/plan AND polls for the response in one instruction, avoiding
+     two iterations.
+
+     **❌ Anti-pattern (what NOT to do):**
+     ```
+     # Step 1: Post comment only (WRONG — splits post and poll)
+     agent(agent_name="c3:release-manager",
+           prompt="Post this plan as a comment on PR #8: [plan]",
+           ephemeral=True)
+     # Step 2: Return to user and ask them to follow up (WRONG — push model)
+     "I've posted the plan on PR #8. Say 'follow up on PR #8' when ready."
+     ```
+
+     **✅ Correct pattern (post AND poll in ONE call):**
+     ```
+     agent(agent_name="c3:release-manager",
+           prompt="Post this plan as a comment on PR #8: [plan]. Then poll
+                  for owner response — check PR comments every 60 seconds
+                  for up to 15 minutes. Report the owner's response or timeout.")
+     ```
+
+## ⚠️ Universal Post-and-Poll Principle
+
+**This is the MOST IMPORTANT operational rule for PR interactions. Read it
+before every PR-related action.**
+
+### The Universal Rule
+
+**After posting ANY comment, plan, question, or response on a PR that
+expects an owner response, the VERY NEXT action is ALWAYS to delegate
+polling to the release-manager in the SAME agent call. There is NO valid
+path where you post a comment on a PR and return to the user without
+polling.**
+
+This applies to ALL scenarios — not just the specific workflows documented
+below:
+
+| Scenario | Post + Poll? |
+|----------|-------------|
+| Initial implementation plan | ✅ Yes — one call |
+| Revised plan after owner feedback | ✅ Yes — one call |
+| Retroactive plan (implementation already done) | ✅ Yes — one call |
+| Question during implementation | ✅ Yes — one call |
+| Mark ready + request review | ✅ Yes — one call |
+| Response to review feedback | ✅ Yes — one call |
+| ANY comment expecting a response | ✅ Yes — one call |
+
+### Polling is ALWAYS the Default
+
+- **Polling** (release-manager posts + waits in a single call) is the
+  **primary and default mechanism** for all PR feedback waiting points.
+- **Push model** ("say 'follow up on PR #N'") is **ONLY a fallback** used
+  after polling times out — it is NEVER the primary or alternative mechanism.
+- There is no situation where you should choose the push model over
+  polling. The push model exists solely so the user can re-trigger a check
+  after a previous polling attempt timed out.
+
+### The Single-Instruction Pattern
+
+Every PR comment that expects a response MUST be a single release-manager
+instruction containing BOTH actions:
+
+```
+# ALWAYS: post + poll in ONE instruction
+agent(agent_name="c3:release-manager",
+      prompt="Post [content] as a comment on PR #{number}. Then poll for
+             owner response — check PR comments and reviews every 60
+             seconds for up to 15 minutes. Report the owner's response
+             or timeout.")
+```
+
+**Never split this into two calls.** The post and the poll are ONE atomic
+operation. Splitting them is the #1 cause of the push-model anti-pattern.
 
 ## ⚠️ Simplicity Principle — Avoid Wrappers is Primary
 
@@ -209,37 +357,47 @@ the owner caught them.
 
 **CRITICAL: All decisions are handled through PR comments, not interactive prompts.**
 
+> **All post-and-poll actions below MUST follow the Universal Post-and-Poll
+> Principle above.** Every comment posted on a PR that expects an owner
+> response is a single release-manager instruction that BOTH posts AND polls.
+> Never split. Never fall back to the push model before polling times out.
+
 ### Implementation Plan Workflow
 
 After analysis is complete:
 
 1. **Create PR branch** with analysis documents committed
-2. **Post implementation plan as PR comment** (not via interactive prompt)
-3. **Wait for owner approval in PR comments (BLOCKING)**
+2. **Delegate to release-manager: post plan + poll for approval (BLOCKING)**
+   - Single instruction to release-manager: "Post the implementation plan
+     as PR comment on PR #{number}: [plan content]. Then poll for owner
+     approval — check PR comments and reviews every 60 seconds for up to
+     15 minutes. Report when the owner approves, requests changes, or
+     timeout is reached."
    - ⚠️ **Implementation cannot proceed until owner approves**
    - Do NOT ask "Would you like to proceed?" — this is not optional
-   - Report to owner: "Implementation plan posted. Waiting for your approval before proceeding."
-   - Wait for explicit approval comment in PR
-4. **If owner requests changes:**
-   - Delegate to functional-analyst to incorporate feedback
-   - Update analysis documents (new commit)
-   - Post revised plan as PR comment
-   - Return to step 3 (blocking wait)
-5. **If owner rejects entirely:**
-   - Close PR
-   - Close related issue (if applicable)
-   - Report to owner
-6. **If owner approves:**
-   - Delegate to python-developer for implementation
+   - Do NOT report to the owner and wait — the release-manager polls for you
+3. **Based on release-manager's polling result:**
+   - Owner approved → Delegate to python-developer for implementation
+   - Owner requests changes → Delegate to functional-analyst to incorporate
+     feedback, update analysis documents (new commit), then return to step 2
+     (re-post revised plan + re-poll in one instruction)
+   - Owner rejects → Close PR, close related issue if applicable, report to owner
+   - Timeout → Report to owner: "No response on PR #{number} yet. Say
+     'follow up on PR #{number}' to check again." Then pause.
 
 ### Questions During Implementation
 
 When questions emerge during implementation:
 
+> **Follows the Universal Post-and-Poll Principle above.** Post the question
+> AND poll for the response in a single release-manager instruction.
+
 1. **Commit any review documents to PR**
-2. **Post question as PR comment**
-3. **Wait for owner response in PR comments**
-4. **Continue after owner responds**
+2. **Delegate to release-manager: post question + poll for response**
+   - Single instruction: "Post question as PR comment on PR #{number}:
+     [question]. Then poll for owner response — check PR comments every
+     60 seconds for up to 15 minutes. Report the owner's response or timeout."
+3. **Continue after owner responds** (or report timeout → pause)
 
 ## Post-Merge Workflow
 
@@ -358,11 +516,24 @@ After processing an issue or PR:
 
 After implementation is complete and CI passes:
 
-1. **Mark PR as ready for review** (convert from draft)
-2. **Assign owner and request review**
-3. **Post comment: "Implementation complete. Ready for review."**
-4. **Pause** — Do NOT check for feedback immediately
-5. **User says "follow up on PR #{number}"** to check for feedback
+> **Follows the Universal Post-and-Poll Principle above.** The mark-ready +
+> request-review + poll is a single release-manager instruction. Never split.
+> The push model ("follow up on PR #N") is only a timeout fallback.
+
+1. **Delegate to release-manager: mark ready + request review + poll**
+   - Single instruction: "Mark PR #{number} as ready for review (convert
+     from draft). Assign to {owner} and request review. Post comment:
+     'Implementation complete. Ready for review.' Then poll for owner
+     review feedback — check PR comments and reviews every 60 seconds
+     for up to 15 minutes. Report the owner's feedback or timeout."
+2. **Based on release-manager's polling result:**
+   - Owner approves → Wait for owner to merge. When user reports merge →
+     delegate to `c3:project-post-merge`
+   - Owner requests changes → Delegate to `c3:project-handle-pr`
+   - Timeout → Report: "No review feedback yet on PR #{number}. Say
+     'follow up on PR #{number}' to check again." Then pause.
+3. **Fallback:** If polling times out, the user can say
+   "follow up on PR #{number}" to re-trigger the check at any time
    → **MUST invoke `c3:project-handle-pr` skill** — do NOT just ask
      release-manager for a status report (that misses formal reviews and
      inline comments)
