@@ -99,6 +99,33 @@ If a project contains a `pyproject.toml` file, it is managed using `uv`. This me
 -> Use SendMessage to: abc123
 ```
 
+### Agent Lifecycle Management
+
+**CRITICAL**: Manage spawned agent lifecycle explicitly to avoid exhausting session capacity.
+
+The session has a maximum number of concurrent agents (default: 10).
+Every spawned agent occupies a slot until explicitly released.
+
+- **Ephemeral agents** (`ephemeral=True`): Use for one-shot tasks (research,
+  analysis, status checks, reviews). The agent is automatically released
+  after responding. No follow-up possible. No `agent_id` is returned.
+
+- **Persistent agents** (`ephemeral=False`, default): Use when you expect
+  follow-up work (e.g., implementation → review feedback → fixes). Keep
+  the `agent_id` and use `send_message` for follow-ups.
+
+- **Release when done**: Call `release_agent(agent_id="...")` when a
+  persistent agent's work is complete. This frees session capacity for
+  new agents.
+
+- **Reuse before spawning**: Before spawning a new agent, check if an
+  active agent of the same type exists (from a previous `agent_id` in your
+  tool results). If so, use `send_message` to continue the conversation
+  instead of spawning a new one.
+
+- **Never exceed capacity**: If you get a "max_agents limit reached" error,
+  release agents you no longer need before spawning new ones.
+
 ### Tool Failure Protocol
 
 **When a tool returns unexpected results** (empty, error, wrong data):
