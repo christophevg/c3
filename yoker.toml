@@ -1,6 +1,3 @@
-[permissions]
-filesystem_paths = ["."]
-
 [context]
 storage_path = "./local/context"
 
