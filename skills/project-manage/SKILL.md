@@ -40,9 +40,37 @@ agent(agent_name="<role>", prompt="<task>", ephemeral=<true|false>)
 
 Skills are invoked with the skill tool: `skill(skill_name="c3:...")`.
 
----
+### Post-and-poll recipes (procedure record)
+
+Every PR interaction that expects an owner response is ONE release-manager
+instruction that posts AND polls — never split into a post call plus a
+user hand-off:
+
+```
+agent(agent_name="c3:release-manager",
+      prompt="Post <content> as a comment on PR #{n}. Then poll for owner
+             response — check PR comments and reviews every 60 seconds for
+             up to 15 minutes. Report the owner's response or timeout.")
+```
+
+Applies to: implementation plans, revised plans, implementation questions,
+mark-ready + review request, responses to review feedback — any comment
+expecting a response. Never split post and poll into two calls; never
+hand back to the owner with "say 'follow up on PR #N'" except after a
+polling timeout (the push model is a timeout fallback only).
+
+Anti-pattern (splits the atomic operation, strands the workflow):
+posting the plan in one call, then reporting "I've posted the plan, say
+'follow up' when ready".
 
 ## Phase 0 — Session Start & Triage
+
+**Phase 0 is unconditional.** Whatever the owner's first request in this
+session — however phrased ("manage this project", "investigate X",
+"there's a bug", "what's the status") — any request concerning the project
+routes through this phase first: state detection, then the ask. Starting a
+session with the project-manager IS entering managed mode; the playbook
+does not require magic words.
 
 **0.1 Project state (release-manager, ephemeral).** Engage c3:release-manager
 with "Report project state". Its report is the session's single source of
