@@ -1,5 +1,6 @@
 ---
 name: lessons-learned
+type: workflow
 description: Use this skill any time when reviewing a session to improve existing skills, agents and/or create additional skills/agents.
 ---
 
@@ -190,3 +191,7 @@ After implementing:
 - Confirm memories saved
 - Confirm commits created
 - Note any follow-up actions needed
+## Related
+
+- `develop-skill` — where skill improvements from this review land
+- `develop-agent` — where agent improvements from this review land

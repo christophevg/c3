@@ -1,5 +1,6 @@
 ---
 name: transcribe-session
+type: workflow
 description: |
   Use this skill when the user asks to "transcribe session", "create transcript", "log conversation", or wants to manually create a curated transcript of the current or recent session.
 ---
@@ -134,3 +135,6 @@ After creating the transcript, ALWAYS update `conversations/index.md`:
 - Check for existing transcripts to match style
 - For continued sessions, append to existing files
 - Extract key information: decisions made, files modified, commits created
+## Related
+
+- `lessons-learned` — companion meta-skill; a transcript feeds the session review

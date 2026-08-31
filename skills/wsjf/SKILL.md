@@ -1,5 +1,6 @@
 ---
 name: wsjf
+type: workflow
 description: |
   Interactive WSJF (Weighted Shortest Job First) scoring for MBI prioritization. Use when user wants to prioritize MBIs using economic decision-making. WSJF calculates priority based on Business Value, Time Criticality, Risk Reduction, and Job Size. Examples: "/wsjf", "score MBIs", "prioritize using WSJF".
 ---
@@ -265,3 +266,6 @@ Agent: Updated PLAN.md. MBIs reordered by WSJF score.
 - This is **interactive only** — scores are calculated on-demand, not automatically
 - WSJF scores should be recalibrated every 8-12 weeks or when priorities change
 - Job Size is in the denominator — smaller jobs get higher WSJF scores
+## Related
+
+- `plan` — owns the PLAN.md backlog and MBI records being scored

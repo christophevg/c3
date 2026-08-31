@@ -1,5 +1,6 @@
 ---
 name: readme
+type: knowledge
 description: |
   Create and maintain README.md files for agentic projects. Use when creating, updating, or reviewing READMEs. Examples: "create a README", "update the README", "review README structure", "add badges to README".
 ---

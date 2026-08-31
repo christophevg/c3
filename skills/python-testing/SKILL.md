@@ -1,5 +1,6 @@
 ---
 name: python-testing
+type: knowledge
 description: |
   Use this skill when writing or reviewing Python tests. Provides guidelines for relevant and tight testing - focus on behavior, not implementation; test what matters, not everything.
 ---
@@ -779,3 +780,8 @@ For every test, ask:
 ---
 
 **Golden Rule:** "A test is valuable if it catches bugs, enables refactoring, and survives implementation changes. Everything else is noise."
+
+## Related
+
+- `python` — code standards this testing guidance complements
+- `python-comments` — comment/docstring guidelines from the same Python family

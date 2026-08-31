@@ -1,5 +1,6 @@
 ---
 name: naming
+type: knowledge
 description: Guides the process of choosing a name for a project, product, agent, or entity — from trait identification through research to shortlisting and decision.
 triggers:
   - name
@@ -101,3 +102,6 @@ Before finalizing a shortlist:
 - [ ] Near-miss tier included
 - [ ] Comparison table maps names to trait clusters
 - [ ] All research documented with provenance in SOURCES.md
+## Related
+
+- `develop-agent`, `develop-skill` — consume naming decisions when creating agents/skills

@@ -1,5 +1,6 @@
 ---
 name: python
+type: knowledge
 description: Use this skill any time when editing Python code
 ---
 

@@ -1,5 +1,6 @@
 ---
 name: documentation
+type: knowledge
 description: Use this skill when setting up or updating project documentation for Sphinx/readthedocs.org. Handles API reference, guides, and changelog updates.
 ---
 
@@ -183,3 +184,8 @@ Before committing documentation:
 3. Update changelog
 4. Update screenshot if showcase changed
 5. Ask user to verify screenshot
+## Related
+
+- `readme` — project-level README creation (this skill covers Sphinx/readthedocs)
+- `python-project` — uv project setup that hosts the documentation
+- `c3:release` — release workflow that owns changelog updates at release time

@@ -1,5 +1,6 @@
 ---
 name: rich
+type: knowledge
 description: |
   Guide Python Rich library usage for terminal output with styled text, tables, progress bars, and logging. Use when user mentions rich, console output, terminal formatting, progress bars, or code imports rich. Default choice for Python console applications.
 ---

@@ -1,5 +1,6 @@
 ---
 name: quart-webapp
+type: knowledge
 description: |
   Use this skill when creating or modifying Quart webapps with Uvicorn. Covers application factory pattern, WebSocket endpoints, CORS configuration, and Python webapp standards. Examples: "create a Quart webapp", "add WebSocket endpoint", "configure CORS for webapp", "set up uvicorn".
 ---

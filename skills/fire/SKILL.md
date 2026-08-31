@@ -1,5 +1,6 @@
 ---
 name: fire
+type: knowledge
 description: Use this skill any time when creating code using Fire
 ---
 
@@ -35,3 +36,7 @@ def a_command(an_argument=None):
     an_argument = os.environ.get("ARGUMENT_ENV_NAME", "a sensible default")
   # perform logic using `an_argument`
 ```
+## Related
+
+- `python` — general code standards for Fire-based CLIs
+- `rich` — styled console output commonly combined with Fire CLIs

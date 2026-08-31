@@ -1,5 +1,6 @@
 ---
 name: markdown-to-pdf
+type: knowledge
 description: Converts folders of Markdown files to a single PDF document with table of contents, CSS styling, and image support. Use when the user asks to convert markdown to PDF, generate PDFs from documentation folders, create reports from markdown, or bundle markdown files into a single document.
 ---
 

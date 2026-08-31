@@ -57,6 +57,12 @@ KNOWN_YOKER = {
     "api-design", "project", "project-feature", "project-manage",
     "project-handle-pr", "project-post-merge", "project-review",
     "project-status", "project-todo-refine",
+    "analysis-integration", "baseweb", "documentation", "fire",
+    "lessons-learned", "markdown-to-pdf", "naming", "ollama", "plan",
+    "prepare-for-exam", "pymongo", "python", "python-comments",
+    "python-project", "python-testing", "quart-webapp", "readme", "rich",
+    "textual", "transcribe-session", "vue", "vue-form-generator",
+    "vuetify-v1", "vuetify-v2", "vuetify-v3", "vuetify-v4", "wsjf",
   },
 }
 

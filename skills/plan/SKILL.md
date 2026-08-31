@@ -1,5 +1,6 @@
 ---
 name: plan
+type: workflow
 description: |
   Manage PLAN.md (Intake Backlog with Minimal Business Increments). Use when user asks about MBIs, wants to create/analyze/score MBIs, or says "/plan". Examples: "/plan", "analyze MBI", "create MBI", "score MBIs with WSJF".
 ---
@@ -338,3 +339,7 @@ Agent: Added to Unsorted MBIs in PLAN.md.
 - Unsorted MBIs are raw ideas — functional-analyst processes them
 - Active MBI tasks are prioritized at top of TODO.md
 - WSJF scoring is optional but recommended for backlog prioritization
+## Related
+
+- `wsjf` — WSJF scoring over the MBI backlog this skill manages
+- `c3:project-feature` — intake that registers MBIs in PLAN.md

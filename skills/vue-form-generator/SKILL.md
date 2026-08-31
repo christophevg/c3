@@ -1,5 +1,6 @@
 ---
 name: vue-form-generator
+type: knowledge
 description: |
   Use this skill when creating complex, schema-based forms in Vue.js applications. Preferred for larger forms, dynamic forms, and API-driven form schemas.
   triggers:
@@ -529,3 +530,8 @@ This skill collaborates with:
 - [VueFormGenerator Documentation](https://vue-generators.gitbook.io/vue-generators/)
 - [GitHub Repository](https://github.com/vue-generators/vue-form-generator)
 - [Vuetify Skill](skills/vuetify-v3/SKILL.md) - For Vuetify integration
+## Related
+
+- `vue` — component and reactivity patterns these forms build on
+- `baseweb` — project conventions where these forms live
+- `vuetify-v2` — component library commonly paired with VueFormGenerator

@@ -1,5 +1,6 @@
 ---
 name: vuetify-v3
+type: knowledge
 description: |
   Use this skill when creating or modifying Vuetify V3 UI components in Baseweb projects. Examples: "create Vuetify 3 component", "Vuetify V3 form patterns", "Vuetify 3 data table", "migrate Vuetify 2 to 3"
   triggers:
@@ -688,3 +689,7 @@ theme: {
 - [Material Design Icons](https://materialdesignicons.com/)
 - [Baseweb Skill](skills/baseweb/SKILL.md)
 - [Vuetify V2 Skill](skills/vuetify-v2/SKILL.md) - For legacy V2 projects
+## Related
+
+- `baseweb` — companion skill: this covers Vuetify V3 specifics only
+- `vuetify-v2` — migration source for the V2 → V3 upgrades named in the triggers

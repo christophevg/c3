@@ -1,5 +1,6 @@
 ---
 name: baseweb
+type: knowledge
 description: Use this skill any time when creating or modifying code in Baseweb projects
 triggers:
   - when creating code using Baseweb
@@ -258,3 +259,8 @@ Both projects confirm the patterns documented in this skill.
 - `/start-baseweb-project` - Create a new Baseweb project from template
 - `patterns/project-setup.md` - Detailed project setup patterns
 - `templates/` - Code templates for common patterns
+## Related
+
+- `vuetify-v1`–`vuetify-v4` — Vuetify component packs for each major version
+- `vue` — component and state patterns used inside Baseweb projects
+- `vue-form-generator` — schema-driven forms for Baseweb projects

@@ -1,5 +1,6 @@
 ---
 name: vuetify-v1
+type: knowledge
 description: |
   Use this skill when creating or modifying Vuetify 1.5 UI components in legacy Baseweb projects
   triggers:
@@ -435,3 +436,7 @@ This skill collaborates with:
 - [Material Design Icons](https://materialdesignicons.com/)
 - [Vuetify V2 Skill](skills/vuetify-v2/SKILL.md) - For V2 projects
 - [Baseweb Skill](skills/baseweb/SKILL.md)
+## Related
+
+- `baseweb` — host framework of the legacy projects this skill serves
+- `vuetify-v2` — migration target named in this skill's trigger surface

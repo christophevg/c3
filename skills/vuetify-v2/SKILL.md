@@ -1,5 +1,6 @@
 ---
 name: vuetify-v2
+type: knowledge
 description: |
   Use this skill when creating or modifying Vuetify V2 UI components in Baseweb projects
   triggers:
@@ -320,3 +321,7 @@ This skill collaborates with:
 - [Vuetify V2 Documentation](https://v2.vuetifyjs.com/)
 - [Material Design Icons](https://materialdesignicons.com/)
 - [Baseweb Skill](skills/baseweb/SKILL.md)
+## Related
+
+- `baseweb` — companion skill: covers structure, navigation, API integration, Vuex store; this skill covers Vuetify V2 components
+- `vue` — shared component patterns

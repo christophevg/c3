@@ -1,5 +1,6 @@
 ---
 name: python-comments
+type: knowledge
 description: |
   Use this skill when writing or reviewing Python code comments and docstrings. Provides guidelines for tight, relevant comments that explain WHY not WHAT.
 ---
@@ -384,3 +385,7 @@ For every comment, ask:
 ---
 
 **Golden Rule:** "Code tells you HOW. Comments tell you WHY." — Write code that doesn't need comments, then add comments for everything else.
+## Related
+
+- `python` — code standards this commenting guidance complements
+- `python-testing` — test-writing guidelines from the same family

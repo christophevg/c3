@@ -1,5 +1,6 @@
 ---
 name: pymongo
+type: knowledge
 description: |
   Use this skill when creating or modifying MongoDB database access code with PyMongo
 ---
@@ -403,3 +404,8 @@ def test_paginated_list(self):
   assert 'pagination' in result
   assert result['pagination']['total_items'] == 1
 ```
+
+## Related
+
+- `python` — general Python code standards for the database layer
+- `fire` — CLI integration pattern shown in this skill's CLI section

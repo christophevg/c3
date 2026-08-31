@@ -1,5 +1,6 @@
 ---
 name: prepare-for-exam
+type: knowledge
 description: |
   Convert PDF documents to interactive exam preparation materials. Generates questions per document, cross-document questions, and optional glossary. Produces Markdown and HTML output with navigation and progress tracking. Use when user wants to create exam questions from PDF course materials. Examples: "create exam questions from these PDFs", "convert PDFs to study guide", "generate questions from course notes", "make interactive HTML from PDFs", "create a glossary from course materials"
 ---

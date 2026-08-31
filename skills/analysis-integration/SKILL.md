@@ -1,5 +1,6 @@
 ---
 name: analysis-integration
+type: workflow
 description: Use this skill after multiple domain agents complete their reviews to integrate findings and update the backlog coherently.
 ---
 
@@ -90,3 +91,7 @@ Invoke this skill when:
 - Updated `TODO.md` with integrated tasks
 - New `analysis/YYYY-MM-DD-integration-summary.md` document
 - Updated `analysis/README.md` index
+## Related
+
+- functional-analyst — TODO.md maintainer; consolidated backlog changes flow through its workflow
+- `c3:project-review` — review cycle whose domain findings this consolidates

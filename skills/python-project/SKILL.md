@@ -1,5 +1,6 @@
 ---
 name: python-project
+type: knowledge
 description: |
   Use this skill when setting up or managing Python projects with uv-based tooling. Examples: "uv init my-app", "migrate setup.py to uv", "add pytest to project".
 ---
