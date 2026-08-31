@@ -50,8 +50,8 @@ KNOWN_YOKER = {
   "agents": {
     "api-architect", "bug-fixer", "business-analyst", "code-reviewer",
     "end-user-documenter", "functional-analyst", "project-manager",
-    "release-manager", "researcher", "security-engineer", "testing-engineer",
-    "ui-ux-designer",
+    "python-developer", "release-manager", "researcher",
+    "security-engineer", "testing-engineer", "ui-ux-designer",
   },
   "skills": {
     "api-design", "project", "project-feature", "project-manage",
