@@ -93,8 +93,24 @@ halt, fix, push, wait again.
 Clean `dist/`/`build//*.egg-info`, then `uv build`. Verify before any
 upload: wheel contents show real source files (not just `.dist-info/`),
 correct structure, no local paths. Empty wheel → fix hatch `packages`
-(conflicting `sources` + `packages = ["src/..."]` is the classic cause),
+(conflicting `sources` + `packages = ["src/..."]` is the classic cause —
+never combine `[tool.hatch.build] sources` with `packages = ["src/..."]`;
+with `sources = ["src"]`, packages must be relative: `["package_name"]`),
 rebuild.
+
+**Pre-upload content checks (all before gate 2):**
+
+- **README image paths are absolute** — PyPI does not serve relative
+  paths from the package; use `raw.githubusercontent.com` URLs:
+  `![Alt](https://raw.githubusercontent.com/owner/repo/main/media/image.svg)`.
+  Relative paths (`media/image.svg`, `docs/image.png`) silently render
+  broken on PyPI.
+- **No local-path references in pyproject.toml** — `[tool.uv.sources]`
+  and `[tool.uv.workspace]` reference paths that don't exist on PyPI and
+  make uploads fail with "Invalid URL": remove before publishing.
+- **Version synced across files** — `pyproject.toml` `version` and any
+  `__version__` in `src/**/__init__.py` match exactly.
+- **Entry point sanity** — `[project.scripts]` targets an existing module.
 
 ### 7 — Tag and GitHub release
 
@@ -139,3 +155,14 @@ install `uv pip install package==X.Y.Z`.
 - Re-run the full publish pipeline to retry an upload.
 - Propose a changelog section the commits don't support — flag anomalies
   for the owner instead.
+
+## Common failures
+
+| Issue | Action |
+|-------|--------|
+| CI fails after push | Fix, commit, push, wait again |
+| Empty wheel (module not found after install) | Fix hatch `packages` config (see step 6), rebuild |
+| Version already on PyPI | Cannot overwrite — bump the version |
+| Upload HTTP 400 | May have partially succeeded — check pypi.org before retrying; retry upload-only; max 3 attempts |
+| Upload fails with "Invalid URL" | `[tool.uv.sources]` / `[tool.uv.workspace]` still present — remove them |
+| Broken images on PyPI page | README uses relative image paths — switch to `raw.githubusercontent.com` URLs |
