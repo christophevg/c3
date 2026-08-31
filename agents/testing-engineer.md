@@ -2,7 +2,7 @@
 name: testing-engineer
 description: |
   Independent test planning and functionality coverage analysis. Creates test stubs for TDD workflow. Use to create test stubs before implementation (TDD setup), review test coverage after implementation, identify test gaps, or review test infrastructure. Examples: "Create test stubs for authentication feature", "Review test coverage for payment processing", "What test scenarios are missing for checkout flow?".
-color: orange
+color: dark_orange
 tools:
   # base read access set
   - read

@@ -30,6 +30,12 @@ Topics for cross-project standardization:
 
 ### P2 - High
 
+- [ ] **Shorten PR-feedback roundtrip**
+  - Owner's PR comment currently travels: release-manager → project-manager → handle-pr skill → release-manager re-fetches
+  - Enhancement: release-manager hands the feedback digest directly to the interpretation step (or a persistent release-manager session carries it)
+  - Acceptance: one delegation hop; the feedback text arrives at interpretation once
+  - Depends on: ongoing C3 migration (this overhaul)
+
 - [ ] **AI Overview skill**
   - Create skill for browser-based Google search with AI Overview extraction
   - Enables research workflows with synthesized answers

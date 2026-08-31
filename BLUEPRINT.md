@@ -40,7 +40,7 @@ The owner is the only decision-maker. Agents propose; the owner approves. Only t
 
 ### 1.4 Shared artifacts (mode-agnostic)
 
-- `TODO.md` — prioritized backlog (Unsorted → Backlog P1–P4 → Done)
+- `TODO.md` — prioritized backlog: `## Unsorted` → `## Backlog` (P1–P4). There is no `## Done` section: completed tasks are removed; git history and `reporting/` are the record.
 - `PLAN.md` — optional MBIs, for larger projects (`c3:plan`)
 - `analysis/` — functional, domain, security and bug analyses
 - `reporting/` — workflow-local (consensus, plans, summaries); never committed when gitignored
@@ -72,12 +72,15 @@ GLM 5.3 adheres literally; imprecision becomes deadlock. Therefore:
 
 ## 2 — Agent Template
 
-File: `agents/<name>.md` — frontmatter: `name`, `description` (when to engage; explicit and precise — this is the trigger surface for owner and peers).
+File: `agents/<name>.md` — frontmatter: `name`, `description` (when to engage; explicit and precise — this is the trigger surface for owner and peers), `color`, and `tools:` — with Yoker tool names only: per-agent grants ARE the static-permission model (base read set, write set, specialist tools, engagement/sleep as needed).
 
 ```markdown
 ---
 name: <name>
 description: <when to engage — explicit, precise>
+color: <color>
+tools:
+  - <Yoker tool names only>
 ---
 
 # Persona
@@ -128,7 +131,7 @@ type: workflow | knowledge
 - **Agents (13):** all restated as personas per template. `project-manager` persona points to the `project-manage` playbook (one place defines managed behavior). `business-analyst` is **retained** (business-value pre-analysis feeding PLAN/TODO; owner will trial it, re-evaluate later).
 - **Skills, three families:**
   - *Workflow:* `project*` suite, `plan`, `wsjf`, `github`, `commit`, `release`, `git-scripting`, `git-activity-report`, `bug-fixing`, `bug-hunting`, `pypi-publish`
-  - *Knowledge:* `python*`, `baseweb`, `vue`, `vuetify` (merged from v1–v4), `textual`, `rich`, `fire`, `pymongo`, `ollama`, `quart-webapp`, `readme`, `documentation`, `naming`, `spec2mod`, `prepare-for-exam`, `markdown-to-pdf` (deferred — see decision log), `project-migrate`, `website-manage`
+  - *Knowledge:* `python*`, `baseweb`, `vue`, `vuetify` (merged from v1–v4), `textual`, `rich`, `fire`, `pymongo`, `ollama`, `quart-webapp`, `readme`, `documentation`, `naming`, `api-design` (restored reference pack from slimmed api-architect), `prepare-for-exam`, `markdown-to-pdf` (deferred — see decision log), `project-migrate`, `website-manage`
   - *Meta:* `develop-agent`, `develop-skill`, `lessons-learned`, `transcribe-session`
 - **Doctrine relocation:** Wrapper Check, owner-proposal-default, simplicity gate move from `project-manage` into the design-review agents (api-architect, security-engineer), collapsed to their own voice.
 - **Overlap resolution** (e.g. `bug-fixer` ↔ `bug-fixing`, `testing-engineer` ↔ `python-testing`): persona invokes the skill's procedure; decided per file at inventory sign-off.
@@ -163,12 +166,23 @@ Extend `bin/validate.py` to enforce this blueprint mechanically:
 - 2026-08-31 — Agents never question assignments; mode and heft are the owner's call.
 - 2026-08-31 — Infrastructure note: `Makefile` is C3-local; `Makefile.yoker` is symlinked as `~/.yoker/Makefile` and included by all project Makefiles.
 - 2026-08-31 — Agent engagement vocabulary: ephemeral (one-shot) / persistent (ongoing) — no sub-agent hierarchy language.
+- 2026-08-31 — TODO.md drops the `## Done` section: completed tasks are removed on completion; the merged PR, reporting/summary.md and git history are the record. All owning definitions updated.
+- 2026-08-31 — Batch A audit with owner: stripped content was duplication except two items (project-status detection heuristics; todo-refine documentation-update ordering) — both restored in place. Verified relocated content landed: review tests in code-reviewer persona, MBI creation in c3:plan.
+- 2026-08-31 — Functional-analyst clarified as the per-task functional guardian (most-engaged agent): verifies/prepares each task (2.3), supplies functional context in design review and integrates domain findings (3), sits in consensus (4), reviews implementation (5.6). Full Phase-1 analysis remains conditional on missing/stale artifacts only.
+- 2026-08-31 — Task selection is autonomous (Phase 2.4): "manage the project" is the instruction to proceed; the selection is reported, not gated. Owner interjects to change course.
+- 2026-08-31 — Full-workflow dogfood #1 (yoker-test): workflow followed correctly; fixes: (1) MERGED PR state = terminal polling signal (release-manager + playbook 5.10 + handle-pr 6.6); (2) CI green strictly precedes ready-for-review request (5.8 + persona I-never); (3) make-run flag-injection pitfall documented in release-manager. Enhancement deferred to TODO.md: PR-feedback roundtrip shortening.
+- 2026-08-31 — Batch A completion audit with owner: stripped content was duplication except two items (project-status detection heuristics; todo-refine documentation-update ordering) — both restored in place. Verified relocated items landed: review tests in code-reviewer persona, MBI creation in c3:plan.
 - 2026-08-31 (inventory round) — `business-analyst` retained: business-value pre-analysis feeding PLAN/TODO; re-evaluate after real-world use.
 - 2026-08-31 — `api2mod` deleted outright (experimental, unused, phantom sub-skill); no salvage — `spec2mod` only drops cross-references to it.
 - 2026-08-31 — `develop-agent` retained; rewritten blueprint-aware (drafts initial new agent definitions).
 - 2026-08-31 — C3 is Yoker-only: all Claude Code support removed (tooling, docs, vocabulary); agent frontmatter `tools:` lists migrated to actual Yoker tool names.
+- 2026-08-31 — Agent frontmatter keeps `color` + `tools:` (Yoker tool names only): per-agent grants ARE the static-permission model; base-read/write sets + specialist tools. Reverses the earlier "drop them as Claude-Code legacy" decision after owner review.
+- 2026-08-31 — `spec2mod` deleted alongside `api2mod` (same paused experiment; both restorable from git history when the experiment resumes).
 - 2026-08-31 — Duplicate-pattern skill refactors deferred to a later phase — notably markdown-to-pdf (Bash() reliance → future Yoker tool or shared Makefile target) and the root `scripts/` copies tied to it.
 - 2026-08-31 — Polling is a real capability: sub-agents busy-wait via the `sleep` tool between GitHub checks (proven in live transcripts); release-manager keeps ~60s-interval polling in managed mode.
 - 2026-08-31 — Design-doctrine consolidation to api-architect/security-engineer approved (explicit invocations stay covered because skills route design questions through those agents).
 - 2026-08-31 — All `pkgq` references removed (tool retired).
 - 2026-08-31 — All `memory/` references removed from agents/skills; valuable memory content incorporated into skills/backlog first; dedicated memory system deferred.
+- 2026-08-31 — Reference material is relocated, never deleted: api-architect's encyclopedic API-design appendix became the `api-design` knowledge skill (persona loads it); observe usage before ever considering removal. This is the standing rule for all slimming: knowledge moves to a knowledge skill, redundancy moves to the one owning place — deletion only via owner decision. Verified against release-manager after owner challenge: operational recipes (PR-status gathering, PR creation, release API, date/attribution recipes, error table) belong IN the persona — they are its daily vocabulary. Slimming may remove scar tissue and duplication, never operative procedure or reference knowledge.
+- 2026-08-31 — Validations: Makefile `version-*`/`release-*`/`tag` targets and `bin/version.py` are referenced by no agent/skill → delete in Batch B; publish path confirmed as release-manager → `c3:release` (pypi-publish referenced only as related material) → merge loses nothing.
+- 2026-08-31 — Live-test lesson (release-manager state report): github list operations return single-line JSON — post_filter cannot recover oversized responses; instructions must prescribe the narrowest query (`state="open"`, small `limit`, classify from list fields, `pr_view` only for depth). Standing recipe rule: **exact tool-call recipes belong in definitions for every repeated tool pattern; the payload model (what's big, what filters can/cannot do) is part of the recipe.** Yoker bug reported by owner: `repo_view` + `repo` param fails (`--repo` unknown flag in gh CLI).

@@ -2,7 +2,7 @@
 name: code-reviewer
 description: |
   Reviews code for quality and best practices. Use when code implementation is complete, when reviewing pull requests, or when performing quality audits. Provides structured code review documents with prioritized findings. Examples: "Review the implementation in src/auth/", "Perform code review for task 1.2", "Baseline review of the payments module".
-color: orange
+color: dark_orange
 tools:
   # base read access set
   - read
