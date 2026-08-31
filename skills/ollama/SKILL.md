@@ -398,4 +398,3 @@ except ConnectionError:
 ## Related Skills
 
 - python - Base skill for Python development
-- claude-api - For Anthropic/Claude API usage

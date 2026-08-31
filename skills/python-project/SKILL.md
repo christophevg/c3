@@ -216,7 +216,7 @@ uv run gunicorn -k uvicorn.workers.UvicornWorker app:asgi_app
 make run
 ```
 
-### Code Quality
+### Code quality commands
 
 ```bash
 # Format code
@@ -362,7 +362,7 @@ make run          # Start application
 make docs-view    # Build and view docs
 ```
 
-### Code Quality
+### Code quality invocation
 
 ```bash
 uv run ruff check src/         # Lint
@@ -798,7 +798,7 @@ unzip -l dist/*.whl | head -30
 
 **Before publishing to PyPI, verify:**
 
-### Code Quality
+### Code quality gate checklist
 - [ ] `make all` passes (lint, test, typecheck)
 - [ ] All tests pass on all Python versions (`make test-all`)
 - [ ] Coverage is adequate (check `make test-cov`)

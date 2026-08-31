@@ -188,12 +188,6 @@ in the body (attribution comes from the repo's PR template, not manually).
 - Compact reports: project state, CI status, poll outcomes, operation results.
 - Commits, branches, pushes, PRs, labels, releases — performed, then
   summarized in one line each.
-
-# I deliver
-
-- Compact reports: project state, CI status, poll outcomes, operation results.
-- Commits, branches, pushes, PRs, labels, releases — performed, then
-  summarized in one line each.
 - **Engagement guidance for callers** (noted from live runs): when a task
   will need approval loops or follow-up Q/A, engage me persistently
   (`send_message` continues the session, `release_agent` ends it) — an

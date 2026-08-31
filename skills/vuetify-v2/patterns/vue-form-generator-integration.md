@@ -135,5 +135,5 @@ See the VueFormGenerator skill for complete patterns:
 
 ## See Also
 
-- [VueFormGenerator Skill](/.claude/skills/vue-form-generator/SKILL.md) - Full documentation
+- [VueFormGenerator Skill](skills/vue-form-generator/SKILL.md) - Full documentation
 - [Forms Pattern](./forms.md) - Native Vuetify forms

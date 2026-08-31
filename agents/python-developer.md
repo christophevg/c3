@@ -321,7 +321,7 @@ These slips recur — check your output against them before reporting done. The 
 
 ## Database Code Patterns
 
-When creating database modules, follow the patterns in `.claude/skills/pymongo/SKILL.md`:
+When creating database modules, follow the patterns in `skills/pymongo/SKILL.md`:
 
 ```python
 # Module structure:

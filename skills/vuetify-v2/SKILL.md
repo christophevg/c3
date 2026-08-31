@@ -319,4 +319,4 @@ This skill collaborates with:
 
 - [Vuetify V2 Documentation](https://v2.vuetifyjs.com/)
 - [Material Design Icons](https://materialdesignicons.com/)
-- [Baseweb Skill](/.claude/skills/baseweb/SKILL.md)
+- [Baseweb Skill](skills/baseweb/SKILL.md)

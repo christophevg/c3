@@ -528,4 +528,4 @@ This skill collaborates with:
 
 - [VueFormGenerator Documentation](https://vue-generators.gitbook.io/vue-generators/)
 - [GitHub Repository](https://github.com/vue-generators/vue-form-generator)
-- [Vuetify Skill](/.claude/skills/vuetify/SKILL.md) - For Vuetify integration
+- [Vuetify Skill](skills/vuetify-v3/SKILL.md) - For Vuetify integration

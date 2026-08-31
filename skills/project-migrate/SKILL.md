@@ -187,7 +187,7 @@ docs = ["sphinx>=7.0.0", "sphinx-rtd-theme>=2.0.0", "myst-parser>=2.0.0"]
 Update to use the standard Makefile format:
 
 ```makefile
--include ~/.claude/Makefile
+-include ~/.yoker/Makefile
 
 .PHONY: env-dev env-run install-pythons test test-cov test-all format lint typecheck check run docs docs-view build publish publish-test clean clean-all help
 

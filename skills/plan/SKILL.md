@@ -263,8 +263,7 @@ Higher scores indicate higher priority. See `c3/skills/wsjf/SKILL.md` for detail
 |------|---------|
 | `PLAN.md` | Project-level MBI tracking |
 | `TODO.md` | Task-level backlog |
-| `c3/skills/plan/SKILL.md` | This skill definition |
-| `c3/skills/project-feature/PLAN.md` | Template for new PLAN.md files |
+| `c3/skills/plan/SKILL.md` | This skill definition — includes the PLAN.md template |
 
 ## Integration with Other Skills
 

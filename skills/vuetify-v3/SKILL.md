@@ -686,5 +686,5 @@ theme: {
 - [Vuetify V3 Documentation](https://vuetifyjs.com/)
 - [Vuetify V3 Upgrade Guide](https://vuetifyjs.com/getting-started/upgrade-guide/)
 - [Material Design Icons](https://materialdesignicons.com/)
-- [Baseweb Skill](/.claude/skills/baseweb/SKILL.md)
-- [Vuetify V2 Skill](/.claude/skills/vuetify-v2/SKILL.md) - For legacy V2 projects
+- [Baseweb Skill](skills/baseweb/SKILL.md)
+- [Vuetify V2 Skill](skills/vuetify-v2/SKILL.md) - For legacy V2 projects

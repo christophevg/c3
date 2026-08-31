@@ -629,5 +629,5 @@ export default {
 ## See Also
 
 - [VueFormGenerator Custom Fields](https://vue-generators.gitbook.io/vue-generators/fields/custom_fields)
-- [Vuetify Forms Skill](/.claude/skills/vuetify/SKILL.md)
-- [Baseweb Skill](/.claude/skills/baseweb/SKILL.md)
+- [Vuetify Forms Skill](skills/vuetify-v3/SKILL.md)
+- [Baseweb Skill](skills/baseweb/SKILL.md)

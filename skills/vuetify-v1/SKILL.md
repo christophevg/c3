@@ -433,5 +433,5 @@ This skill collaborates with:
 
 - [Vuetify 1.5 Documentation](https://v15.vuetifyjs.com/)
 - [Material Design Icons](https://materialdesignicons.com/)
-- [Vuetify V2 Skill](/.claude/skills/vuetify/SKILL.md) - For V2 projects
-- [Baseweb Skill](/.claude/skills/baseweb/SKILL.md)
+- [Vuetify V2 Skill](skills/vuetify-v2/SKILL.md) - For V2 projects
+- [Baseweb Skill](skills/baseweb/SKILL.md)

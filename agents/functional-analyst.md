@@ -186,7 +186,7 @@ If the feature is an MBI:
 
 #### Step 1: Check/Create PLAN.md
 
-Check for PLAN.md in the project root. If missing, create it using the template from `c3/skills/project-feature/PLAN.md`.
+Check for PLAN.md in the project root. If missing, create it using the PLAN.md structure in `c3:plan`.
 
 #### Step 2: Ask to Analyze or Capture
 
@@ -795,7 +795,7 @@ After domain agents complete their reviews:
 **Does this iteration structure align with your vision? Adjustments before I elaborate?**
 ```
 
-## Switching Approaches
+## Switching Approaches (procedure)
 
 When transitioning from agile to structured:
 

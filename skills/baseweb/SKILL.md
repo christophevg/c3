@@ -139,7 +139,7 @@ This skill includes code templates for common Baseweb patterns:
 
 ## Usage Examples
 
-### Creating a New Page
+### Example: Creating a New Page
 
 ```python
 # backend: pages/users.py
