@@ -2,214 +2,106 @@
 name: git-activity-report
 description: |
   Generate human-readable git activity summaries focused on accomplishments. Use when user asks to "report git activity", "show work done", or wants a summary of commits. Examples: "/git-activity-report --week", "report git activity for today on paths in file repos.txt", "what did I do this week".
+type: workflow
 ---
 
 # Git Activity Report
 
-Generate human-readable activity summaries from git repositories. The skill produces non-technical reports focused on accomplishments, suitable for sharing with stakeholders unfamiliar with the projects.
+Human-readable activity summaries from git repositories — reports focused
+on accomplishments, suitable for stakeholders unfamiliar with the projects.
 
-## Overview
-
-| Capability | Description |
-|------------|-------------|
-| Multi-repo queries | Aggregate activity across multiple repositories |
-| Time-based filtering | Filter by today, yesterday, week, or month |
-| Deterministic output | Same input always produces same report format |
-| Path flexibility | Direct paths, file input, or glob patterns |
-
-## When to Use This Skill
-
-Use this skill when:
-- User invokes `/git-activity-report` command
-- User asks to "report git activity" or "show work done"
-- User wants a summary of their commits over a period
-- User mentions paths in a file (e.g., "repos.txt")
-
-## Skill Interface
+# Inputs
 
 ```
 /git-activity-report [path...] [--file FILE] [--today|--yesterday|--week|--month]
 ```
 
-**Defaults:**
-- Period: `--week` if not specified
-- Paths: Current directory (`.`) if not specified
+- Period defaults to `--week`; paths default to the current directory.
+- Paths come as arguments, a file (`--file repos.txt`), or globs.
+- Natural language works: "what did I do today", "this week's work on
+  incubator", "report git activity for today on paths in repos.txt".
 
-**Examples:**
-```bash
-/git-activity-report --today
-/git-activity-report ~/Workspace/agentic/* --week
-/git-activity-report --file repos.txt --month
-```
+## Period map
 
-**Natural language examples:**
-- "report git activity for today on paths in file repos.txt"
-- "show me this week's work on incubator"
-- "what did I do today"
-
-## Workflow
-
-1. **Parse arguments** - Extract paths and time period
-2. **Generate report** - Run `generate-report.py` with the arguments:
-   ```bash
-   # Use path relative to skill base directory (shown in command header)
-   <skill-base>/scripts/generate-report.py --since "<period>" [--include-empty] <paths...>
-   ```
-   
-   The skill base directory is shown in the command header, e.g.:
-   `Base directory for this skill: /Users/xtof/Workspace/agentic/c3/skills/git-activity-report`
-   
-   So the full path would be:
-   `<skill-base>/scripts/generate-report.py`
-
-3. **Output** - The script produces a complete markdown report
-
-The script handles everything: path expansion, git repo validation, author detection, statistics collection, and deterministic report generation.
-
-**For JSON output** (programmatic use):
-```bash
-<skill-base>/scripts/generate-report.py --json --since "<period>" <paths...>
-```
-
-**Efficiency tip:** When you need both markdown and HTML output (e.g., for email), capture the output once:
-```bash
-# Generate once, use for both formats
-REPORT_MD=$(<skill-base>/scripts/generate-report.py --since "<period>" <paths...>)
-REPORT_HTML=$(echo "$REPORT_MD" | <c3-base>/bin/md-to-html.py)
-# Now use $REPORT_MD as plain text and $REPORT_HTML as HTML
-```
-
-**Path resolution:**
-- `<skill-base>` is shown in the command header when the skill is invoked
-- `<c3-base>` is the parent of the skills directory, typically `<skill-base>/../..`
-- For c3 plugin: `<c3-base>/bin/md-to-html.py`
-
-## Time Periods
-
-| Flag | Git `--since` value |
+| Flag | git `--since` value |
 |------|---------------------|
-| `--today` | `midnight` or `0am` |
-| `--yesterday` | `1 day ago` (limit to yesterday) |
+| `--today` | `midnight` |
+| `--yesterday` | `1 day ago` (bounded to that day) |
 | `--week` | `1 week ago` |
 | `--month` | `1 month ago` |
 
-## Path File Format
+## Path-file format
 
-```
-# Comments start with #
-~/Workspace/agentic/incubator
-~/Workspace/agentic/christophe.vg
+`#` comments and blank lines ignored; one repo path per line.
 
-# Blank lines are ignored
-~/Workspace/agentic/c3
-```
+# Procedure
 
-## Filtering Rules
+1. Parse paths and period from the invocation.
+2. Run the bundled generator (Yoker tool-call form; `<skill-base>` is shown
+   in the skill-invocation header):
 
-**Exclude from statistics:**
-- Merge commits (commits with >1 parent)
-- Lock files: `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`
-- Minified files: `*.min.js`, `*.min.css`
-- Generated files: `*.generated.*`, `dist/`, `build/`
+   ```
+   make: no — the generator is a script, invoke via the project runtime:
+   uv run <skill-base>/scripts/generate-report.py --since "<period>" <paths...>
+   ```
 
-**Author filter:**
-- Only include commits by current git user (`git config user.name`)
+   Flags: `--include-empty` (report repos without activity), `--json`
+   (machine-readable). The script handles path expansion, repo validation,
+   author detection, statistics, and deterministic formatting.
 
-## Output Structure
+3. Deliver the markdown report as-is — it is deterministic: same input,
+   same report.
 
-The script produces deterministic markdown following this structure:
+## Filtering rules
+
+Excluded from statistics: merge commits (multi-parent), lock files
+(`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`), minified files
+(`*.min.js`, `*.min.css`), generated artifacts (`*.generated.*`, `dist/`,
+`build/`). Author filter: only the current git user's commits.
+
+## Output structure (deterministic)
 
 ```markdown
 # Activity Report: [period]
 
-**Period:** [period]
-**Author:** [author]
+**Period / Author**
 
 ## Summary
-
-Activity across N projects. Most active: [project], [project], [project].
+Activity across N projects. Most active: [projects].
 
 ## Projects
-
-### [Project Name]
-
-Activity includes X new features, Y fixes, Z documentation updates.
-
+### [Project]
+Activity includes X features, Y fixes, Z documentation updates.
 **Commits:** X | **Files:** Y | **Lines:** +A/-B
-
-- [Accomplishment stripped of conventional prefix]
-- [Accomplishment stripped of conventional prefix]
-- ...
-
-### [Project Name]
-
-...
+- [Accomplishment, conventional prefix stripped]
 
 ## Totals
-
 | Metric | Value |
 |--------|-------|
-| **Total Commits** | X |
-| **Total Files** | Y |
-| **Lines Added** | +A |
-| **Lines Removed** | -B |
+| Total Commits / Files / Lines +A/-B |
 
 ## No Activity
-
-- [repo] - No commits in this period
-
----
-*Report generated on [date] for author: [author]*
+- [repo] — no commits in this period
 ```
 
-## Script Reference
+## Efficiency recipe
 
-### generate-report.py
+Generate once, reuse for both formats (report + HTML email):
 
-Primary script for generating complete markdown reports:
+1. Run `generate-report.py` once, keep the markdown.
+2. Pipe the captured markdown through `<c3-base>/bin/md-to-html.py` for
+   the HTML variant (email styling for tables, headers, lists).
+3. `<c3-base>` is the parent of `<skill-base>/../..`.
 
-```bash
-# Basic usage - use path relative to skill base directory
-# The skill base is shown in command header, e.g.:
-# Base directory for this skill: /path/to/c3/skills/git-activity-report
-<skill-base>/scripts/generate-report.py --since "1 week ago" ~/projects/*
+## Helper scripts (in `<skill-base>/scripts/`)
 
-# Include repos with no activity
-<skill-base>/scripts/generate-report.py --include-empty --since "1 month ago" ~/work/*
+- `generate-report.py` — full markdown (or JSON) report
+- `git-activity.py` — data collection only (JSON)
 
-# JSON output for programmatic use
-<skill-base>/scripts/generate-report.py --json --since "4 days ago" ~/code/*
-```
+# Deliverables
 
-**Output:** Deterministic markdown report (or JSON with `--json` flag).
+- A deterministic, accomplishment-focused markdown report; optional JSON.
 
-### git-activity.py
+# Related
 
-Data collection only (outputs JSON):
-
-```bash
-<skill-base>/scripts/git-activity.py --since "1 week ago" ~/projects/*
-```
-
-### md-to-html.py
-
-Convert markdown report to HTML for email. Located in `c3/bin/` for use across all skills.
-
-```bash
-# The c3 base is the parent of skills directory
-# If skill-base is /path/to/c3/skills/git-activity-report
-# Then c3-base is /path/to/c3
-
-# Direct pipe for HTML output
-<skill-base>/scripts/generate-report.py --since "1 week ago" ~/projects/* | <c3-base>/bin/md-to-html.py
-
-# For both formats (avoid running twice):
-REPORT_MD=$(<skill-base>/scripts/generate-report.py --since "1 week ago" ~/projects/*)
-REPORT_HTML=$(echo "$REPORT_MD" | <c3-base>/bin/md-to-html.py)
-```
-
-**Use case:** Send formatted reports via email. The HTML includes styling for tables, headers, and lists suitable for email clients.
-
-## Related Skills
-
-- `git-scripting` - Safe git command patterns for scripts
+- `c3:git-scripting` — safe git-command patterns for any wrapper scripts

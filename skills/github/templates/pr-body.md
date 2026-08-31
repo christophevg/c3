@@ -32,4 +32,4 @@
 
 ---
 
-🤖 Implemented together with a coding agent.
+🤖 Implemented together with Yoker.

@@ -1,269 +1,87 @@
 ---
 name: website-manage
 description: |
-  Manage content website projects with streamlined conversational workflow. Syncs, processes GitHub issues into TODO, and implements tasks iteratively with user. Use for Jekyll/static sites when user asks to "manage website", "work on site", or project has _config.yml. No PRs, no agents - direct collaboration. Examples: "manage the website", "work on site tasks", "next website task".
+  Manage content website projects with streamlined conversational workflow. Syncs, processes GitHub issues into TODO, and implements tasks iteratively with user. Use for Jekyll/static sites when user asks to "manage website", "work on site tasks", or project has _config.yml. No PRs, no agents - direct collaboration. Examples: "manage the website", "work on site tasks", "next website task".
+type: workflow
 ---
 
 # Website Manage
 
-Manage content website projects with a streamlined, conversational workflow.
+Conversational management of content website projects (Jekyll/static):
+sync, issue intake into TODO.md, then small-step iterative implementation
+with the owner. No PRs, no agent engagement — direct collaboration with
+the owner in chat.
 
-## Detection
+## Triggering
 
-This skill activates when:
-- `_config.yml` exists in the current working directory (Jekyll site)
+- a `_config.yml` in the working directory (Jekyll site)
+- "manage the website", "work on site tasks", "next website task"
 
-The project-manager agent checks for `_config.yml` to determine if this is a website project.
+# Inputs
+
+Website repo checked out locally; TODO.md in canonical structure; the
+owner present and reviewing in browser (`localhost:4000`).
 
 ## Workflow
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  WEBSITE-MANAGE WORKFLOW                                        │
-│                                                                 │
-│  ✓ Sync with remote (git pull)                                  │
-│  ✓ GitHub issues → interactive priority assignment               │
-│  ✓ Unsorted TODO items → interactive priority assignment         │
-│  ✓ Propose next task from backlog                                │
-│  ✓ Implementation (conversational, iterative)                    │
-│  ✓ Commit when approved                                          │
-│                                                                 │
-│  ✗ No PRs, no agents, no builds, no server management            │
-└─────────────────────────────────────────────────────────────────┘
-```
+### 1 — Sync first
 
----
+`git(operation="pull")` before any work. Conflicts: report, never resolve
+automatically, await owner guidance.
 
-## Step 1: Sync with Remote
+### 2 — Process open issues
 
-**CRITICAL: Always sync before starting work.**
+`github(operation="issue_list", state="open", limit=10)` and, per issue:
+show title/body → owner assigns P1–P4, Skip (won't implement), or
+Research → add to TODO.md at that priority with acceptance criteria →
+label `status:backlog` / `status:needs-research` / `status:wont-do`.
 
-```bash
-git pull
-```
+Known limitation: the Yoker github tool has no issue comment/edit/close —
+labeling and commenting steps run only when those operations exist; report
+the gap and let the owner do the labeling in the web UI meanwhile.
 
-If there are conflicts:
-- Report to user
-- Do NOT attempt to resolve automatically
-- Wait for user guidance
+### 3 — Process unsorted TODO items
 
----
+Read TODO.md `## Unsorted`; per item the owner assigns P1–P4 / Skip /
+Research; move to backlog with acceptance criteria.
 
-## Step 2: Process GitHub Issues
+### 4 — Propose the next task
 
-Fetch open issues and interactively assign priority.
+Present the highest-priority backlog item (P1 first). Owner: proceed /
+show all / skip to next.
 
-```bash
-gh issue list --state open --json number,title,body,labels
-```
+### 5 — Conversational implementation
 
-**For each issue:**
+Plan first, owner approves the plan, then small steps: describe → discuss
+(if an open question) → implement → owner reviews in browser (localhost:
+4000) → iterate on feedback → next step only on approval. Never implement
+everything at once, never skip the browser-review step.
 
-1. Show issue title and body
-2. Ask user: "How should this be prioritized?"
-   - P1 (Critical)
-   - P2 (High)
-   - P3 (Medium)
-   - P4 (Low)
-   - Skip (won't implement)
-   - Research (needs investigation)
+### 6 — Commit when approved
 
-3. Add to TODO.md at chosen priority with acceptance criteria
-4. Label issue: `gh issue edit {number} --add-label "status:backlog"`
-5. Comment: `gh issue comment {number} --body "Added to TODO.md as P{X} task"`
+Stage the files explicitly, commit `type: description` (feat/fix/docs/
+refactor/style), push. Direct commits — no PRs in this mode.
 
-**Issue Status Labels:**
+Update TODO.md per the canonical model: **remove the completed task**.
+There is no `## Done` section — git history is the record.
 
-| Label | Meaning |
-|-------|---------|
-| `status:backlog` | Added to TODO.md |
-| `status:in-progress` | Currently implementing |
-| `status:needs-research` | Needs investigation |
-| `status:wont-do` | Won't implement |
+Issue-sourced tasks: the implementing commit references `#N` so GitHub
+auto-closes the issue at push; comment/label cleanup happens web-side
+(the Yoker github tool cannot close or comment on issues).
 
----
+# Deliverables
 
-## Step 3: Process Unsorted TODO Items
+- Synced repo, sorted TODO.md, implemented and committed tasks with the
+  removed-from-TODO convention, one-line per-item reports.
 
-Read `TODO.md` and check for unsorted items.
+## Related
 
-**For each unsorted item:**
+- `c3:commit` — commit message conventions
+- `c3:project-status` — when the owner wants a health snapshot instead
 
-1. Show item details
-2. Ask user: "How should this be prioritized?"
-   - P1/P2/P3/P4/Skip/Research
-3. Move to backlog at chosen priority
-4. Add acceptance criteria if needed
+## Never
 
----
-
-## Step 4: Propose Next Task
-
-Show the next task from backlog (P1 first, then P2, etc.)
-
-Ask user:
-- Proceed with this task?
-- Show all tasks?
-- Skip and show next?
-
----
-
-## Step 5: Implementation (Conversational)
-
-**CRITICAL: Implementation is iterative and collaborative.**
-
-### 5a. Present Plan
-
-Present a plan breaking down the task into steps:
-
-```
-Here's my plan for [task]:
-
-1. [Step 1]
-2. [Step 2]
-3. [Step 3]
-...
-
-Does this plan work, or should we adjust?
-```
-
-Wait for user approval before proceeding.
-
-### 5b. Break Into Small Steps
-
-Each step should be:
-- Small enough to review quickly
-- Describable in one sentence
-- Independently verifiable in browser
-
-### 5c. For Each Step
-
-1. **Describe**: "I'll do X"
-2. **Discuss**: "How should Y be handled?" (if needed)
-3. **Implement**: Make the change
-4. **Review**: "Please check localhost:4000/path/to/page"
-5. **Iterate**: Fix/adjust based on feedback
-6. **Continue**: Only when user approves
-
-### 5d. Iteration Loop
-
-```
-Make change → User reviews in browser → Feedback → Adjust → Repeat until done
-```
-
-**Do NOT:**
-- Implement everything at once
-- Move to next step without user approval
-- Assume something is correct
-- Skip the review step
-
----
-
-## Step 6: Commit
-
-**Only commit when user approves.**
-
-```bash
-git add <files>
-git commit -m "type: description"
-git push
-```
-
-**Commit message format:**
-- `feat:` for new features/content
-- `fix:` for bug fixes
-- `docs:` for documentation
-- `refactor:` for refactoring
-- `style:` for formatting
-
-### Update TODO.md
-
-Mark task as done:
-```markdown
-## Done
-
-- [x] Task name (YYYY-MM-DD)
-```
-
-### Close GitHub Issue (if applicable)
-
-If the task came from a GitHub issue:
-```bash
-gh issue close {number} --comment "Implemented in [commit hash]"
-```
-
----
-
-## TODO.md Structure
-
-```markdown
-# TODO
-
-## Unsorted
-
-- [ ] Quick idea from issue #X
-- [ ] Another unsorted idea
-
-## Backlog
-
-### P1 - Critical
-
-- [ ] Task title
-  - Description
-  - **Acceptance Criteria:**
-    - Criterion 1
-    - Criterion 2
-  - **From:** Issue #X (if applicable)
-
-### P2 - High
-
-- [ ] Task
-
-### P3 - Medium
-
-- [ ] Task
-
-### P4 - Low
-
-- [ ] Task
-
-## Done
-
-- [x] Completed task (YYYY-MM-DD)
-```
-
----
-
-## Key Principles
-
-1. **Sync first** — Always `git pull` before any work
-2. **Interactive priority** — Issues and unsorted items get user input on priority
-3. **Conversational implementation** — Plan, discuss, implement, review, iterate
-4. **Small steps** — Break tasks into reviewable chunks
-5. **User reviews** — User checks changes in browser before commit
-6. **No PRs** — Commit directly when approved
-7. **No builds** — User's server auto-reloads changes
-8. **No server management** — User manages their own Jekyll process
-
----
-
-## File Conventions
-
-| File | Purpose |
-|------|---------|
-| `TODO.md` | Task backlog with priorities |
-| `_posts/` | Blog posts and content pages |
-| `_pages/` | Static pages |
-| `_config.yml` | Jekyll configuration |
-| `_data/` | YAML/JSON data files |
-| `_includes/` | Reusable Liquid includes |
-| `_layouts/` | Page templates |
-
----
-
-## Notes
-
-- The user runs the Jekyll server themselves
-- Changes are visible immediately at `localhost:4000`
-- Focus on content and structure, not infrastructure
-- Work iteratively with user feedback at each step
+- Open PRs or engage agents — this workflow is deliberately direct.
+- Commit without the owner's browser-verified approval.
+- Resolve merge conflicts automatically.
+- Manage builds or the Jekyll server — the owner runs their own.

@@ -1,245 +1,126 @@
 ---
 name: bug-fixing
 description: Systematic bug fixing with TDD approach. Use when fixing bugs, debugging issues, or investigating problems. Accepts bug descriptions in any format, coordinates analyst/reviewer agents, creates tests before fixes, produces analysis reports.
+type: workflow
 ---
 
 # Bug Fixing
 
-A systematic, test-driven workflow for fixing software bugs with agent coordination.
+Systematic, test-driven bug fixing with agent coordination. This skill
+diagnoses and fixes; the caller owns the review cycle and PR.
 
-## Overview
+## Triggering
 
-| Capability | Description |
-|------------|-------------|
-| Bug Intake | Accept text, issue references, or structured bug reports |
-| Analysis | Root cause investigation with functional analyst review |
-| TDD Approach | Failing test first, then fix implementation |
-| Verification | Run `make check`; report the fix back to the caller for review + PR |
-| Documentation | Bug analysis reports with issue comments |
+- "fix bug", "there's a bug", "debug this" — any bug phrasing
+- an issue reference with fix context ("fix issue #123")
+- a bug report path or a description of unexpected behavior
 
-## When to Use This Skill
-
-Use this skill when:
-- User says "fix bug", "there's a bug", "debug this"
-- User references an issue with fix context (e.g., "fix issue #123")
-- User provides a bug report or describes unexpected behavior
-- User wants to reproduce or investigate an issue
+Bug descriptions land in any format: free text, `#123`/ticket reference,
+structured report file. The authorized description IS the approval to
+proceed through the workflow.
 
 ## Workflow
 
-### Phase 1: Bug Intake
+### Phase 1 — Intake
 
-```
-Parse bug description → Detect project context → Extract details → Assign ID
-```
+Parse the description into: symptoms, expected vs actual behavior,
+environment, reproduction steps. Detect project context (language,
+framework, test runner, conventions) from `pyproject.toml` / config files.
+Assign a bug ID `{bug-id}`.
 
-**Input Formats:**
-- Free-form text: "The login button doesn't work on mobile"
-- Issue reference: "#123" or "JIRA-456"
-- Structured report: Path to bug report file
+### Phase 2 — Analysis
 
-**Project Detection:**
-| Detect | Method |
-|--------|--------|
-| Language | `pyproject.toml`, `package.json`, `Cargo.toml` |
-| Framework | Config files (Django, React, Vue) |
-| Test framework | `pytest.ini`, `jest.config.js`, `vitest.config.ts` |
-| Conventions | `.prettierrc`, `pylintrc`, `ruff.toml` |
+Engage `c3:functional-analyst` to review validity and scope: confirm the
+bug exists (or reject with reason), flag UI impact if present.
 
-### Phase 2: Bug Analysis
+Create the analysis report at `docs/bug-analysis/{bug-id}.md` (template in
+`patterns/bug-analysis-template.md`) and, if the bug came from an issue,
+report the analysis to the caller for posting.
 
-**Invoke functional-analyst agent** to:
-1. Review bug validity and scope
-2. Confirm bug exists or reject with reason
-3. Flag UI impact if applicable
+Outcomes: confirmed → proceed (note UI review if UI-touched); rejected →
+document the reason and stop.
 
-**Create bug analysis report:**
-- Path: `docs/bug-analysis/{bug-id}.md`
-- Post as comment if issue/ticket exists
+### Phase 3 — Root cause
 
-**Analyst outcomes:**
-| Outcome | Action |
-|---------|--------|
-| Confirmed (no UI) | Proceed to Phase 3 |
-| Confirmed (with UI) | Proceed, note UI review needed |
-| Rejected | Document reason, close bug |
+Isolate (reproduce consistently, find boundaries) → gather info (log,
+compare working vs broken) → hypothesize (one variable at a time) →
+validate. RCA techniques in `patterns/rca-techniques.md` (5 Whys for linear
+problems; fishbone for multi-factor).
 
-### Phase 3: Root Cause Investigation
+### Phase 4 — Failing test first (TDD)
 
-Apply systematic debugging framework:
+Create the test that demonstrates the bug BEFORE the fix exists:
 
-| Step | Action |
-|------|--------|
-| Isolate | Reproduce consistently, identify boundaries |
-| Gather Info | Log strategically, compare working vs broken |
-| Hypothesize | Specific testable hypotheses, one variable at a time |
-| Validate | Run tests, document findings |
+| Bug type | Test type |
+|----------|-----------|
+| Logic/validation | unit |
+| Integration/API | integration |
+| User flow | E2E |
 
-**RCA Techniques:**
-- **5 Whys**: For simple/linear problems
-- **Fishbone Diagram**: For complex/multi-factor issues
+Run it to confirm it reproduces the bug (fails now, passes after the fix).
+Platform-specific patterns: `patterns/test-creation-patterns.md`.
 
-### Phase 4: Test Creation (TDD)
+### Phase 5 — Fix, then exact-gate verification
 
-**Critical:** Create failing test BEFORE implementing fix.
+1. Implement the minimal fix.
+2. Update the test to expect the correct behavior.
+3. Run the full suite (fix + no regressions).
+4. Run `make check` — must pass before reporting done. **Verify against
+   the exact gate that failed**: if the bug surfaced in a specific gate
+   (CI's multi-version matrix, one interpreter, a platform-specific test),
+   re-run *that* gate — an equivalent-but-narrower check does not verify
+   (a 3.10-only failure is invisible to a local single-version run; A1).
+   Per-version runs use the project's own make targets; the agent never
+   invents new ones. If the exact gate is not runnable locally, report that
+   gap explicitly rather than claiming verified.
 
-1. **Determine test type:**
-   | Bug Type | Test Type |
-   |----------|-----------|
-   | Logic/validation | Unit test |
-   | Integration/API | Integration test |
-   | User flow | E2E test |
+No commit, branch, or PR here. This skill diagnoses and fixes; the caller
+runs review (Phase 7).
 
-2. **Create test that demonstrates bug:**
-   ```python
-   # Example: Test expects current (incorrect) behavior
-   def test_login_button_disabled():
-       result = login_button.is_enabled()
-       assert result == False  # Passes, proving bug exists
-   ```
+### Phase 6 — Documentation
 
-3. **Run test to confirm reproduction**
+Update the analysis report with the fix summary; confirm the regression
+test is in the codebase; prepare a commit message for the caller
+(`fix: {summary} (#{number})`). Do not close the issue — closure is
+`c3:project-post-merge`'s job after the owner merges.
 
-### Phase 5: Fix Implementation
+### Phase 7 — Report back
 
-1. Implement minimal fix
-2. Update test to expect correct behavior
-3. Run all tests (fix + no regressions)
-4. Run `make check` (test + typecheck + lint + format) — must pass before reporting done. **Verify against the exact gate that failed**: if the bug surfaced in a specific gate (e.g. CI's multi-version `check-all`, a specific interpreter, a platform-specific test), re-run *that* gate — passing an equivalent-but-narrower check does not verify the fix (a 3.10-only failure is invisible to a local single-version `make check`). If the exact gate is not runnable locally, report that gap explicitly rather than claiming verified.
-
-**Do NOT commit, create a branch, open a PR, or run review here.** This skill
-diagnoses and fixes; the caller runs the review cycle (`c3:project-review`) and
-creates the PR (via `c3:release-manager` in project mode). See Phase 7.
-
-### Phase 6: Documentation
-
-- Update the bug analysis report with the fix summary
-- Ensure the regression test is in the codebase
-- Prepare a commit message (bug, fix, issue link) for the caller to use
-
-**Do NOT close the issue.** Issue closure is handled post-merge by
-`c3:project-post-merge` (via release-manager), after the owner merges the PR.
-
-### Phase 7: Report Back to Caller
-
-This skill does NOT run the review cycle or create the PR. Report back to the
-caller (project-manage, or the main session) so it can run `c3:project-review`
-and create the PR.
-
-**Determine scope** from what the bug touched:
-
-| Scope | When |
-|-------|------|
-| Backend | logic, API, data model, no UI |
-| Frontend | UI/UX changes |
-| Full stack | both |
-| + security | auth, PII, input handling, external API, files, config |
-
-**Report:**
+This skill stops here; it never opens the PR. Report format:
 
 ```
 ## Bug Fix Ready for Review
 
-**Issue:** #{number}
-**Bug ID:** {bug-id}
-**Summary:** {one-line}
-**Root Cause:** {technical cause}
-
-**Test Added:** {test file}:{test name}
-**make check:** ✅ passing
-**Files Modified:** {list}
-**Scope:** {backend | frontend | full | docs} (+ security?)
-
-**Bug Analysis Report:** docs/bug-analysis/{bug-id}.md
-**Commit Message:** fix: {summary} (#{number})
-
-Ready for c3:project-review, then PR.
+Issue #{n} · Bug ID · one-line summary · root cause
+Test: {file}:{test} — make check ✅ (or: exact-gate gap reported)
+Files modified · Scope (backend | frontend | full, + security?)
+Analysis report path · proposed commit message
 ```
 
-The caller then:
-1. Invokes `c3:project-review` (scoped to this bug) — functional, domain, quality, docs, `make check`.
-2. On approval, creates the PR (via `c3:release-manager` in project mode).
-3. On rejection (max 2 rounds), sends feedback back here to revise the fix.
+Scope from what the bug touched: backend | frontend | full (+ security
+when auth, PII, input handling, external APIs, files, config are touched).
 
-**Rejection Handling** (when the caller returns feedback from `c3:project-review`):
-| Scenario | Max Iterations | Escalation |
-|----------|----------------|------------|
-| Review rejects fix | 2 rounds | Caller escalates to owner |
-| make check fails | 3 attempts | Ask user |
-| Cannot reproduce | 1 request | Close bug |
+The caller then runs `c3:project-review` (scoped), and on approval creates
+the PR. Rejection feedback (max 2 rounds) returns here for revision;
+`make check` failures: 3 attempts, then ask the owner.
 
-### Phase 8: PR & CI (handled by the caller)
+# Deliverables
 
-PR creation, CI follow-up, and marking ready for review are handled by the
-caller (`c3:project-manage` via `c3:release-manager`), after `c3:project-review`
-approves the fix — mirroring the feature workflow. This skill stops at Phase 7.
+- Failing test → fix → green suite; updated analysis report; the Phase-7
+  report for the caller.
 
-## Bug Analysis Report Template
+# Related
 
-See `patterns/bug-analysis-template.md` for the full template.
+- `c3:project-review` — the review cycle the caller runs on the fix
+- `c3:commit` — commit conventions for the prepared message
+- `c3:project-manage` — managed-mode caller
+- Agents (engaged for review, not by this skill): `c3:functional-analyst`,
+  `ui-ux-designer` (UI changes), `security-engineer` (security-adjacent),
+  `code-reviewer`, `testing-engineer`, `end-user-documenter` (user-facing)
 
-**Key sections:**
-- Summary & symptoms
-- Expected vs actual behavior
-- Root cause analysis
-- Proposed fix approach
-- Test strategy
-- Risk assessment
-- Lessons learned
+## Never
 
-## Platform-Specific Patterns
-
-See `patterns/test-creation-patterns.md` for platform-specific guidance.
-
-**Common bug categories:**
-
-| Platform | Common Causes | Debug Focus |
-|----------|---------------|-------------|
-| Frontend | Async race conditions, stale state | Timeline, state changes |
-| Backend | N+1 queries, connection exhaustion | Query patterns, logs |
-| Mobile | Device/OS variations, memory leaks | Environment, profiling |
-| Database | Missing indexes, stale statistics | Query plans, metrics |
-
-## Out of Scope
-
-This skill does NOT handle:
-- **Security vulnerabilities** - Use specialized security workflow
-- **Production incidents** - Use incident response process
-- **Bug prioritization** - Project management concern
-- **Upstream library fixes** - Only workarounds in scope
-- **PR creation & CI** - Handled by the caller (project-manage via release-manager)
-- **Issue closure** - Handled post-merge by c3:project-post-merge (owner merges)
-
-## Common Issues
-
-| Issue | Solution |
-|-------|----------|
-| Cannot reproduce | Request more info, check environment differences |
-| Tests keep failing | Analyze if fix incomplete or test incorrect |
-| Multiple fix proposals | Analyst recommends, user decides |
-| Review rejects fix (via c3:project-review) | Caller returns feedback; iterate (max 2 rounds) |
-
-## Related Skills
-
-- **project-review** - Shared review cycle the caller runs on the fix (functional → domain → quality → docs → `make check`)
-- **commit** - Create properly formatted commit
-- **develop-agent** - For complex bug investigation
-- **researcher** - For researching unknown patterns
-- **manage-project** - Can be invoked within manage-project for bugs in project workflow
-
-## Related Agents
-
-These review the fix, invoked by `c3:project-review` (the caller runs it), not by this skill:
-
-- **functional-analyst** - Bug validation, solution review
-- **ui-ux-designer** - UI/UX change review (conditional)
-- **security-engineer** - Security review (if security-related)
-- **code-reviewer** - Quality and pattern validation
-- **testing-engineer** - Test coverage and quality
-- **end-user-documenter** - Documentation (if user-facing)
-
-## Pattern Files
-
-- `patterns/bug-analysis-template.md` - Bug analysis report template
-- `patterns/test-creation-patterns.md` - Platform-specific test patterns
-- `patterns/rca-techniques.md` - Root cause analysis techniques
+- Do not run review, create PRs, or commit — the caller owns those steps.
+- Do not close issues; closure belongs to post-merge.
+- Security vulnerabilities, production incidents, prioritization, and
+  upstream library fixes are out of scope — route them accordingly.

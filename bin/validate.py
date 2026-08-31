@@ -253,6 +253,10 @@ def main() -> int:
 
   agent_files = sorted(agents_dir.glob("*.md")) if agents_dir.exists() else []
   skill_files = sorted(skills_dir.glob("*/SKILL.md")) if skills_dir.exists() else []
+  # reference/bundled markdown: vocabulary scan applies too
+  skill_ref_files = sorted(
+    p for p in skills_dir.rglob("*.md") if p.name != "SKILL.md"
+  ) if skills_dir.exists() else []
   skill_names = {p.parent.name for p in skill_files}
   findings = []
 
@@ -260,6 +264,9 @@ def main() -> int:
     validate_agent(path, findings)
   for path in skill_files:
     validate_skill(path, skill_names, findings)
+  for path in skill_ref_files:
+    content = path.read_text()
+    check_forbidden_vocab(str(path), content, findings)
 
   errors = [f for f in findings if f.status == "ERROR"]
   warns = [f for f in findings if f.status == "WARN"]

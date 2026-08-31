@@ -78,7 +78,7 @@ Adds user authentication with JWT tokens.
 - [ ] All tests pass
 - [ ] Manual: login flow works
 
-🤖 Implemented together with a coding agent.
+🤖 Implemented together with Yoker.
 EOF
 )"
 

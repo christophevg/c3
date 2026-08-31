@@ -1,437 +1,125 @@
 ---
 name: commit
 description: Guide git commit operations with atomic commits and conventional format. Use when committing changes, creating commits, or when user says "/commit", "commit these changes", "create a commit". Analyzes changes, groups by functionality, detects sensitive files, and waits for user verification.
+type: workflow
 ---
 
-# commit
+# Commit
 
-Guide git commit operations with atomic commits, functionality-based grouping, and conventional commit format.
+Guide git commit operations with atomic commits, functionality-based grouping,
+and conventional commit format.
 
-## Overview
+## When
 
-| Capability | Description |
-|------------|-------------|
-| Git safety protocol | Enforce safe git operations, prevent destructive actions |
-| Atomic commits | Group changes by logical functionality |
-| Conventional format | Apply type/scope/description format |
-| Sensitive file detection | Block .env, *.key, credentials files |
-| User verification | Wait for approval before committing |
+- The user wants to commit changes, says `/commit`, "commit these changes",
+  or "create a commit".
+- Multiple changes need grouping analysis into atomic commits.
 
-## When to Use This Skill
+## Inputs
 
-Use this skill when:
-- User wants to commit changes
-- User invokes "/c3:commit" command
-- User says "commit these changes" or "create a commit"
-- Multiple changes need grouping analysis
+- A working tree with changes to commit (staged or unstaged).
+- Mode: direct (local commits on the working branch) or managed (feature
+  branch within the `project-manage` workflow).
 
-## Git Safety Protocol
+# Procedure
 
-**CRITICAL:** Follow these rules without exception unless user explicitly requests otherwise.
+1. **Gather context** — `git(operation="status", args={porcelain: true})`
+   for the change set, `git(operation="diff")` for unstaged edits,
+   `git(operation="log", args={oneline: true, n: 10})` for the repository's
+   message style.
+2. **Screen for sensitive files.** Block: `.env*`, `*.pem`, `*.key`,
+   `secrets.*`, `credentials.*`. On detection: name the file, block the
+   commit, suggest `git(operation="rm", args={cached: true, files: [...]})`
+   and a `.gitignore` entry.
+3. **Group atomically.** One logical change per commit — file type
+   (backend / frontend / tests / docs), directory, and change type
+   (`feat`, `fix`, `refactor`, `perf`, `test`, `docs`, `style`, `chore`).
+   Atomic test: the message must be describable without "and".
+   Multi-concern files: propose separate commits; if intertwined, one
+   commit with a detailed body.
+4. **Check repository style.** Follow the conventions of the last ten
+   commits (types in use, scopes, language).
+5. **Validate pre-conditions**, in order:
+   a. Changes staged — the `git` tool's `commit` does not stage; stage
+      explicitly with `git(operation="add", args={files: [...]})` and
+      verify with `git(operation="status", args={porcelain: true})`.
+      Committing with nothing staged fails on "no changes added" — that is
+      a staging miss, not a message problem.
+   2. Sensitive files absent.
+   3. Trailing newlines present on edited files.
+   4. Python projects formatted (`ruff format` via the project's make
+      targets; the agent runs the project's own gate, never invents new
+      Makefile targets).
+6. **Present the analysis** — groupings, sensitive-file warnings, proposed
+   messages — and wait for the owner's confirmation. In direct mode the
+   confirmation is plain chat; in managed mode it is PR feedback. Never
+   mix. Validation of tests/lint/types is the caller's gate, not this
+   skill's.
+7. **Create the commit** with a multi-line message argument:
+   `git(operation="commit", args={message: "type(scope): summary\n\nbody\n\n🤖
+   Implemented together with Yoker."})` — multi-line messages pass as one
+   argument. Pre-conditions verified in step 3.
+8. **Verify.** `git(operation="status")` clean &&
+   `git(operation="show", args={format: "%B"})` shows the message with the
+   attribution line. On missing attribution: `git commit --amend` to add it,
+   then re-verify. Report the hash; push only on explicit request.
+
+## Commit message rules
+
+Format: `type(scope): description` + blank line + optional body +
+attribution.
+
+- Every commit ends with: `🤖 Implemented together with Yoker.`
+- Core types: `feat fix refactor perf test docs style chore`.
+- Subject ≤ 50 chars, capitalized, imperative, no trailing period;
+  body wrapped at 72 explaining what and why, never how; blank line
+  between subject and body.
+- Attribution is for commits only — never in PR/issue comments or bodies.
+
+## Safety protocol
 
 | Rule | Reason |
 |------|--------|
-| NEVER commit directly to master/main in project mode | User acceptance happens on PRs |
-| NEVER update git config | Preserves user's configuration |
-| NEVER skip hooks (`--no-verify`, `--no-gpg-sign`) | Hooks exist for safety |
-| NEVER amend commits | Except to add missing attribution |
-| NEVER force push to main/master | Protects shared branches |
-| NEVER use `-i` flag (interactive) | Not supported in non-interactive context |
-| Prefer specific files over `git add -A` or `git add .` | Avoids sensitive files, large binaries |
-
-**Project Management Mode:**
-
-When invoked via `project-manage` skill:
-1. **ALWAYS commit to feature branch** — Never master/main
-2. **After commit, push branch** — Enable PR creation
-3. **PR URL returned to user** — User handles acceptance testing
-
-**Destructive Operations:**
-
-Avoid these unless user explicitly requests:
-- `git push --force`, `git reset --hard`, `git checkout .`
-- `git restore .`, `git clean -f`, `git branch -D`
-
-**When hooks fail:** Fix the underlying issue, don't bypass. Create a NEW commit after fixing.
-
-## Pre-Commit Checklist
-
-Before any commit, verify:
-
-1. **Changes staged** - Run `git status` to check staged files
-2. **Sensitive files** - Block if .env, *.key, *.pem, secrets.*, credentials.* detected
-3. **Atomic grouping** - Verify changes represent one logical change
-4. **User approval** - Present analysis and wait for confirmation
-5. **Repository style** - Check recent commits for message style conventions
-6. **Attribution included** - Ensure message includes attribution line
-7. **Trailing newlines** - Verify all edited files end with newline
-8. **Code formatting** - Run `ruff format src tests` for Python projects
-
-**Note:** Test/type/lint validation should be performed by the project-manager agent before invoking this skill.
-
-## Pre-Commit Validation
-
-Before committing, verify:
-
-### 1. Trailing Newlines
-
-All edited files should end with a newline character.
-
-```bash
-# Check if file ends with newline (returns 0 if no newline)
-test "$(tail -c1 file | wc -l)" -ne 0 && echo "Missing newline"
-
-# Or check all staged files
-git diff --cached --name-only | while read file; do
-  if test "$(tail -c1 "$file" 2>/dev/null | wc -l)" -ne 0; then
-    echo "Missing newline: $file"
-  fi
-done
-```
-
-**If missing newline:**
-```bash
-# Add newline to file
-echo "" >> file
-```
-
-### 2. Code Formatting (Python Projects)
-
-Before committing Python code, run formatting:
-
-```bash
-# Format code
-ruff format src tests
-
-# Or use makefile if available
-make lint
-```
-
-**If formatting is needed:**
-1. Run `ruff format src tests`
-2. Re-stage files: `git add src tests`
-3. Proceed with commit
-
-### 3. If Validation Fails
-
-If either check fails:
-1. Fix the issue (add newline, format code)
-2. Re-stage the files
-3. Attempt commit again
-
-## Sensitive File Detection
-
-Block commits containing these files:
-
-| Pattern | Risk Level | Action |
-|---------|------------|--------|
-| `.env`, `.env.local`, `.env.*.local` | High | Block, warn about secrets |
-| `*.pem`, `*.key` | High | Block, warn about credentials |
-| `secrets.*`, `credentials.*` | High | Block, warn about sensitive data |
-| `password`, `api_key`, `token` in code | Medium | Warn, suggest .env |
-
-If sensitive file detected:
-1. Immediately block commit
-2. Warn user with specific file name
-3. Suggest remediation: `git restore --staged <file>`
-4. Recommend adding to .gitignore
-
-## Functionality Analysis
-
-### Identifying Logical Groupings
-
-Analyze staged changes by:
-
-**File Type:**
-- `*.py` backend changes → separate commit
-- `*.vue`, `*.tsx` frontend changes → separate commit
-- `*.test.*`, `*_test.*` test changes → separate commit
-- `*.md` documentation → separate commit
-
-**Directory:**
-- `src/api/` → API changes
-- `src/models/` → data model changes
-- `src/ui/` → UI changes
-- `tests/` → test changes
-
-**Change Type:**
-- New functionality → `feat`
-- Bug fixes → `fix`
-- Refactoring → `refactor`
-- Documentation → `docs`
-- Tests → `test`
-
-### Atomic Commit Test
-
-Can you describe the commit without using "and"?
-
-- ✓ "Fix null pointer exception on empty cart checkout"
-- ✗ "Fix cart bug and update user model and add tests"
-
-If multiple "and"s needed, split into separate commits.
-
-### Handling Multi-Concern Files
-
-When a file touches multiple concerns:
-
-1. Use `git add -p` to stage specific hunks
-2. Create separate commits for each logical change
-3. If changes are intertwined, single commit with detailed body
-
-## Commit Message Guidelines
-
-### Conventional Commit Format
-
-```
-type(scope): description
-
-[optional body]
-
-🤖 Implemented together with Yoker.
-```
-
-**CRITICAL:** Every commit MUST end with the attribution line:
-```
-🤖 Implemented together with Yoker.
-```
-
-This attribution is mandatory. If a commit is created without it, use `git commit --amend` to add it.
-
-### Core Types
-
-| Type | Usage | Example |
-|------|-------|---------|
-| `feat` | New feature | `feat(cart): add quantity adjustment` |
-| `fix` | Bug fix | `fix(checkout): handle empty cart` |
-| `refactor` | Code restructuring | `refactor(api): simplify user endpoint` |
-| `perf` | Performance improvement | `perf(search): optimize query` |
-| `test` | Adding/updating tests | `test(cart): add checkout edge cases` |
-| `docs` | Documentation changes | `docs(readme): update install steps` |
-| `style` | Formatting (no logic change) | `style: fix indentation` |
-| `chore` | Build, deps, tooling | `chore: update dependencies` |
-
-### Seven Rules
-
-1. Separate subject from body with a blank line
-2. Limit subject to 50 characters
-3. Capitalize the subject line
-4. Don't end with a period
-5. Use imperative mood ("Add feature" not "Added feature")
-6. Wrap body at 72 characters
-7. Explain what and why, not how
-
-## Workflow Steps
-
-### 1. Analyze Changes
-
-Run these commands in parallel to gather context:
-
-```bash
-git status              # See untracked files (never use -uall flag)
-git diff HEAD           # See staged and unstaged changes
-git log --oneline -10   # Follow repository's commit message style
-```
-
-Categorize changes:
-- By file type (backend, frontend, tests, docs)
-- By directory (api, models, ui, tests)
-- By change type (feat, fix, refactor)
-
-### 1.5. Handle Auto-Generated Files
-
-Some files are regenerated during development (demo screenshots, build artifacts, compiled outputs).
-After committing implementation changes:
-
-1. Check if `make demos`, `make build`, or similar commands were run
-2. Identify auto-generated files in `git status`
-3. For each file, determine:
-   - Intentionally regenerated (commit in separate commit or with implementation)
-   - Temporary artifacts (add to `.gitignore`)
-   - Unrelated files (leave uncommitted)
-4. Ask user about unclear files before committing
-
-Example: After implementing a new tool, `make demos` regenerated screenshot files.
-These should be committed to reflect the current state of the project.
-
-### 2. Present Analysis
-
-Show user:
-- Grouped changes with recommendations
-- Any sensitive files detected
-- Suggested commit boundaries
-- Proposed commit message(s)
-
-Then ask the user to confirm the approach:
-```
-Ask the user with:
-  question: "How would you like to proceed with these changes?"
-  header: "Commit plan"
-  options:
-    - label: "Proceed with suggested commits"
-      description: "Create commits as proposed above"
-    - label: "Combine into single commit"
-      description: "Merge all changes into one commit"
-    - label: "Cancel"
-      description: "Abort without committing"
-```
-
-### 3. Validate Pre-conditions
-
-- Check for `.pre-commit-config.yaml` or `package.json` with lint-staged
-- Verify user has reviewed changes (per user memory)
-- Confirm commit message format
-
-### 4. Create Commits
-
-**HEREDOC Syntax:** Always use HEREDOC for commit messages to ensure proper formatting:
-
-```bash
-git commit -m "$(cat <<'EOF'
-type(scope): description
-
-Optional body explaining why (not how).
-
-🤖 Implemented together with a coding agent.
-EOF
-)"
-```
-
-**Single logical change:**
-
-Stage specific files and commit in parallel:
-```bash
-git add path/to/file1 path/to/file2
-git commit -m "$(cat <<'EOF'
-type(scope): description
-
-🤖 Implemented together with a coding agent.
-EOF
-)"
-```
-
-**Multiple logical changes:**
-1. Propose grouping to user
-2. Let user confirm or adjust
-3. Create commits one by one after verification
-
-### 5. Post-Commit
-
-Run `git status` and `git log -1 --format=%B` to verify commit success, then:
-- Verify attribution line is present: `🤖 Implemented together with a coding agent.`
-- If missing: use `git commit --amend` to add it
-- Show commit hash
-- Remind about push (don't auto-push)
-
-## Attribution Scope
-
-**Attribution is for COMMITS only, NOT for comments.**
-
-| Context | Add Attribution? |
-|---------|------------------|
-| Git commits | ✅ Yes - Required |
-| PR comments | ❌ No - Do NOT add |
-| Issue comments | ❌ No - Do NOT add |
-| PR body (description) | Optional - via PR template |
-
-## User Verification Requirement
-
-**CRITICAL:** Never commit without user verification.
-
-### Asking the User for Confirmation
-
-Always ask the user to confirm commits. Present clear options:
-
-```
-Ask the user with:
-  question: "Ready to commit? [commit message preview]"
-  header: "Commit"
-  options:
-    - label: "Yes, proceed"
-      description: "Create the commit with the proposed message"
-    - label: "No, cancel"
-      description: "Abort the commit operation"
-    - label: "Edit message first"
-      description: "You want to modify the commit message before proceeding"
-  multiSelect: false
-```
-
-The tool automatically provides an "Other" option for custom input, allowing the user to specify alternative instructions.
-
-### Verification Workflow
-
-Per user memory (`commit_after_testing.md`):
-1. Wait for visual confirmation of changes
-2. User runs incremental builds locally
-3. Request explicit approval from the user
-4. Only proceed after user selects "Yes, proceed"
-
-## Edge Cases
-
-### Merge Conflicts
-
-1. Explain how to resolve conflicts
-2. Don't auto-commit after resolution
-3. User must verify resolved changes
-
-### Work in Progress
-
-1. Support `wip:` or `--wip` prefix
-2. Allow skipping pre-commit for drafts
-3. Remind user to clean up before final commit
-
-### Empty Commit
-
-1. Warn if no changes staged
-2. Suggest `git add` for specific files
-3. Don't create empty commits
-
-### Pre-Commit Hook Failure
-
-When a pre-commit hook fails:
-1. The commit did NOT happen
-2. Explain the failure to the user
-3. Fix the underlying issue
-4. Re-stage files if needed
-5. Create a NEW commit (never amend after hook failure)
-
-**Why not amend:** After hook failure, `--amend` would modify the PREVIOUS commit, potentially destroying work or losing changes.
-
-**Exception:** Amending to add missing attribution is allowed for successful commits.
-
-### Project Management Mode (PR Workflow)
-
-When this skill is invoked via `project-manage`:
-
-1. **Verify branch**: Check that current branch is NOT master/main
-   ```bash
-   git branch --show-current
-   ```
-   If on master/main, project-manage should have created a feature branch.
-
-2. **Commit to feature branch**: All commits go to the feature branch
-
-3. **After commit, do NOT push automatically** — Let project-manage handle push and PR creation
-
-4. **Return control** to project-manage for:
-   - Pushing branch to remote
-   - Creating pull request
-   - Updating GitHub issue status
-
-**Direct commits to master/main are NEVER allowed in project management mode.**
-
-## Related Patterns
-
-- `patterns/atomic-commits.md` - Detailed atomic commit patterns
-- `patterns/conventional-commits.md` - Conventional commit format guide
-
-## Common Issues
-
-| Issue | Solution |
-|-------|----------|
-| Changes affect multiple concerns | Propose splitting into separate commits |
-| Sensitive file in commit | Block immediately, warn user, suggest .gitignore |
-| Pre-commit hooks failing | Fix issue, create NEW commit (never amend after failure) |
-| Commit message too long | Keep subject under 50 chars, move details to body |
-| User didn't review changes | Present diff, wait for explicit approval |
-| Accidentally staged sensitive file | Use `git restore --staged <file>` to unstage |
-| Missing attribution in commit | Use `git commit --amend` to add attribution line |
+| Never commit directly to master/main in managed mode | acceptance happens on PRs |
+| Never update git config | preserves the owner's configuration |
+| Never skip hooks (`--no-verify`, `--no-gpg-sign`) | hooks are safety |
+| Amend only to add missing attribution | otherwise previous commit history is rewritten |
+| Never force-push the default branch | protects shared history |
+| Stage specific files, not `-A`/`.` | avoids sensitive files and binaries |
+| Never create empty commits | state the problem instead |
+
+Destructive operations (`push --force`, `reset --hard`, `checkout .`,
+`restore .`, `clean -f`, `branch -D`) only when the owner explicitly
+requests them. When hooks fail, fix and create a NEW commit — never amend
+after hook failure (that would modify the previous commit).
+
+## Project-management mode
+
+When invoked from `c3:project-manage`:
+
+1. Verify the current branch is a feature branch, never master/main
+   (`git(operation="branch", args={show_current: true})`).
+2. Commit to the feature branch; do not push — `c3:project-manage` handles
+   push and PR creation.
+3. Return control with the commit summary for PR creation.
+
+# Deliverables
+
+- Owner-verified, conventional-format commits with mandatory attribution.
+- A short report: groupings, hashes, and any files left uncommitted with
+  the reason.
+
+## Related
+
+- `patterns/atomic-commits.md`, `patterns/conventional-commits.md` —
+  reference patterns bundled with this skill
+- `c3:project-manage` — the managed-mode caller; commits land on feature
+  branches, push/PR stay there
+- `c3:release` — where commits feed the release workflow
+
+## Never
+
+- Commit without the owner's explicit verification of the changes.
+- Commit to master/main in managed mode, skip hooks, or update git config.
+- Auto-push after committing; push is a separate, confirmed step.
+- Add the attribution line to PR or issue comments.

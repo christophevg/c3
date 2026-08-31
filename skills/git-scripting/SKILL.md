@@ -1,228 +1,96 @@
 ---
 name: git-scripting
-description: Guide safe git command usage in scripts, Makefiles, and automation. Use when writing shell scripts that interact with git repositories.
+description: Guide safe git command usage in scripts, Makefiles, and automation. Use when writing shell scripts or Makefiles that interact with git repositories, or when user says "/git-scripting".
+type: knowledge
 ---
 
 # Git Scripting
 
-Safe patterns for using git commands in scripts, Makefiles, and automation contexts.
+Safe patterns for git commands in scripts, Makefiles, and automation.
 
-## When to Use This Skill
+# When
 
-**Automatic triggers:**
-- Writing Makefile targets that interact with git
-- Creating shell scripts that check git state
-- Automating git operations across multiple repositories
-- Building CI/CD scripts with git commands
+Auto-triggers (knowledge skill — domain mention suffices): writing Makefile
+targets that touch git, shell scripts that check git state, automating git
+across repositories, CI scripting with git commands. Also on explicit
+invocation.
 
-**Manual invocation:**
-- User asks about git commands in scripts
-- User says "/git-scripting"
-- User requests Makefile targets for git operations
+# Inputs
 
-## Common Patterns
+A script, Makefile, or automation context that will run git commands —
+existing or being written.
 
-### Checking for Unpushed Commits
+# Core patterns
 
-**WRONG:** `git log --branches --not --remotes --exit-code`
-- Checks ALL branches (including untracked ones)
-- Will trigger false positives for local-only branches
-- Returns exit 0 when ANY branch has commits not in remotes
+## Current branch, safely
 
 ```bash
-# DON'T USE THIS
-if git log --branches --not --remotes --exit-code > /dev/null 2>&1; then
-  git push  # Wrong! Pushes even when current branch is clean
-fi
+# Handles normal branches and detached HEAD
+branch=$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null)
 ```
 
-**CORRECT:** `git rev-list --count @{upstream}..HEAD`
-- Checks only the current branch against its upstream
-- Returns `0` if no upstream configured (safe default)
-- Returns count of commits ahead
+## Unpushed commits — current branch only
+
+WRONG: `git log --branches --not --remotes --exit-code` — matches ALL local
+branches (false positives on local-only branches, pushes even when the
+current branch is clean). Use:
 
 ```bash
-# USE THIS INSTEAD
 ahead=$(git rev-list --count @{upstream}..HEAD 2>/dev/null || echo "0")
 if [ "$ahead" -gt 0 ]; then
   git push
 fi
 ```
 
-### Iterating Over Git Repositories
-
-```makefile
-.PHONY: push
-
-push:
-	@for dir in */; do \
-		if [ -d "$$dir/.git" ]; then \
-			cd "$$dir" && \
-			branch=$$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null); \
-			ahead=$$(git rev-list --count @{upstream}..HEAD 2>/dev/null || echo "0"); \
-			if [ "$$ahead" -gt 0 ]; then \
-				echo "Pushing $$dir ($$branch) - $$ahead commits ahead"; \
-				git push; \
-			fi; \
-			cd ..; \
-		fi; \
-	done
-```
-
-### Getting Current Branch Name Safely
+## Repository check
 
 ```bash
-# Handles both normal branches and detached HEAD
-branch=$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null)
+# plain checkout… …or worktrees/submodules:
+if git -C "$dir" rev-parse --git-dir > /dev/null 2>&1; then ...
 ```
 
-### Checking if Directory is a Git Repository
+## Change checks
 
 ```bash
-if [ -d "$dir/.git" ]; then
-  # It's a git repository
-fi
-
-# Or for worktrees and submodules:
-if git -C "$dir" rev-parse --git-dir > /dev/null 2>&1; then
-  # It's a git repository (including worktrees)
-fi
+git diff --cached --quiet      # staged changes?
+git diff --quiet               # unstaged changes?
+git diff-index --quiet HEAD    # any uncommitted change (both kinds)
+git ls-files --others --exclude-standard   # untracked files
 ```
 
-### Checking for Uncommitted Changes
+# Common mistakes
 
-```bash
-# Check for staged changes
-if ! git diff --cached --quiet; then
-  echo "Has staged changes"
-fi
+1. `--branches` matches ALL local branches — script false positives. Scope
+   to the current branch.
+2. Missing upstream: `git rev-list --count @{upstream}..HEAD` fails on a
+   new branch — append `2>/dev/null || echo "0"`.
+3. Unsilenced stderr pollutes automation output — suppress for expected
+   failure paths.
+4. Check commands without `--quiet` dump payload into logs.
 
-# Check for unstaged changes
-if ! git diff --quiet; then
-  echo "Has unstaged changes"
-fi
+# Makefile specifics
 
-# Check for either (staged or unstaged)
-if ! git diff --quiet --cached && ! git diff --quiet; then
-  # Actually, this is wrong - use:
-if ! git diff-index --quiet HEAD; then
-  echo "Has uncommitted changes"
-fi
-```
+- `$$` escapes to a single `$` for the shell; a single `$` is eaten by make.
+- Subshell scope: `cd dir && ahead=$(...)` loses `ahead` after the line —
+  keep dependent commands in the same subshell.
+- Non-file-producing targets are declared `.PHONY`.
 
-### Checking for Untracked Files
+# Validation checklist
 
-```bash
-# Check for untracked files
-if [ -n "$(git ls-files --others --exclude-standard)" ]; then
-  echo "Has untracked files"
-fi
-```
+- [ ] Missing upstream handled gracefully (default, not failure)
+- [ ] Current branch only — never `--branches` in scripts
+- [ ] stderr suppressed for expected-failure paths
+- [ ] `--quiet` on check commands
+- [ ] Detached HEAD handled
+- [ ] Worktree-safe where applicable
+- [ ] Tested on clean AND dirty repos
 
-## Common Mistakes to Avoid
+# Deliverables
 
-### 1. Using `--branches` in Scripts
+- Correct, quiet, upstream-safe git snippets for scripts/Makefiles.
 
-**Problem:** `--branches` matches ALL local branches, not just the current one.
+# Related
 
-```bash
-# Wrong - checks all branches
-git log --branches --not --remotes
-
-# Correct - checks current branch only
-git rev-list --count @{upstream}..HEAD
-```
-
-### 2. Forgetting to Handle Missing Upstream
-
-**Problem:** New branches may not have an upstream configured.
-
-```bash
-# Wrong - fails if no upstream
-git rev-list --count @{upstream}..HEAD
-
-# Correct - gracefully handle missing upstream
-git rev-list --count @{upstream}..HEAD 2>/dev/null || echo "0"
-```
-
-### 3. Not Silencing Errors
-
-**Problem:** Git errors can pollute script output.
-
-```bash
-# Wrong - shows error if no upstream
-branch=$(git symbolic-ref --short HEAD)
-
-# Correct - suppresses error
-branch=$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null)
-```
-
-### 4. Forgetting `--quiet` for Check Commands
-
-**Problem:** Output from check commands clutters script output.
-
-```bash
-# Wrong - outputs diff content
-if git diff; then
-  echo "Has changes"
-fi
-
-# Correct - silent check
-if ! git diff --quiet; then
-  echo "Has changes"
-fi
-```
-
-## Makefile-Specific Notes
-
-### Escaping Dollar Signs
-
-In Makefiles, `$$` becomes a single `$` in the shell:
-
-```makefile
-# Wrong - Make interprets $dir
-echo $dir
-
-# Correct - Make passes $dir to shell
-echo $$dir
-```
-
-### Subshell Variable Scope
-
-Variables set in subshells don't persist:
-
-```makefile
-# Wrong - 'ahead' is empty after cd ends
-cd dir && ahead=$(git rev-list --count @{upstream}..HEAD)
-echo $$ahead  # Empty!
-
-# Correct - all in same subshell
-cd dir && ahead=$(git rev-list --count @{upstream}..HEAD) && echo $$ahead
-```
-
-### Phony Targets
-
-Always declare targets that don't create files as `.PHONY`:
-
-```makefile
-.PHONY: push status clean
-
-push:
-	# ...
-
-status:
-	# ...
-```
-
-## Validation Checklist
-
-Before finalizing a git script:
-
-- [ ] Handles missing upstream gracefully (returns 0 or default)
-- [ ] Only checks current branch, not all branches
-- [ ] Suppresses stderr for expected failure cases
-- [ ] Uses `--quiet` for check commands
-- [ ] Handles detached HEAD state
-- [ ] Works with worktrees if applicable
-- [ ] Tested on clean repo (no false positives)
-- [ ] Tested on dirty repo (detects correctly)
+- `c3:commit` — commit conventions once the script's changes land
+- `c3:git-activity-report` — summarizing multi-repo activity
+- `c3:release-manager` — delegate for operational git work

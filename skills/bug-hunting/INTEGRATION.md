@@ -351,7 +351,7 @@ Found by bug-hunting: Config parsing crashed on empty TOML
 - Added test for empty config edge case
 - Verified no regressions
 
-🤖 Implemented together with a coding agent.
+🤖 Implemented together with Yoker.
 ```
 
 ## Future Enhancements
