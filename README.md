@@ -104,11 +104,12 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/wsjf` | Interactive WSJF (Weighted Shortest Job First) scoring for prioritization. |
 | `/bug-hunting` | Systematic debugging with patterns, templates, and integration guides. |
 
-### Domain Expertise (9)
+### Domain Expertise (11)
 
 | Skill | Description |
 |-------|-------------|
 | `/python` | Python coding standards, tight code philosophy, and testing patterns. |
+| `/python-testing` | Behavior-focused Python testing guidelines. |
 | `/pymongo` | MongoDB/PyMongo patterns and security. |
 | `/baseweb` | Baseweb/Vue/Vuetify best practices. |
 | `/fire` | Python Fire CLI patterns. |
@@ -117,6 +118,7 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/vuetify-v1` | Vuetify 1.5 components in legacy Baseweb projects. |
 | `/vuetify-v2` | Vuetify V2 components in Baseweb projects. |
 | `/vuetify-v3` | Vuetify V3 components with comprehensive patterns and migration guide from V2. |
+| `/api-design` | HTTP/REST API design reference (design review standard). |
 
 ### Development (2)
 
@@ -125,7 +127,7 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/develop-skill` | Create and refine skills. |
 | `/develop-agent` | Develop agents. |
 
-### Utility (20)
+### Utility (16)
 
 | Skill | Description |
 |-------|-------------|
@@ -139,24 +141,20 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/documentation` | Sphinx/readthedocs setup. |
 | `/readme` | Create and maintain README files. |
 | `/transcribe-session` | Curated session transcripts. |
-| `/api2mod` | Convert API docs to Python modules. |
-| `/spec2mod` | Generate Python from OpenAPI specs. |
 | `/vue-form-generator` | Schema-based Vue.js forms. |
 | `/ollama` | Python ollama library for LLM integration. |
 | `/python-project` | Python project setup with uv. |
-| `/pypi-publish` | Publish packages to PyPI. |
 | `/release` | Release workflow and version management. |
 | `/github` | GitHub operations and PR management. |
 | `/research` | Comprehensive research with provenance tracking and source citations. |
 
-### Framework-Specific (5)
+### Framework-Specific (4)
 
 | Skill | Description |
 |-------|-------------|
 | `/vue` | Vue.js framework patterns. |
 | `/vuetify-v4` | Vuetify V4 components and patterns. |
 | `/quart-webapp` | Quart web application patterns. |
-| `/plugin-development` | Guide for creating plugins (structure, manifest, distribution). |
 | `/prepare-for-exam` | Interactive study material generation. |
 
 ### Other (1)

@@ -36,6 +36,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **tight-python skill** — Merged into python skill (consolidated for single source of truth)
 
+### Yoker Migration (Batch D–E, 2026-08-31)
+
+- **All skills** carry `type:` frontmatter (knowledge/workflow classes); `## Related` sections
+  added; 37 skills strict-validated against the blueprint template
+- **project-manager** restored as team orchestrator (delegation map, lifecycle, post-and-poll)
+- **markdown-to-pdf skill** removed — superseded by `scripts/md_to_pdf.py`
+- **TODO.md** canonicalized (Unsorted → Backlog P1–P4); deferred migration items logged
+- **Migration closed** — C3 is Yoker-only; ongoing dogfooding drives further fixes
+
 ## [1.1.5] - 2026-04-21
 
 ### Added

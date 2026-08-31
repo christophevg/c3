@@ -4,6 +4,7 @@ description: |
   Research topics comprehensively with full provenance tracking. Use for web research,
   literature reviews, technology investigations, and gathering information with source
   citations. Examples: "research best practices for X", "investigate Y library options".
+type: knowledge
 ---
 
 # Research Skill
@@ -318,4 +319,7 @@ Before completing, verify:
 - If you batched multiple searches/fetches before recording, you have FAILED the task
 - If README.md contains information from a WebFetch that is NOT in fetched/, you have FAILED the task
 - If the number of WebFetch tool calls does not equal the number of files in fetched/, you have FAILED the task
+## Related
 
+- `c3:researcher` — the agent persona that invokes this workflow
+- `analysis-integration` — where multi-research findings get consolidated
