@@ -1,1016 +1,278 @@
 ---
 name: project-manage
-description: | 
-  Use this skill to manage the entire project workflow, orchestrating specialized agents (functional analyst, API architect, UI/UX designer) to ensure proper analysis, design, implementation, and review of all tasks. Handles both new features and bug fixes with appropriate workflows. Examples: "Start working on the project", "Implement the next task", "Fix the authentication bug".
+description: |
+  The managed-mode playbook: drive a project through the full workflow —
+  state detection, analysis, task selection, design review, consensus,
+  implementation, review, PR and CI — with GitHub as the communication
+  channel to the owner. Use only on explicit invocation: a project-manager
+  session start or an explicit owner request (handover from a direct
+  session). Never triggers on conversational phrases.
+type: workflow
 ---
 
-# Manage Project
+# Managed Project Workflow
 
-## ⛔ STOP: READ THIS FIRST
+## Mode
 
-**THE PROJECT ROOT IS REPORTED BY RELEASE-MANAGER.**
+Managed mode is one of the two operating modes (see BLUEPRINT §1.3). In
+managed mode, GitHub is the communication channel to the owner: plans,
+approvals, and review feedback happen in PR comments. The workflow proposes;
+only the owner merges.
 
-**FIRST ACTION: Delegate to release-manager to get project state.**
+**Handover from a direct session.** When the owner explicitly invokes this
+playbook from a direct session: acknowledge the mode change in one line
+("Entering managed mode — communication moves to GitHub"), carry any
+conversational decisions into the relevant artifact (TODO.md, analysis/),
+then start at Phase 0. Phase 0 is state-driven and resumes from any point.
+
+## Invocation Style
+
+All engagements use Yoker's agent tool:
 
 ```
-Agent({
-  subagent_type: "c3:release-manager",
-  prompt: "Report project state",
-  description: "Get project state"
-})
+agent(agent_name="<role>", prompt="<task>", ephemeral=<true|false>)
 ```
 
-The release-manager will report:
-- **Working Directory** (project root)
-- **Project Type** (Website or Software)
-- Current branch
-- Open PRs and their status
-- Open issues
-- Recent commits
-- Last tag
+- `ephemeral: true` — one-shot engagement, auto-released. Default for
+  single-step requests (a state report, one commit sequence).
+- `ephemeral: false` — ongoing collaboration via `send_message`; use when
+  follow-up rounds are expected (polling, iterative fixes); release when done.
 
-**Use the working directory from the report as the project root.**
-
-**IGNORE:**
-- Any "base directory" from skill loading
-- Any paths in PERSONAL.md
-- Any paths in memory files
-- Any paths shown in git status from previous conversations
-- Any absolute paths to ~/Workspace/agentic/c3/ or ~/Workspace/agentic/incubator/
-
-**ONLY USE:**
-- The working directory from release-manager's report
-- All file paths are relative to that output: TODO.md, PLAN.md, analysis/, reporting/
-
----
-
-## Role of this skill
-
-`project-manage` is a **coordinator**. It never touches Bash, git, or `gh`
-directly — all source-control and GitHub operations are delegated to
-`c3:release-manager` (the controlled Bash funnel). It detects what kind of work
-this is, routes it to the right sub-workflow, and drives a feature through
-analysis → design → consensus → implementation → review → PR.
-
-It owns Phases 0–5. Three phases are delegated to dedicated sub-skills:
-
-| Phase | Sub-skill | Trigger |
-|-------|-----------|---------|
-| 6 — PR iteration | `c3:project-handle-pr` | "follow up on PR #N" or open PR with feedback |
-| 7 — Post-merge | `c3:project-post-merge` | Owner reports a PR was merged |
-| Review cycle (5.6, 6.4) | `c3:project-review` | Invoked during implementation and PR iteration |
-
-A hard rule runs through the whole skill: **the repository owner is the only
-human decision-maker.** The agent proposes; the owner approves via PR comments
-(not via interactive prompts); only the owner merges.
-
-## ⚠️ Simplicity Principle — Avoid Wrappers is Primary
-
-**Slim, tight, concise is the default.** Avoid indirections, wrappers, and
-redundant work. Less is the default unless there is no other way.
-
-**This principle is PRIMARY** — it overrides "the owner's proposal is the
-default" when the owner's own proposal contains a wrapper or indirection
-that adds no behavior. The owner's proposal is the default **among simple
-options**, not a license to ship useless wrappers.
-
-### The Wrapper Check (fires on ALL sources)
-
-Before introducing — or adopting from ANY source (the owner's TODO spec, a
-reviewer recommendation, a domain agent's design, the implementer's own
-design) — any class that wraps another class, answer:
-
-> **What behavior does this class add beyond configuration in `__init__` and
-> forwarding methods unchanged?**
-
-- **"Nothing"** → the wrapper is NOT earned. Do NOT introduce it. Propose a
-  **factory function** returning the configured instance, or **inlining** at
-  the call site, or **module-level constants** + direct calls.
-- **"Real behavior"** (retry, validation, state, a different contract,
-  multi-step orchestration the wrapped class doesn't do) → the wrapper IS
-  earned. Keep it and state the behavior it adds.
-
-The same check applies to adapter layers, façades, config objects, "seam"
-modules, dataclasses that just repackage another structure's fields, and
-helper methods that forward unchanged.
-
-**The "useless wrapper" pattern (reject on sight):** a class that (a)
-forwards one or more methods to a wrapped class unchanged AND (b) adds only
-configuration in its constructor. P1-003 (`Mailbox`) and P1-004
-(`Assistant`) were both this pattern — caught during owner review after
-consensus; the Wrapper Check now catches them at design time.
-
-### Owner's Proposal is the Default (among simple options)
-
-When the owner provides an explicit proposal or snippet, OR states a worry /
-constraint / directive (in the issue, PR comments, or interview):
-1. **It is the default** — implement/endorse it as-is unless there is a
-   specific, documented problem OR it fails the Wrapper Check.
-2. **Any deviation must** (i) quote the owner's proposal, (ii) state the
-   specific problem, (iii) justify why the added complexity is earned.
-3. **"Reviewer prefers X" or "refinement" is NOT justification.**
-4. **Ignoring the owner's proposal without a stated reason is unacceptable.**
-5. **Owner-stated worries and constraints are binding.** The implementation
-  plan (Phase 5.2) MUST enumerate every owner-stated proposal, worry, and
-  constraint and explicitly respond to each. An owner instruction left as
-  background context (no explicit response) blocks plan approval.
-
-**If the owner's own proposal fails the Wrapper Check:** flag it, propose the
-simpler alternative (factory function / inline / constants), and let the
-owner decide. Do NOT silently implement the wrapper. This is the gap that let
-P1-003's `Mailbox` and P1-004's `Assistant` reach consensus before the owner
-caught them.
-
-### PM Simplicity Gate (applies at Phase 3, 4, 5.2, 5.6)
-
-The gate fires on TWO sources:
-
-1. **Reviewer recommendations that diverge from the owner's proposal:**
-   before forwarding any reviewer recommendation that adds a
-   class/indirection/wrapper/guard not in the owner's proposal, (a) quote the
-   owner's proposal, (b) state the specific problem, (c) only forward if the
-   problem is real and the added complexity is earned.
-
-2. **The owner's own proposal (NEW):** before adopting the owner's proposal
-   when it contains a class/indirection/wrapper, apply the Wrapper Check. If
-   it fails, flag it and propose the simpler alternative. Do NOT silently
-   implement a wrapper that fails the check, even when the owner proposed it.
-   The owner decides — but the agent surfaces the problem first.
+Skills are invoked with the skill tool: `skill(skill_name="c3:...")`.
 
 ---
 
-## Workflow Overview
+## Phase 0 — Session Start & Triage
 
-```
-═══════════════════════════════════════════════════════════════════════
-PHASE 0 — Session Start & Triage
-═══════════════════════════════════════════════════════════════════════
- 0.1  release-manager → project state report (project root = its wd)
- 0.2  state detection matrix:
-        analysis-only PR, no approval   → poll for plan approval (5.3)
-        analysis-only PR, approved      → proceed to implementation (5.4)
-        analysis-only PR, changes req   → revise plan (5.2)
-        implementation PR, no feedback  → poll for review (5.10)
-        implementation PR, changes req  → c3:project-handle-pr
-        implementation PR, CI failing   → fix CI
-        merged PR on feature branch     → c3:project-post-merge
-        clean main/master               → Phase 1
-        open issues                     → 0.3 issue triage
- 0.3  issue triage (by type/label — all gh ops via release-manager):
-        bug        → Bug Implementation Flow (bug-fixer → project-review → PR)
-        feature    → functional-analyst review → owner approves → backlog
-        question   → researcher
-        dependency → researcher → backlog
-        reject     → close
+**0.1 Project state (release-manager, ephemeral).** Engage c3:release-manager
+with "Report project state". Its report is the session's single source of
+truth: working directory (the project root), project type, branch, uncommitted
+changes, open PRs (with content classification and owner-direction timeline),
+open issues, last tag, recent commits.
 
-═══════════════════════════════════════════════════════════════════════
-PHASE 1 — Analysis (conditional)
-═══════════════════════════════════════════════════════════════════════
- 1A  no analysis/functional.md → functional-analyst: interview,
-     create analysis/functional.md + TODO.md + (optional) PLAN.md (MBIs)
- 1B  analysis exists, no TODO  → functional-analyst: review,
-     create prioritized TODO.md (+ PLAN.md MBIs if needed)
-     (researcher conditional: gaps / tech choices; see c3:plan for MBIs)
+**0.2 State matrix.** From the report, pick the resume point:
 
-═══════════════════════════════════════════════════════════════════════
-PHASE 2 — Task Selection
-═══════════════════════════════════════════════════════════════════════
- 2.1  unsorted items (TODO.md ## Unsorted) & unsorted MBIs
-      (PLAN.md ## Unsorted MBIs) → ask: sort / analyze / skip
- 2.2  PRIORITY (first-class):
-        1. Active MBI tasks   (PLAN.md ## Active MBI, tagged [MBI-XXX])
-        2. Fix issues          (critical bugs)
-        3. Linear TODO.md backlog
- 2.3  verify task not already implemented (acceptance-criteria check)
- 2.4  propose next task (ask user) → approved → 2.5
- 2.5  task scope classification:
-        backend | frontend | full | docs | research
-        (+ security-engineer if auth / PII / external API / input / files / config)
+| Finding | Action |
+|---------|--------|
+| Analysis-only PR, no approval | poll for plan approval (5.3) |
+| Analysis-only PR, approved | go directly to implementation (5.4) |
+| Analysis-only PR, changes requested | revise plan (5.2) |
+| Implementation PR, no feedback, CI green | poll for review (5.10) |
+| Implementation PR, CI red | fix CI |
+| Implementation PR, changes requested | `c3:project-handle-pr` |
+| Merged PR, still on feature branch | `c3:project-post-merge` |
+| Clean default branch | next: open issues (0.3) or Phase 1 |
+| Open issues without status labels | triage (0.3) |
 
-═══════════════════════════════════════════════════════════════════════
-PHASE 3 — Cross-Domain Design Review (parallel, by scope)
-═══════════════════════════════════════════════════════════════════════
- 3.1  api-architect + security-engineer   (backend / full)
- 3.2  ui-ux-designer                       (frontend / full)
-      each writes analysis/*.md; TODO.md updates flow via functional-analyst
+Approval already present in PR comments is final: never re-post the plan,
+never re-wait, never re-ask. Read the comment timeline and act.
 
-═══════════════════════════════════════════════════════════════════════
-PHASE 4 — Consensus
-═══════════════════════════════════════════════════════════════════════
- 4.1  reporting/{task}/consensus.md — all invoked domain agents approve
+**0.3 Issue triage.** Only issues without status labels are new.
 
-═══════════════════════════════════════════════════════════════════════
-PHASE 5 — Implementation
-═══════════════════════════════════════════════════════════════════════
- 5.1  release-manager: feature branch + commit analysis docs + draft PR
- 5.2  post implementation plan as PR comment
- 5.3  ◆ PLAN APPROVAL GATE (BLOCKING — owner in PR comments)
- 5.4  check domain skills first (textual / pymongo / baseweb / python …)
- 5.5  python-developer implements (incremental: one change → test → verify)
- 5.6  ★ invoke c3:project-review skill
- 5.7  mark pending-review + write reporting/{task}/summary.md
- 5.8  release-manager: commit → push → PR → CI (fix until green)
- 5.9  release-manager: mark ready → assign / request owner review
- 5.10 PAUSE → delegate polling to release-manager (15min timeout)
-       timeout → report & wait for "follow up on PR #N"
+| Type | Route |
+|------|-------|
+| Bug | Bug flow (below) — immediate, no confirmation ask |
+| Feature | functional-analyst reviews; clarifies in issue comments; owner accepts → `status:backlog` + TODO.md entry |
+| Question | researcher evaluates or close |
+| Dependency | researcher → backlog |
 
- → "follow up on PR #N" → delegate to c3:project-handle-pr
- → "PR merged"          → delegate to c3:project-post-merge
-```
-
-The review cycle detail (Stage a–f, the `make check` gate, rejection handling)
-lives in the `c3:project-review` skill, invoked at 5.6 and again (scoped) at
-Phase 6.4 of `c3:project-handle-pr`.
-
----
-
-## Session Start: Get Project State
-
-**CRITICAL: Project-manager does NOT run git/gh commands directly. Always delegate to release-manager.**
-
-```
-Agent({
-  subagent_type: "c3:release-manager",
-  prompt: "Report project state",
-  description: "Get project state"
-})
-```
-
-Based on the state reported, determine the next action (Phase 0.2):
-
-### 0.2 — State Detection Matrix
-
-Using the release-manager's enhanced report (PR content classification + 
-owner direction + comment timeline), determine the exact state of each 
-open PR:
-
-| PR Content | Owner Direction | CI | Action |
-|------------|----------------|----|--------|
-| Analysis only | NO DIRECTION YET | — | Poll for plan approval (Phase 5.3) |
-| Analysis only | PLAN APPROVED | — | **Proceed directly to implementation (Phase 5.4)** — do NOT re-post plan, do NOT poll |
-| Analysis only | CHANGES REQUESTED | — | Delegate to functional-analyst to revise plan (Phase 5.2 re-post) |
-| Implementation | NO DIRECTION YET | Passing | Poll for review feedback (Phase 5.10) |
-| Implementation | NO DIRECTION YET | Failing | Delegate to developer to fix CI |
-| Implementation | CHANGES REQUESTED | — | Delegate to `c3:project-handle-pr` |
-| Implementation | PLAN APPROVED | Passing | Poll for review feedback (Phase 5.10) — plan was for initial implementation, now reviewing the result |
-| Mixed | Any | — | Treat as Implementation row (implementation is present) |
-| Merged | — | — | Delegate to `c3:project-post-merge` |
-
-**No open PRs + clean main/master** → Start new task from TODO.md (Phase 1)
-
-**Open issues** → Process issues (Phase 0.3)
-
-⚠️ **CRITICAL — Do Not Re-Wait For Already-Given Approval:**
-
-If the release-manager's report shows the owner has already approved the 
-plan (detected via owner comments containing "approved", "proceed", 
-"looks good", etc.) AND the PR contains only analysis documents (no 
-source files), then:
-
-1. Do NOT re-post the implementation plan
-2. Do NOT delegate polling for approval
-3. Do NOT report "waiting for approval"
-4. DO proceed directly to Phase 5.4 (check domain skills) → 5.5 (implement)
-
-This is the state that caused repeated mistakes in prior sessions. The 
-approval is in the PR comments — read them, trust them, and act on them.
-
-**Do NOT run `gh pr checks` or `gh pr view` directly — get this from release-manager.**
-
----
-
-## Task Type Detection
-
-Before starting, detect whether the task is a **feature**, **bug**, or **dependency**:
-
-| Task Type | Indicators |
-|-----------|------------|
-| **Bug** | "fix", "bug", "issue", "broken", "error", "doesn't work", "crash", "fails" |
-| **Feature** | "add", "create", "implement", "build", "new", "feature", "enhance" |
-| **Dependency** | "upgrade", "update", "bump", "dependencies", "package", "release", "version" |
-
-### If the task is a BUG
-
-Follow the **Bug Implementation Flow** below — bugs go through the same review
-(`c3:project-review`) and PR funnel (`c3:release-manager`) as features, but skip
-the Plan Approval Gate (bugs are urgent and owner-decided). See
-[references/bug-workflow-integration.md](references/bug-workflow-integration.md).
-
-#### Bug Implementation Flow
-
-```
-1. Mark in-progress + create feature branch   (release-manager)
-2. Spawn c3:bug-fixer                          (diagnose + TDD + fix + make check → reports back)
-3. Invoke c3:project-review (scoped to bug)    ← review re-entry, same as features
-4. Commit, push, PR, CI                        (release-manager)
-5. Mark ready, request owner review            (release-manager)
-6. PAUSE                                       (do not poll)
-   → "PR merged" → c3:project-post-merge
-```
-
-**Step 1 — Mark in-progress + create branch** (release-manager):
-
-```python
-Agent({ subagent_type: "c3:release-manager",
-  prompt: "Add label 'status:in-progress' to issue #{number}. If on main/master, create and checkout feature branch: feature/{issue-number}-{short-description}.",
-  description: "Mark bug in progress + branch" })
-```
-
-**Step 2 — Spawn bug-fixer** (diagnose + TDD + fix + `make check`; reports back,
-does NOT create a PR or run review):
-
-```python
-Agent({ subagent_type: "c3:bug-fixer",
-  prompt: "Fix {issue-number}: {issue-title}\n\n{issue-body}",
-  description: "Fix bug {issue-number}" })
-```
-
-**Step 3 — Review the fix** (invoke the shared review skill, scoped to the bug,
-using the scope/files from bug-fixer's report):
-
-```
-Skill({ skill: "c3:project-review",
-  args: "bug fix, issue #{number}, scope {scope}, round 0, files: {from report}" })
-```
-
-| `c3:project-review` returns | Action |
-|------------------------------|--------|
-| `approved` | Proceed to Step 4 |
-| `rejected: <feedback>` | Re-spawn bug-fixer (Step 2) with the feedback to revise; increment round; re-run Step 3 |
-| `escalate` | Ask owner: proceed with known issues / reduce scope / alternative? |
-
-**Step 4 — Commit, push, PR, CI** (release-manager, same as Phase 5.8):
-
-```python
-Agent({ subagent_type: "c3:release-manager",
-  prompt: "Commit the fix with message: 'fix: {summary} (#{issue-number})'. Push and create PR titled 'fix: {title}' referencing issue #{number}.",
-  description: "Commit, push, create PR" })
-Agent({ subagent_type: "c3:release-manager",
-  prompt: "Check CI status for PR #{number}. If failing, report details.",
-  description: "Check CI" })
-```
-
-If CI fails, re-spawn bug-fixer to fix, then release-manager commits/pushes again.
-
-**Step 5 — Mark ready, request owner review** (release-manager, same as Phase 5.9).
-
-**Step 6 — Poll for review feedback** (same as Phase 5.10). Delegate polling
-to release-manager (15min timeout). On "PR merged" → delegate to
-`c3:project-post-merge`.
-
-### If the task is a DEPENDENCY
-
-Determine complexity, then route:
-
-| Complexity | Example | Workflow |
-|------------|---------|----------|
-| Simple upgrade | "Upgrade yoker to 2.1.0" | Researcher → python-developer |
-| Upgrade with goal | "Upgrade yoker to simplify our codebase" | Researcher → functional-analyst |
-
-```python
-# Step 1: researcher gathers package information (uses pkgq for Python packages)
-Agent({
-  subagent_type: "c3:researcher",
-  prompt: "Research Python packages: {packages}. Include: capabilities, patterns, breaking changes, migration steps.",
-  description: "Research {packages}"
-})
-
-# Step 2: route based on complexity
-#   simple upgrade  → c3:python-developer (apply migration)
-#   upgrade w/ goal → c3:functional-analyst (analyze simplification, create TODO.md)
-```
-
-### If the task is a FEATURE
-
-Use the **Feature Development Workflow** — continue to Phase 0.3 / Phase 1.
-
----
-
-## Phase 0.3 — Issue Triage
-
-⛔ **MANDATORY: uses data from release-manager's project state report. Do NOT run gh commands directly.**
-
-Issues are reported by release-manager during session start. Filter out issues
-with status labels (already reviewed); issues without status labels are new and
-need triage. Classify each new issue:
-
-| Issue Type | Labels / Indicators | Workflow |
-|------------|---------------------|----------|
-| **Bug** | `bug`, `error`, `crash`, `broken`, `fix` | Bug Implementation Flow (bug-fixer → project-review → PR) |
-| **Feature** | `enhancement`, `feature`, `new`, `add` | Review → Clarify → Backlog |
-| **Question** | `question`, `help`, `discussion` | Research or close |
-| **Dependencies** | `dependencies`, `upgrade` | Research → Backlog |
-
-Detailed triage (owner authority, clarification process, triage completion) is
-in [references/issue-review-workflow.md](references/issue-review-workflow.md).
-
-### Bug issues (URGENT — immediate action)
-
-Do NOT ask for confirmation. Follow the **Bug Implementation Flow** (see "If the
-task is a BUG" above): mark in-progress + create branch (release-manager) →
-spawn `c3:bug-fixer` → `c3:project-review` → commit/push/PR/CI (release-manager)
-→ mark ready → pause. Bugs no longer stop at the bug-fixer; they continue
-through the same review + PR funnel as features.
-
-### Feature issues (REQUIRE review — clarify first)
-
-⚠️ **Only the repository owner can approve an issue into the backlog.**
-Non-owner comments are informational only. Functional-analyst must verify
-commenter ownership. Full process in
+Labels: `status:backlog` / `status:in-progress` / `status:needs-research` /
+`status:wont-do` (closed with reason) / `status:blocked`. All labeling,
+commenting, and closing go through c3:release-manager. Only the repository
+owner's comments decide; verify ownership before treating feedback as
+authoritative. Full protocol:
 [references/issue-review-workflow.md](references/issue-review-workflow.md).
-
-1. Mark as being reviewed (release-manager adds `status:in-progress` + comment).
-2. Delegate to functional-analyst for review (clarify via `gh issue comment`).
-3. After functional-analyst reports **owner** agreement:
-   - release-manager: remove `status:in-progress`, add `status:backlog`, comment.
-   - functional-analyst: add issue to TODO.md backlog with agreed criteria.
-4. Commit and push TODO.md/REQUIREMENTS.md updates immediately via release-manager
-   (prevents accumulating uncommitted changes during triage).
-
-### Question / discussion issues
-
-```python
-Agent({ subagent_type: "c3:release-manager",
-  prompt: "Add label 'status:needs-research' to issue #{number} and comment 'Needs evaluation for...'",
-  description: "Mark for research" })
-```
-
-### Rejecting issues
-
-```python
-Agent({ subagent_type: "c3:release-manager",
-  prompt: "Add label 'status:wont-do' to issue #{number} and close with comment 'Closing: not in scope because...'",
-  description: "Reject issue" })
-```
-
-### Issue status labels
-
-| Label | Meaning | Action |
-|-------|---------|--------|
-| `status:backlog` | Reviewed, accepted, added to TODO.md | Keep open, implement later |
-| `status:in-progress` | Currently being reviewed or implemented | Keep open, track progress |
-| `status:wont-do` | Decision: won't implement | Close with explanation |
-| `status:needs-research` | Needs evaluation | Keep open, research first |
-| `status:blocked` | Blocked by dependency | Keep open, note blocker |
-
-### "Follow up on issue #N"
-
-⚠️ **Do NOT decide yourself. Delegate to functional-analyst.** Use `SendMessage`
-with the existing functional-analyst agent to preserve context — do not relaunch.
-
-The functional-analyst checks for new comments, verifies ownership, and reports
-one of: needs clarification / waiting for owner / fully triaged. After triage is
-complete, update labels and TODO.md via release-manager + functional-analyst, then
-move to the next issue (do not pause for feedback).
-
-Continue to Phase 1 after issues are handled.
+Commit TODO.md updates promptly (via release-manager) — never let triage
+accumulate uncommitted changes. After issues, continue to Phase 1 or the
+next item; do not pause for feedback.
 
 ---
 
 ## Phase 1 — Analysis (conditional)
 
-Detect the project state from analysis artifacts:
+| State | functional.md | TODO.md | Action |
+|-------|---------------|---------|--------|
+| New project | missing | missing | 1A |
+| Unanalyzed backlog | exists | missing | 1B |
+| Ready | exists | exists | Phase 2 |
 
-| State | `analysis/functional.md` | `TODO.md` | Action |
-|-------|--------------------------|-----------|--------|
-| **New Project** | Missing | Missing | Phase 1A |
-| **Incomplete Setup** | Exists | Missing | Phase 1B |
-| **Ready for Work** | Exists | Exists | Phase 2 |
+**1A/1B — functional-analyst**: review project state (1B: existing
+analysis first), interview the owner, (re)build `analysis/functional.md`
+and a prioritized `TODO.md`. Create `PLAN.md` with MBIs via `c3:plan` when
+the project benefits from MBI slicing — otherwise skip it.
 
-### Phase 1A — Initial Functional Analysis (new project)
+A Ready project skips Phase 1 by design — the full interview-style analysis
+runs only when artifacts are missing or the owner requests fresh analysis.
+The functional-analyst's involvement then continues **per task** at Phases
+2–4: preparing each task, guarding its functionality through design and
+consensus, and reviewing the implementation (5.6). It is the most-engaged
+agent in the workflow, not a one-time Phase 1 role.
 
-Invoke `functional-analyst` to:
-
-- Review high-level functional requirements (README.md, existing docs)
-- Review existing code structure if available
-- Interview the user to clarify topics needing more information
-- Create `analysis/functional.md` with comprehensive functional analysis
-- Create `TODO.md` with a prioritized backlog of atomic, well-defined tasks
-- **Optionally create `PLAN.md`** with Minimal Business Increments (MBIs) when
-  the work benefits from MBI-level slicing. Use the `c3:plan` skill for MBI
-  creation, scoring (WSJF), and structure.
-
-**Conditional: invoke `c3:researcher` when:**
-- Functional analysis identifies gaps needing best-practice proposals
-- The user explicitly requests research to address functional-analyst questions
-- A technology choice needs evaluation and recommendations
-
-Researcher delivers: findings in `research/{topic}.md`, technology
-recommendations with pros/cons, best-practice proposals for identified gaps.
-
-### Phase 1B — Review and Backlog Creation (existing analysis)
-
-Invoke `functional-analyst` to:
-
-- Review existing `analysis/functional.md`
-- Review current project state
-- Interview the user to update understanding if needed
-- Create a prioritized `TODO.md`
-- **Create/update `PLAN.md`** with MBIs if the work warrants MBI slicing
-
-**Conditional: invoke researcher** when existing analysis needs technology
-investigation or the user requests research.
-
-Then proceed to **Task Scope Classification** (Phase 2.5).
+**researcher, conditional:** only for identified gaps, tech choices, or on
+owner request; findings in `research/`.
 
 ---
 
 ## Phase 2 — Task Selection
 
-### 2.1 Check for unsorted items and MBIs
+**2.1 Unsorted items** (TODO.md `## Unsorted`, PLAN.md `## Unsorted MBIs`):
+ask — sort into backlog / analyze now / start next task.
 
-- Read `TODO.md` — check for a `## Unsorted` section (quick ideas captured but
-  not yet analyzed).
-- If `PLAN.md` exists, check for `## Unsorted MBIs` (raw MBI ideas not yet
-  analyzed).
+**2.2 Priority:** 1) Active MBI tasks ([MBI-xxx] in TODO.md),
+2) critical bugs, 3) linear backlog.
 
-| Condition | Action |
-|-----------|--------|
-| No unsorted items or MBIs | Proceed to 2.2 |
-| Unsorted items / MBIs exist | Ask the user: sort / analyze / skip / show all |
+**2.3 Verify first (functional-analyst).** The functional-analyst confirms
+the chosen task's acceptance criteria are not already satisfied by the
+codebase and the task is still accurately described; if implemented or
+stale, it updates TODO.md and the orchestrator moves to the next task.
 
-Choices:
-- **Sort unsorted items first** → functional-analyst integrates them into the backlog
-- **Analyze unsorted MBIs** → functional-analyst creates proper MBI entries in PLAN.md
-- **Show next backlog task** → proceed to 2.2
-- **Show all items** → display TODO.md and PLAN.md, ask again
+**2.4 Propose next task to the owner in chat — do not pause.** State the
+selection (task id, title, one-line why) as a report and continue
+immediately into the workflow. The owner interjects when they want
+ something different: "manage the project" IS the instruction to proceed
+autonomously. On request, show all backlog items or run fresh analysis.
 
-### 2.2 Priority (MBI is first-class)
+**2.5 Scope classification → design agents:**
 
-| Priority | Task Source |
-|----------|-------------|
-| 1 | Active MBI tasks (PLAN.md `## Active MBI`, tagged `[MBI-XXX]` in TODO.md) |
-| 2 | Fix issues (critical bugs) |
-| 3 | Linear TODO.md backlog |
+| Scope | Domain agents |
+|-------|---------------|
+| backend | api-architect (+ security-engineer if security-adjacent) |
+| frontend | ui-ux-designer |
+| full | api-architect, ui-ux-designer (+ security-engineer) |
+| docs | end-user-documenter |
+| research | researcher |
 
-If an Active MBI exists, propose its first incomplete task and report the MBI
-context to the user (e.g. "Found Active MBI: MBI-001 — Bootstrap. Next task: …").
-Active MBI tasks take priority over non-MBI tasks.
+Include security-engineer when the task touches auth, sensitive data,
+external APIs, user input, files, or security-relevant configuration.
 
-### 2.3 Verify task completion status (CRITICAL)
-
-Before proposing a task, verify whether its acceptance criteria are already
-satisfied by existing code — this prevents proposing already-implemented work.
-
-- Does the task require creating a file that already exists?
-- Are the acceptance criteria already met by current code?
-- Are there related "done" tasks covering this functionality?
-
-If the task appears already implemented: mark it done in TODO.md with today's
-date, move to the next task, and report to the user.
-
-### 2.4 Propose next task (ask user)
-
-```
-Question: "Project analysis complete. Next task from backlog: {task-id} - {task-title}. Proceed with this task?"
-Options:
-- "Yes, start implementation" (Recommended)
-- "Show all tasks in backlog"
-- "Run fresh analysis"
-```
-
-If approved, proceed to 2.5.
-
-### 2.5 Task scope classification
-
-| Scope | Indicators | Required Domain Agents |
-|-------|------------|------------------------|
-| **Backend only** | "API", "endpoint", "backend", "data model", no UI | api-architect, security-engineer* |
-| **Frontend only** | "UI", "UX", "frontend", "component", "page", no backend | ui-ux-designer |
-| **Full stack** | Both backend and frontend mentioned | api-architect, ui-ux-designer, security-engineer* |
-| **Documentation only** | "document", "readme", "guide" | end-user-documenter |
-| **Research only** | "research", "investigate", "evaluate" | researcher |
-
-\* Include `security-engineer` when the task involves: authentication or
-authorization changes, sensitive data (PII, credentials, payments), external API
-integrations, user input processing, file operations, or security-affecting
-configuration changes.
-
-Then proceed to Phase 3.
-
----
-
-### 2.6 Owner-Directed Bundling
-
-When the owner directs bundling (e.g., "bundle almost all remaining tasks"):
-
-1. **Enumerate ALL incomplete tasks** from TODO.md — do not skip any.
-2. **Propose a split** — group by nature (implementation vs. documentation vs.
-   evaluation). Documentation is typically a separate follow-up PR.
-3. **Exclude open-ended evaluation tasks** from bundles by default — they
-   don't produce code and don't benefit from the review cycle. Flag them to
-   the owner for separate triage.
-4. **Present the proposed bundle** to the user before proceeding.
-
-Bundled tasks share a single feature branch, PR, and review cycle. The
-implementation plan (Phase 5.2) must enumerate every task in the bundle and
-map each to its acceptance criteria.
+**2.6 Bundling (owner-directed).** Enumerate all incomplete tasks, propose
+groupings (implementation vs docs; open-ended evaluations excluded), present
+before proceeding. A bundle = one branch, one PR, one review cycle; the
+implementation plan maps every task to its acceptance criteria.
 
 ---
 
 ## Phase 3 — Cross-Domain Design Review
 
-Invoke domain agents based on scope. Run them **in parallel** where independent.
+Engage the scope's domain agents (Phase 2.5 table) **and the
+functional-analyst** to review the task against the functional analysis.
+The functional-analyst prepares the task for the domain agents: restates
+the acceptance criteria, supplies the functional context from
+`analysis/functional.md`, and frames the open functional questions. Domain
+agents own their domain's design doctrine — api-architect alone applies
+API/architecture principles (RESTful, simplicity, wrapper check); never
+restate them here.
 
-**Backend / Full stack:** `api-architect` (+ `security-engineer` if security-related)
-**Frontend / Full stack:** `ui-ux-designer`
+Each domain agent writes `analysis/<domain>-<topic>.md` and returns its
+findings. The functional-analyst incorporates them into TODO.md (scope,
+criteria, dependencies) and reports the integrated result.
 
-Each domain agent:
-- Reviews the most recent functional analysis and the current backlog (TODO.md)
-- Provides its perspective and improvements
-- **Creates an analysis document in `analysis/`** (mandatory for api-architect
-  and security-engineer)
-- Updates TODO.md with domain considerations (flowing through functional-analyst)
+## Phase 4 — Consensus
 
----
-
-## Phase 4 — Consensus and Backlog Finalization
-
-- Collect feedback from all domain agents invoked in Phase 3
-- Coordinate resolution if agents disagree
-- Create a consensus summary in `reporting/{task-name}/consensus.md`
-- **Only proceed to implementation when all invoked agents approve**
-
-Not all tasks require all agents — consensus is among the agents that were
-invoked.
-
----
+- Collect findings from all engaged agents (functional-analyst always
+  included); coordinate resolution.
+- Write `reporting/<task>/consensus.md`.
+- Proceed only on consent of every engaged agent.
 
 ## Phase 5 — Implementation
 
-### 5.1 Create feature branch + commit analysis docs + draft PR
+**5.1 Branch + draft PR (release-manager).** Feature branch from the
+default branch; commit analysis docs (skip gitignored paths — never force-add);
+open a draft PR referencing the task/issue.
 
-```python
-Agent({ subagent_type: "c3:release-manager",
-  prompt: "Check current branch. If on main/master, create and checkout feature branch: feature/{issue-number}-{short-description}",
-  description: "Create feature branch" })
-Agent({ subagent_type: "c3:release-manager",
-  prompt: "Stage and commit analysis documents that are not gitignored (check .gitignore first; typically reporting/ is workflow-local and stays uncommitted — skip ignored paths, do not force-add, note exclusions) with message: 'docs: add analysis for {task-name}'",
-  description: "Commit analysis docs" })
-Agent({ subagent_type: "c3:release-manager",
-  prompt: "Create draft PR with title 'feat: {task title}' and body describing the analysis. Include links to analysis documents.",
-  description: "Create draft PR" })
-```
+**5.2 Implementation plan as PR comment** (release-manager): approach,
+files, steps, acceptance criteria — ending "Waiting for owner approval
+before proceeding." When conversational decisions exist (handover, 2.6
+bundles), the plan must explicitly incorporate them.
 
-### 5.2 Post implementation plan as PR comment
+**5.3 Plan Approval Gate (blocking).** Poll via release-manager: check PR
+comments every 60s, max 15 minutes, only newer comments count, non-owner
+comments are informational.
 
-```python
-Agent({ subagent_type: "c3:release-manager",
-  prompt: "Post PR comment with implementation plan for {task-name}. Include: approach, files to modify, implementation steps, acceptance criteria. End with 'Waiting for owner approval before proceeding.'",
-  description: "Post plan as PR comment" })
-```
+| Outcome | Action |
+|---------|--------|
+| Approved | 5.4 |
+| Changes requested | revise (functional-analyst) → re-post → poll again |
+| Timeout | report PR URL + "Say 'follow up on PR #N' to check again", pause |
 
-### 5.3 ◆ Plan Approval Gate (BLOCKING)
+Implementation never starts without this approval in PR comments.
 
-⚠️ **Implementation cannot proceed until the repository owner approves the plan
-in PR comments. This is mandatory and blocking — not optional, not an
-asking the user.**
+**5.4 Domain skills.** Invoke matching knowledge skills before coding
+(`python` for anything Python; `textual`/`rich`/`pymongo`/`fire`/
+`baseweb`/`vuetify` for their domains; `readme` + `documentation` for
+docs-touching tasks). Their patterns are the implementation vocabulary.
 
-Delegate to release-manager to poll for owner approval:
+**5.5 Implement** (python-developer or fitting specialist): follow the
+approved plan and the domain skills; incremental — one change, verify,
+next; `make check` green before reporting done.
 
-```python
-Agent({ subagent_type: "c3:release-manager",
-  prompt: "Poll PR #{number} for owner approval. Check PR comments and reviews every 60 seconds for up to 15 minutes. Report when the owner approves, requests changes, or when the timeout is reached.",
-  description: "Poll for plan approval" })
-```
+**5.6 Review cycle.** Invoke `c3:project-review` (round 0, task, scope,
+files). `approved` → 5.7 · `rejected: <feedback>` → back to 5.5 with the
+consolidated feedback, round++ · `escalate` → owner decides.
 
-Report to the owner:
-```
-Implementation plan posted as PR comment. Waiting for your approval before proceeding.
-PR: {PR URL}
-Please review and either:
-- Approve: comment "approved" or "looks good, proceed"
-- Request changes: comment with specific feedback
-Implementation is blocked until you approve.
-```
+**5.7 Mark pending-review + summary.** Update TODO.md (pending review, PR
+ref); write `reporting/<task>/summary.md` (what, decisions, files, PR).
+Workflow-local `reporting/` is never committed when gitignored.
 
-| Release-manager reports | Action |
-|--------------------------|--------|
-| Owner requests changes | functional-analyst incorporates → release-manager commits → re-post plan → delegate polling again |
-| Owner rejects entirely | Close PR (+ related issue if applicable) → report to owner |
-| Owner approves | Proceed to 5.4 |
-| Timeout (no response after 15 min) | Report to owner: "No response on PR #{number} yet. Say 'follow up on PR #{number}' to check again." Then pause. |
+**5.8 Push + PR + CI** (release-manager): commit (conventional format),
+push, non-draft PR with task/issue references. Then CI until green:
+developer fixes → release-manager re-pushes.
 
-**Only proceed to 5.4 after explicit owner approval in PR comments.**
+**Phased completion — CI gate before review request.** The PR lifecycle
+is strictly ordered: 5.8 commit/push → CI green (fix-and-repush until it
+passes) → and only then 5.9 (mark ready, request owner review) and any PR
+comment announcing readiness. Never request review, mark ready, or post
+completion comments while CI is red or unknown.
 
-### 5.4 Check domain skills
+**5.9 Ready + request review** (release-manager): mark ready, request the
+owner's review, comment "Ready for review."
 
-Before exploring code or running one-off scripts, check for a domain skill:
-
-| Skill | When to use |
-|-------|-------------|
-| `textual` | Textual TUI widgets and patterns |
-| `rich` | Rich console output |
-| `pymongo` | MongoDB operations |
-| `fire` | Fire CLI framework |
-| `baseweb` / `vuetify` | Web UI frameworks |
-| `python` | Python coding standards (always relevant) |
-| `readme` | README creation/maintenance (any task touching README) |
-| `documentation` | docs/ + Sphinx + ReadTheDocs setup (any task touching user docs, tutorials, publication) |
-
-Invoke the matching skill first to get API knowledge and patterns — saves
-exploration time. For docs-scope tasks, consult BOTH `readme` and
-`documentation` — the README is the lean front-door; `docs/` is the full
-narrative published via ReadTheDocs. Missing the documentation standard leads
-to rejected plans.
-
-### 5.5 Implement
-
-Invoke `c3:python-developer` (or appropriate specialized agent) to:
-- Implement the task following the plan
-- Follow project and global agent instructions (auto-loaded into context)
-- Follow domain skills (python, baseweb, fire, pymongo, etc.)
-- Run `make check` and verify all pass before reporting done
-- Receive task details from TODO.md and relevant analysis documents
-
-**Incremental changes when fixing issues:**
-1. Make ONE change at a time — don't batch multiple fixes
-2. Test after each change — verify each fix works
-3. Restore if broken — if a change breaks working code, restore first
-4. Ask before guessing — if unsure about root cause, ask for clarification
-
-**Anti-patterns:** making multiple changes simultaneously; guessing without
-understanding root cause; continuing to add changes when already broken; skipping
-checks between changes.
-
-### 5.6 Review cycle
-
-⚠️ **MANDATORY. Do not skip.** Invoke the shared review skill:
-
-```
-Skill({
-  skill: "c3:project-review",
-  args: "initial implementation, task {task-id}, scope {scope}, round 0, files: {files}"
-})
-```
-
-`c3:project-review` runs functional → domain → quality → documentation →
-`make check` → pre-commit verification, with rejection handling (max 2 rounds,
-then escalate). Handle its return value:
-
-| `c3:project-review` returns | Action |
-|------------------------------|--------|
-| `approved` | Proceed to 5.7 |
-| `rejected: <feedback>` | Send developer back to 5.5 with consolidated feedback; increment round; re-run 5.6 |
-| `escalate` | Ask owner: proceed with known issues / reduce scope / alternative approach? |
-
-### 5.7 Mark pending-review + summary
-
-- Mark the task **pending review** (not complete until PR is merged)
-- Update the task in TODO.md with the PR reference
-- Ensure `reporting/{task-name}/` exists
-- Create `reporting/{task-name}/summary.md`: what was implemented, key decisions,
-  lessons learned, files modified, PR link
-- Reporting/consensus files are workflow-local: write them, but do NOT commit them when .gitignore excludes the path (owner policy — they remain available to the working agents)
-
-### 5.8 Commit, push, create PR, CI
-
-⚠️ **In project management mode, commits NEVER go directly to master/main.**
-
-```python
-Agent({ subagent_type: "c3:release-manager",
-  prompt: "Check current branch. If on main/master, create and checkout feature branch: feature/{issue-number}-{short-description}",
-  description: "Ensure feature branch" })
-Agent({ subagent_type: "c3:release-manager",
-  prompt: "Commit all staged changes with message: 'feat: {description}'",
-  description: "Commit changes" })
-Agent({ subagent_type: "c3:release-manager",
-  prompt: "Push branch to origin and create PR with title 'feat: {task title}' and body describing changes. Include task reference #{task-id} and issue #{issue-number}.",
-  description: "Push and create PR" })
-Agent({ subagent_type: "c3:release-manager",
-  prompt: "Add label 'status:in-progress' to issue #{issue-number} and add comment 'PR created: {PR URL}'",
-  description: "Update issue status" })
-```
-
-**CI follow-up (MANDATORY):** PR creation is NOT complete until CI passes.
-
-```python
-Agent({ subagent_type: "c3:release-manager",
-  prompt: "Check CI status for PR #{number}. Report if passing or failing. If failing, provide failure details.",
-  description: "Check CI status" })
-```
-
-If CI fails: delegate to developer to fix → release-manager commits and pushes →
-repeat until CI passes.
-
-### 5.9 Mark PR ready, assign, request review
-
-```python
-Agent({ subagent_type: "c3:release-manager",
-  prompt: "Mark PR #{number} as ready for review (convert from draft).",
-  description: "Mark PR ready" })
-Agent({ subagent_type: "c3:release-manager",
-  prompt: "Assign PR #{number} to {owner} and request review from {owner}. Post comment: 'Implementation complete. Ready for review.'",
-  description: "Assign and request review" })
-```
-
-### 5.10 Poll for review feedback
-
-Delegate to release-manager to poll for PR review feedback:
-
-```python
-Agent({ subagent_type: "c3:release-manager",
-  prompt: "Poll PR #{number} for owner review feedback. Check PR comments and reviews every 60 seconds for up to 15 minutes. Report when the owner provides feedback or when the timeout is reached.",
-  description: "Poll for review feedback" })
-```
-
-Report to the owner:
-```
-PR #{number} is ready for review.
-URL: {PR URL}
-Status:
-- Implementation: Complete
-- CI: Passing
-- Review: Requested from {owner}
-The PR is ready for your review.
-```
-
-| Release-manager reports | Action |
-|--------------------------|--------|
-| Owner approves | Wait for owner to merge. When user reports merge → delegate to `c3:project-post-merge` |
-| Owner requests changes | Delegate to `c3:project-handle-pr` |
-| Timeout (no response after 15 min) | Report: "No review feedback yet on PR #{number}. Say 'follow up on PR #{number}' to check again." Then pause. |
-
-**Fallback:** If polling times out, the push model remains available — the user
-can say "follow up on PR #{number}" to re-trigger the check at any time.
+**5.10 Poll for review** (release-manager): owner approves → wait for the
+merge; PR state MERGED (owner merged/rebased directly) → treat as positive
+response and go to `c3:project-post-merge`; changes requested →
+`c3:project-handle-pr`; timeout (15 min) → report + pause
+("follow up on PR #N" resumes).
 
 ---
 
-## Delegating to sub-skills
+## Bug Flow
 
-After Phase 5.10, control returns to the owner. Two triggers delegate onward:
+Bugs skip the Plan Approval Gate (owner-reported, urgent); everything else
+funnels identically:
 
-| Trigger | Delegation |
-|---------|------------|
-| "follow up on PR #N" / "check PR #N" | `Skill({ skill: "c3:project-handle-pr", args: "PR #N, task {task-id}, scope {scope}" })` |
-| Owner reports PR merged | `Skill({ skill: "c3:project-post-merge", args: "PR #N, task {task-id}, issue #{number}" })` |
+1. Branch + `status:in-progress` label (release-manager)
+2. c3:bug-fixer (ephemeral): diagnose → test first → fix → `make check`; reports diagnosis + files
+3. `c3:project-review` scoped to the fix
+4. Commit (`fix: ... (#N)`), push, PR, CI (release-manager)
+5. Mark ready, request owner review, poll (5.9–5.10)
 
-**Polling vs push:** The default flow uses release-manager polling (15min
-timeout) for PR approval and review feedback. When polling times out, the push
-model serves as fallback — the user says "follow up on PR #N" to re-trigger
-the check. Both paths converge on the same sub-skills.
-
-`c3:project-handle-pr` re-enters the review cycle (scoped) on every feedback
-round before push — closing the gap where PR-comment changes previously shipped
-without cross-validation. `c3:project-post-merge` runs the sequenced cleanup and
-returns control here (Phase 2) for the next task, or delegates to release for a
-release.
-
-### Processing multiple issues/PRs
-
-After processing an issue or PR:
-1. Check for more items (new issues without status labels; in-progress issues;
-   PRs awaiting feedback).
-2. If more exist, move to the next and process it — do not check feedback on
-   previous items.
-3. If all are processed, report a summary ("Processed X issues/PRs. Y items
-   waiting for feedback.") and pause. The user says "follow up" to resume.
-
----
-
-## Publishing Releases
-
-When the user requests publishing to PyPI or preparing a release, delegate to
-release-manager (which invokes the `c3:release` skill): version bump decision,
-updating version files, changelog, pre-publish checks, build, tag, GitHub
-release, PyPI upload.
-
-```python
-Agent({ subagent_type: "c3:release-manager",
-  prompt: "Execute release workflow: determine version bump, update files, run checks, build, and publish to PyPI",
-  description: "Execute release" })
-```
-
-Key checks (handled by release-manager): README image paths use absolute GitHub
-URLs; version synced between `pyproject.toml` and `__init__.py`; local dev
-config (`[tool.uv.sources]`, `[tool.uv.workspace]`) removed; entry points
-verified; package contents verified after build.
-
----
-
-## Agent Quick Reference
-
-| Agent | Phase | When to invoke |
-|-------|-------|----------------|
-| functional-analyst | 1, 2, 3, 4, 5.6 | Always |
-| researcher | 1 | When gaps or tech choices |
-| api-architect | 3, 5.6 (via project-review) | Backend or Full stack |
-| ui-ux-designer | 3, 5.6 (via project-review) | Frontend or Full stack |
-| security-engineer | 3, 5.6 (via project-review) | Security-related |
-| python-developer | 5.5 | Always for Python projects |
-| end-user-documenter | 5.6 (via project-review) | User-facing changes |
-| code-reviewer | 5.6 (via project-review) | Always |
-| testing-engineer | 5.6 (via project-review) | Always |
-| release-manager | 0, 5, 6 (via sub-skill), 7 (via sub-skill) | All git/gh operations |
-| bug-fixer | 0.3, task-type detection | Bug tasks |
+Feature issues and dependency upgrades:
+- Feature issue → Phase 0.3 route → backlog (no immediate build).
+- Dependency: researcher first; simple upgrade → developer; goal-bearing
+  upgrade → functional-analyst.
 
 ## Sub-skills
 
-| Sub-skill | Phase | Purpose |
-|-----------|-------|---------|
-| `c3:project-review` | 5.6, 6.4 | Shared review cycle with `make check` gate |
-| `c3:project-handle-pr` | 6 | PR feedback iteration with review re-entry |
-| `c3:project-post-merge` | 7 | Sequenced post-merge cleanup |
+| Trigger | Sub-skill | Purpose |
+|---------|-----------|---------|
+| "follow up on PR #N" | `c3:project-handle-pr` | feedback round, review re-entry, push |
+| owner reports merge | `c3:project-post-merge` | default-branch cleanup (switch/pull BEFORE any TODO.md edit), then return here for the next task |
+| during 5.6 / 6.4 | `c3:project-review` | shared review cycle, `make check` gate, escalation |
 
-## File Conventions
+## Release
 
-| File | Path |
-|------|------|
-| Functional analysis | `analysis/functional.md` |
-| API analysis | `analysis/api-{topic}.md` |
-| UX analysis | `analysis/ux-{topic}.md` |
-| Security analysis | `analysis/security-{topic}.md` |
-| Bug analysis | `analysis/bug/{bug-id}.md` |
-| Consensus summary | `reporting/{task-name}/consensus.md` |
-| Plan | `reporting/{task-name}/plan.md` |
-| Implementation review report | `reporting/{task-name}/{agent}-review.md` |
-| Task summary | `reporting/{task-name}/summary.md` |
-| Research findings | `research/{topic}.md` |
-| Technology recommendations | `research/{topic}/recommendations.md` |
-| MBIs | `PLAN.md` (managed via `c3:plan`) |
+On owner request, delegate to release-manager → `c3:release`
+(version decision, changelog, checks, build, tag, GitHub release, PyPI).
 
-All analysis documents go in `analysis/` with sub-folders for organization.
+## Conventions
 
-### TODO.md Structure
+Artifacts: `TODO.md`, `PLAN.md`, `analysis/`, `research/`;
+`reporting/` is workflow-local and uncommitted when gitignored.
+TODO.md structure is canonical (BLUEPRINT §1.4): `## Unsorted` →
+`## Backlog` (P1–P4). Completed tasks are removed — git history is the record — all project-* skills use this.
 
-```markdown
-# TODO
+## After Each Task / PR
 
-## Unsorted
-
-- [ ] Quick idea 1 (captured but not yet analyzed)
-- [ ] Quick idea 2 (needs functional analysis)
-
-## Backlog (Prioritized)
-
-### P1 - Critical
-- [ ] Critical task with clear acceptance criteria
-
-### P2 - High
-- [ ] High priority task
-
-### P3 - Medium
-- [ ] Medium priority task
-
-### P4 - Low
-- [ ] Low priority task
-
-## Done
-
-- [x] Completed task
-```
-
-**Unsorted section rules:** placed at the top; short ideas without acceptance
-criteria; functional-analyst moves them into the prioritized Backlog when
-analyzed; optional — only present when the user has captured unsorted ideas.
-
-## Notes
-
-- The functional-analyst owns the TODO.md structure; domain agents contribute
-  through it.
-- Resolve conflicts between domain recommendations based on project priorities.
-- Ensure all tasks have verifiable acceptance criteria before implementation.
-- **Bugs** → Bug Implementation Flow: `c3:bug-fixer` (diagnose + TDD + fix +
-  `make check`, reports back) → `c3:project-review` (scoped) → PR via
-  `c3:release-manager`. Same review + PR funnel as features, no Plan Approval Gate.
-- **Features** → follow the phases with domain design reviews.
-- **Research** is conditional — invoke when gaps identified or technology choices
-  needed.
-- **MBIs** are first-class: Active MBI tasks take priority over the linear
-  backlog. Use `c3:plan` to create/score them.
-- **Security review** is scoped to security-related tasks.
-- **Documentation** is part of task completion for user-facing changes.
-- **Parallel reviews** improve efficiency without sacrificing quality.
-- **User can request reanalysis**: use the "Run fresh analysis" option when
-  proposing the next task.
-- **PR ownership**: the agent creates PRs and processes feedback, but ONLY the
-  owner merges PRs. Never propose merging.
-- **TODO.md direction is authoritative**: when TODO.md specifies an approach,
-  follow it without asking for confirmation. Only ask for clarification when
-  genuinely ambiguous or conflicting requirements exist.
-- **`make check` is the quality gate**: never authorize a commit while
-  `make check` fails. The gate applies to initial implementation (5.6) and to
-  every PR-feedback round (6.4 via `c3:project-handle-pr`).
-
-## Communication with the User
-
-- Provide clear status updates at each phase transition
-- Report blockers or issues requiring user input
-- Summarize agent findings and decisions
-- When the project is ready for work, propose the next task from the backlog
-
-### Asking the User
-
-**CRITICAL**: when asking the user for input and there are **limited possible
-answers (<7)**, ask the user directly with clear options instead of open-ended
-prompts. This applies to task approval, workflow selection, priority decisions,
-conflict resolution, branch selection — but **never** to owner-approval gates,
-which happen in PR comments.
-
-## Reference Files
-
-- [references/issue-review-workflow.md](references/issue-review-workflow.md) — GitHub issue triage, owner authority, clarification process
-- [references/bug-workflow-integration.md](references/bug-workflow-integration.md) — How the bug workflow integrates with project management
-- [../project-review/SKILL.md](../project-review/SKILL.md) — Shared review cycle (Stage a–f, `make check` gate)
-- [../project-handle-pr/SKILL.md](../project-handle-pr/SKILL.md) — Phase 6: PR feedback iteration
-- [../project-post-merge/SKILL.md](../project-post-merge/SKILL.md) — Phase 7: post-merge cleanup
+Process the next item without re-checking feedback on processed ones
+(new issues; PRs awaiting feedback). When nothing is pending, report a
+summary and pause; "follow up" resumes.
