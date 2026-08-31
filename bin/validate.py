@@ -48,8 +48,9 @@ ALLOWED_EXTERNAL_REFS = {
 
 KNOWN_YOKER = {
   "agents": {
-    "api-architect", "bug-fixer", "business-analyst", "end-user-documenter",
-    "project-manager", "release-manager", "researcher", "security-engineer",
+    "api-architect", "bug-fixer", "business-analyst", "code-reviewer",
+    "end-user-documenter", "functional-analyst", "project-manager",
+    "release-manager", "researcher", "security-engineer", "testing-engineer",
     "ui-ux-designer",
   },
   "skills": {
