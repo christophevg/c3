@@ -58,8 +58,10 @@ decision was given).
 
 ### 3 — Pre-publish checks (local)
 
-`uv sync --all-extras`; `make test`, `make lint`, `make typecheck` —
-all green before committing. Fix failures, don't route around them.
+`make(operation="check")` — the standard all-gate (covers test, lint,
+typecheck; env setup is handled by the target itself; `check-all` when
+multiple Python versions matter). All green before committing. Fix
+failures, don't route around them.
 
 ### 4 — Commit and push
 
@@ -90,9 +92,11 @@ halt, fix, push, wait again.
 
 ### 6 — Build and verify the package
 
-Clean `dist/`/`build//*.egg-info`, then `uv build`. Verify before any
-upload: wheel contents show real source files (not just `.dist-info/`),
-correct structure, no local paths. Empty wheel → fix hatch `packages`
+Remove `dist/` via the `file` tool (`operation="delete"`, recursive);
+build via `make(operation="build")` — the standard target wraps
+`uv build`. Verify before any upload: wheel contents show real source
+files (not just `.dist-info/`), correct structure, no local paths. Empty
+wheel → fix hatch `packages`
 (conflicting `sources` + `packages = ["src/..."]` is the classic cause —
 never combine `[tool.hatch.build] sources` with `packages = ["src/..."]`;
 with `sources = ["src"]`, packages must be relative: `["package_name"]`),
@@ -122,18 +126,23 @@ covered it.
 
 ### 8 — PyPI upload — after gate 2
 
-`uv run twine upload dist/*` (or the project's `make upload` — the
-granular target, never a full `make publish` re-run).
+`make(operation="publish")` — the full pipeline (**all** pre-publish
+checks included). The granular retry path is the existing per-target
+recipe below; never re-run the full pipeline just to retry an upload.
 
 **If upload fails (e.g. HTTP 400):**
 1. Check PyPI first — the upload may have partially succeeded (one file
    in, one rejected). Verify on pypi.org before retrying.
-2. Retry the upload only (`make upload` / twine), never the full publish
-   pipeline.
+2. Retry the upload only, never the full publish pipeline: if the
+   project defines a granular upload target, use
+   `make(operation="<target>")`; **otherwise report to the owner to run
+   `uv run twine upload dist/*` — do not invent a Makefile target.**
 3. Max 3 retries, then stop and ask the owner.
 
-**Verify publication:** the PyPI project page shows the new version; test
-install `uv pip install package==X.Y.Z`.
+**Verify publication:** `webfetch` the PyPI project page
+(`https://pypi.org/project/<name>/`) and confirm the new version
+appears; a test install is the owner's terminal call:
+`uv pip install package==X.Y.Z`.
 
 # Deliverables
 
