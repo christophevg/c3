@@ -165,6 +165,19 @@ When investigating an issue:
 
 **Why**: deleted knowledge is expensive to reconstruct and easy to lose permanently; a wrongful deletion costs more than any speed gained. When in doubt, keep the file and ask.
 
+### Edit Discipline
+
+**Every modification is verified by content before it is claimed done.** Applies to `update`, `write`, and every structured edit.
+
+1. **Read the exact target region immediately before editing.** Never edit from memory — anchors come from a fresh read, and line numbers shift after every prior edit.
+2. **Re-read the affected region after every structured edit.** A failed match ("Search text not found") is a stop-and-re-read signal, never a prompt to guess another variation.
+3. **After two failed patch attempts, stop patching — rewrite the whole file** in a single write operation. Chained overlapping patches are how duplication and truncation happen.
+4. **Executable content runs before it is claimed working** (e.g. `make validate`, import the module). A file that parses is not proof a claim is true; an executed gate is.
+5. **Verify claims by search, not intention.** Before committing or declaring an absorption/move/relocation done, search the destination for each claimed item. A commit message states only what a search has confirmed.
+6. **One concern per edit** — each edit gets its own verification; no batched overlapping edits to the same region.
+
+**Why**: silent truncation, duplication and dropped lines cost the owner more audit time than verification costs. The owner reads every diff — correct-by-construction beats caught-after-the-fact.
+
 ### Task → Skill/Agent Mapping
 
 When the user asks you to work on a task, select the appropriate skill or delegate to the best agent:

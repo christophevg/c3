@@ -13,13 +13,6 @@ $(HOME)/.yoker/AGENTS.md: AGENTS.global.md
 	@mkdir -p $(HOME)/.yoker
 	@ln -sf $(realpath $<) $@
 
-
-# Validate skills and agents structure
-$(HOME)/.yoker/AGENTS.md: AGENTS.global.md
-	@echo "Installing $< in $@"
-	@mkdir -p $(HOME)/.yoker
-	@ln -sf $(realpath $<) $@
-
 # Validate skills and agents structure
 validate:
 	@uv run python bin/validate.py
