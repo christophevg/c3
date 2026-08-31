@@ -169,14 +169,16 @@ When investigating an issue:
 
 **Every modification is verified by content before it is claimed done.** Applies to `update`, `write`, and every structured edit.
 
-1. **Read the exact target region immediately before editing.** Never edit from memory — anchors come from a fresh read, and line numbers shift after every prior edit.
-2. **Re-read the affected region after every structured edit.** A failed match ("Search text not found") is a stop-and-re-read signal, never a prompt to guess another variation.
-3. **After two failed patch attempts, stop patching — rewrite the whole file** in a single write operation. Chained overlapping patches are how duplication and truncation happen.
-4. **Executable content runs before it is claimed working** (e.g. `make validate`, import the module). A file that parses is not proof a claim is true; an executed gate is.
-5. **Verify claims by search, not intention.** Before committing or declaring an absorption/move/relocation done, search the destination for each claimed item. A commit message states only what a search has confirmed.
-6. **One concern per edit** — each edit gets its own verification; no batched overlapping edits to the same region.
+1. **One write-tool call per assistant message on any given file.** Never batch two `update`/`write` calls against the same file in one turn, and never chain a second same-file edit from the result of the first in the same turn: the second patch's anchor must come from a fresh read issued *after* the first edit's result exists. (This is the hard rule; rule 6 covers intent, this one covers mechanics.)
+2. **Read the exact target region immediately before editing.** Never edit from memory — anchors come from a fresh read, and line numbers shift after every prior edit.
+3. **Choose the operation by intent, not convenience.** Adding content at the end or after a known block → `append`/`insert`, never `replace` (replace *swaps*; using it to "append" swaps the anchor out — the decision-log clobber class). A patch whose anchor must survive (e.g. a heading) must be replayed verbatim at the start of `new_string`, or use line-based `insert` instead; if the anchor text is more than ~3 lines, prefer insert-at-line-number or a whole-file rewrite over string matching.
+4. **Re-read the affected region after every structured edit.** A failed match ("Search text not found") is a stop-and-re-read signal, never a prompt to guess another variation.
+5. **After two failed or corrupted patch attempts, stop patching — rewrite the whole file** from freshly read content in a single write (delete + write where overwrite is refused). Chained repair patches on a corrupted file multiply corruption; convergence by patching is not a goal.
+6. **Executable content runs before it is claimed working** (e.g. `make validate`, import the module). A file that parses is not proof a claim is true; an executed gate is.
+7. **Verify claims by search, not intention.** Before committing or declaring an absorption/move/relocation done, search the destination for each claimed item. A commit message states only what a search has confirmed — and a verification search that "confirms" a claim must itself have its pattern verified (a wrong verification pattern produced a false all-clear once this session).
+8. **One concern per edit** — each edit does exactly one conceptual change; the mechanical rule for that is rule 1.
 
-**Why**: silent truncation, duplication and dropped lines cost the owner more audit time than verification costs. The owner reads every diff — correct-by-construction beats caught-after-the-fact.
+**Why**: silent truncation, duplication and dropped lines cost the owner more audit time than verification costs — and a repo-wide corruption loses work that no amount of verification recovers. The owner reads every diff; correct-by-construction beats caught-after-the-fact.
 
 ### Task → Skill/Agent Mapping
 
