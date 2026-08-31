@@ -654,7 +654,7 @@ When migrating from `setup.py`, `requirements.txt`, or other legacy approaches:
 
 - `python` - Python best practices and coding conventions
 - `documentation` - Sphinx documentation setup
-- `pypi-publish` - Publishing to PyPI
+- `c3:release` - Publishing to PyPI (absorbed pypi-publish)
 
 ## Entry Point Naming
 

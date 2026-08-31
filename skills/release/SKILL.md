@@ -1,325 +1,141 @@
 ---
 name: release
 description: |
-  Standardize release preparation and publishing workflow. Use when preparing a release, publishing to PyPI, or release-manager starts release process. Handles version bump decisions, changelog updates, CI verification, tagging, and PyPI upload.
+  Standardize release preparation and publishing workflow. Use when preparing a release, publishing to PyPI, or release-manager starts release process. Handles version bump decisions, changelog updates, CI verification, tagging, GitHub release, and PyPI upload. Two owner gates: version decision and final pre-PyPI confirmation.
+type: workflow
 ---
 
-# Release Workflow
+# Release
 
-Standardized release preparation and publishing workflow for Python packages.
+Standardized release workflow for Python packages, from version decision to
+PyPI publication. Two standing owner gates; everything between them runs
+autonomously.
 
-## Overview
+## Triggering
 
-| Step | Action | Purpose |
-|------|--------|---------|
-| 1 | Determine version bump | Major/minor/patch based on commits |
-| 2 | Update version files | pyproject.toml, __init__.py |
-| 3 | Update changelog | Document changes |
-| 4 | Local pre-publish checks | Verify quality before pushing |
-| 5 | Commit version bump | Record version change |
-| 6 | Push | Send to remote |
-| 7 | Wait for CI | Authoritative quality check |
-| 8 | Build package | Create wheel and sdist |
-| 9 | Verify package | Confirm contents are correct |
-| 10 | Create tag | Mark release point |
-| 11 | Create GitHub release | Announce release |
-| 12 | Upload to PyPI | Distribute package |
+- owner asks to "prepare release" or "publish"
+- release-manager starts the release process
+- post-merge, ready to release
 
-## When to Use
+# Inputs
 
-- User asks to "prepare release" or "publish"
-- Release-manager starts release process
-- After PR merge, ready to release
-- Version needs to be bumped and published
+A repository at release readiness (PR merged, CI green), the owner's
+version decision (Gate 1), and — before upload — the owner's final
+confirmation (Gate 2).
 
-## Version Bump Decision
+## Owner gates (authoritative)
 
-Before updating version, determine bump type:
+1. **Version decision** — propose the semver bump with commit-based
+   evidence; the owner decides the target version. Do not start file
+   changes before approval.
+2. **Final confirmation before PyPI upload** — after CI green, build and
+   verification, present the state (version, changelog entry, tag, wheel
+   contents) and wait for explicit approval. PyPI publishes are
+   irreversible; no upload without it.
 
-| Change Type | Bump | Example |
-|-------------|------|---------|
-| Bug fixes | Patch | 0.3.1 → 0.3.2 |
-| New features (backward compatible) | Minor | 0.3.1 → 0.4.0 |
-| Breaking changes | Major | 0.3.1 → 1.0.0 |
-
-**Check recent commits:**
-
-```bash
-# Get commits since last tag
-git log $(git describe --tags --abbrev=0)..HEAD --oneline
-
-# Count by type
-git log $(git describe --tags --abbrev=0)..HEAD --oneline | grep -c "^.*feat:"
-git log $(git describe --tags --abbrev=0)..HEAD --oneline | grep -c "^.*fix:"
-```
-
-**Decision rules:**
-- `feat:` commits present → Minor bump
-- Only `fix:` commits → Patch bump
-- Breaking API changes detected → Major bump
-- If unclear, ask owner
+Everything from changelog through GitHub release runs autonomously once
+the version is approved. A4: CI green is the **authoritative** quality
+gate — local checks prepare, CI decides; a local `make check` pass never
+substitutes for a pending CI run.
 
 ## Workflow
 
-### Step 1: Determine Version Bump
+### 1 — Determine the bump
 
-```bash
-# Check current version
-grep '^version =' pyproject.toml
+Read `version` from `pyproject.toml`; list commits since the last tag via
+the `git` tool (`git(operation="log", args={ref: "vX.Y.Z..HEAD", oneline:
+true})`). Decision rules: `feat:` present → minor; only `fix:` → patch;
+breaking API → major; unclear → ask (that IS gate 1 if no version
+decision was given).
 
-# Check commits since last tag
-git log $(git describe --tags --abbrev=0 2>/dev/null || echo "HEAD~10")..HEAD --oneline
+### 2 — Update version artifacts
+
+- `pyproject.toml` `version`
+- any `__version__` in `src/**/__init__.py`
+- `CHANGELOG.md` release section (Added / Fixed / Changed), extracted
+  from commits since the last tag
+- Verify sync: both locations match exactly; `uv.lock` self-updates.
+
+### 3 — Pre-publish checks (local)
+
+`uv sync --all-extras`; `make test`, `make lint`, `make typecheck` —
+all green before committing. Fix failures, don't route around them.
+
+### 4 — Commit and push
+
+Version files + changelog in one commit:
+`chore: bump version to X.Y.Z` (attribution line per `c3:commit`), push;
+
+### 5 — CI wait (authoritative)
+
+Poll `github(operation="workflow_list", limit=3)` every 60s (`sleep`
+tool) until the run reports `status="completed"`. `workflow_view` returns
+single-line JSON that overflows on big matrix runs — only for a completed
+run's job-level verdict; failures via `workflow_logs` with a failure
+pattern. Filter cookbook (shared with release-manager persona):
+
+```
+pytest:   ^FAILED|^ERROR|^E |short test summary|no tests ran
+collect:  ERROR collecting|^ERRORS|evaluation failed
+make:     Error [12]|make: \*\*\*|^make\[1\]: \*\*\*
+CI:       ##\[error\]
 ```
 
-Based on commit types, determine bump level. If uncertain, ask owner.
+Substring pitfalls: "passed" matches "bypassed"; `.` matches everything;
+anchors can fail on decorated output (Yoker #58). Two size-failures on
+one command → stop, report from captured lines.
 
-### Step 2: Update Version Files
+CI strictly precedes ready-for-review and any tagging. Red → report logs,
+halt, fix, push, wait again.
 
-**Update pyproject.toml:**
-```bash
-# Current: version = "0.3.1"
-# New: version = "0.4.0"
-```
+### 6 — Build and verify the package
 
-**Update src/**/__init__.py:**
-```bash
-# Find __init__.py files with __version__
-find src -name "__init__.py" -exec grep -l "__version__" {} \;
+Clean `dist/`/`build//*.egg-info`, then `uv build`. Verify before any
+upload: wheel contents show real source files (not just `.dist-info/`),
+correct structure, no local paths. Empty wheel → fix hatch `packages`
+(conflicting `sources` + `packages = ["src/..."]` is the classic cause),
+rebuild.
 
-# Update __version__ = "0.3.1" to __version__ = "0.4.0"
-```
+### 7 — Tag and GitHub release
 
-### Step 3: Update Changelog
+After CI green: annotated tag `vX.Y.Z` pushed; GitHub release via
+`github_tool release_create` with notes extracted from the changelog
+(Summary, Changes, Installation). The tag push is not itself release
+gated beyond CI green — the owner's version decision (gate 1) already
+covered it.
 
-**Check for existing changelog:**
-```bash
-ls docs/changelog.md CHANGELOG.md 2>/dev/null
-```
+### 8 — PyPI upload — after gate 2
 
-**Add release section:**
-```markdown
-## 0.4.0 (2026-05-26)
+`uv run twine upload dist/*` (or the project's `make upload` — the
+granular target, never a full `make publish` re-run).
 
-### Added
-- Feature 1 description
-- Feature 2 description
+**If upload fails (e.g. HTTP 400):**
+1. Check PyPI first — the upload may have partially succeeded (one file
+   in, one rejected). Verify on pypi.org before retrying.
+2. Retry the upload only (`make upload` / twine), never the full publish
+   pipeline.
+3. Max 3 retries, then stop and ask the owner.
 
-### Fixed
-- Bug fix description
+**Verify publication:** the PyPI project page shows the new version; test
+install `uv pip install package==X.Y.Z`.
 
-### Changed
-- Change description
-```
+# Deliverables
 
-**Extract changes from commits:**
-```bash
-git log $(git describe --tags --abbrev=0 2>/dev/null || echo "HEAD~10")..HEAD --pretty=format:"- %s"
-```
+- Bumped, tagged, GitHub-released, and published package; verification
+  evidence (CI run, wheel listing, PyPI page) reported in one block.
 
-### Step 4: Run Local Pre-Publish Checks
+# Related
 
-```bash
-# Sync dependencies
-uv sync --all-extras
+- `c3:release-manager` — the delegate that executes git/GitHub operations
+  and CI polling during a release
+- `c3:commit` — commit discipline
+- `c3:github` — PR/CI/release operations vocabulary
+- `c3:project-manage` — the managed-mode caller after PR merge
 
-# Run tests
-make test
+## Never
 
-# Run linting
-make lint
-
-# Run type checking
-make typecheck
-
-# Format code (if not in make lint)
-ruff format src tests
-```
-
-**If any check fails:** Fix the issue before proceeding.
-
-### Step 5: Commit Version Bump
-
-```bash
-# Stage version files
-git add pyproject.toml src/**/__init__.py docs/changelog.md CHANGELOG.md uv.lock
-
-# Commit
-git commit -m "$(cat <<'EOF'
-chore: bump version to X.Y.Z
-
-- Change 1
-- Change 2
-
-🤖 Implemented together with a coding agent.
-EOF
-)"
-```
-
-### Step 6: Push
-
-```bash
-# Get current branch
-current_branch=$(git branch --show-current)
-
-# Push to remote
-git push origin "$current_branch"
-```
-
-### Step 7: Wait for CI to Pass
-
-**CRITICAL: Do not proceed until CI passes.**
-
-```bash
-# Check CI status
-gh pr checks
-
-# Or watch the run
-gh run watch
-```
-
-**If CI fails:**
-1. View failure details: `gh run view {id} --log-failed`
-2. Debug and fix the issue
-3. Commit and push fixes to the same branch
-4. Return to Step 7 (wait for CI)
-
-**Why wait?** If CI fails, additional fixes will be needed, resulting in new commits. Tagging should only happen after CI confirms the release is good.
-
-### Step 8: Build Package
-
-**Only after CI passes:**
-
-```bash
-# Clean previous builds
-rm -rf dist/ build/ *.egg-info
-
-# Build
-uv build
-```
-
-This creates:
-- `dist/<package>-<version>-py3-none-any.whl` (wheel)
-- `dist/<package>-<version>.tar.gz` (source distribution)
-
-### Step 9: Verify Package Contents
-
-**CRITICAL: Always verify before publishing.**
-
-```bash
-# List wheel contents
-unzip -l dist/*.whl | head -40
-```
-
-**Check for:**
-- Source files present (not just `.dist-info/`)
-- Correct package structure
-- No local path references
-
-**If package is empty or wrong:** Fix hatch configuration, rebuild.
-
-### Step 10: Create Annotated Tag
-
-```bash
-# Create tag with message
-git tag -a vX.Y.Z -m "Release X.Y.Z: Brief Description"
-
-# Push tag
-git push origin vX.Y.Z
-```
-
-### Step 11: Create GitHub Release
-
-```bash
-# Create release with notes
-gh release create vX.Y.Z \
-  --title "vX.Y.Z - Brief Description" \
-  --notes "$(cat <<'EOF'
-## Summary
-
-Brief description of what this release includes.
-
-## Changes
-
-### Added
-- Feature 1
-- Feature 2
-
-### Fixed
-- Bug fix 1
-
-### Changed
-- Change 1
-
-## Installation
-
-```bash
-pip install package-name==X.Y.Z
-```
-EOF
-)"
-```
-
-### Step 12: Upload to PyPI
-
-**Use the granular upload target, not the full publish pipeline:**
-
-```bash
-# Upload to PyPI (if make publish was already run for pre-publish checks)
-make upload
-
-# Or directly:
-uv run twine upload dist/*
-```
-
-**If the upload fails (e.g. HTTP 400):**
-
-1. **Check PyPI first** — the upload may have partially succeeded (one file
-   uploaded, the second rejected). Visit
-   `https://pypi.org/project/package-name/` to verify before retrying.
-2. **Do NOT re-run `make publish`** — it re-executes the entire test suite,
-   build, and pre-publish cycle. Use `make upload` or
-   `uv run twine upload dist/*` directly to retry just the upload.
-3. **Max 3 retries** — after 3 failed attempts, stop and ask the user to
-   investigate (per the retry policy in the global agent instructions).
-
-**Verify publication:**
-```bash
-# Open PyPI page
-open https://pypi.org/project/package-name/
-
-# Test install
-pip install package-name==X.Y.Z
-```
-
-## Quick Reference
-
-```bash
-# 1. Determine bump: git log --oneline since last tag
-# 2. Update: pyproject.toml, __init__.py, changelog
-# 3. Check: make test && make lint && make typecheck
-# 4. Commit: git commit -m "chore: bump version to X.Y.Z"
-# 5. Push: git push origin <branch>
-# 6. Wait CI: gh pr checks
-# 7. Build: rm -rf dist && uv build
-# 8. Verify: unzip -l dist/*.whl | head -40
-# 9. Tag: git tag -a vX.Y.Z -m "Release X.Y.Z"
-# 10. Push tag: git push origin vX.Y.Z
-# 11. GitHub release: gh release create vX.Y.Z
-# 12. Upload: make upload (or uv run twine upload dist/*)
-```
-
-## Common Issues
-
-| Issue | Solution |
-|-------|----------|
-| CI fails after push | Fix issue, commit, push, wait again |
-| Package empty in wheel | Check hatch `packages` configuration |
-| Version already on PyPI | Cannot overwrite - bump version again |
-| PyPI upload returns HTTP 400 | Upload may have partially succeeded. Check `https://pypi.org/project/<name>/` before retrying. Use `make upload` (not `make publish`) to retry — avoids re-running tests. Max 3 retries, then ask user. |
-| PyPI upload fails (other) | Check for `[tool.uv.sources]` in pyproject.toml |
-
-## Related Skills
-
-- `c3:pypi-publish` - Detailed pre-publish checklist and PyPI upload
-- `c3:commit` - Commit workflow
-- `c3:github` - GitHub release management
+- Upload to PyPI without the owner's final confirmation (gate 2).
+- Tag, release, or declare ready-for-review while CI is red.
+- Re-run the full publish pipeline to retry an upload.
+- Propose a changelog section the commits don't support — flag anomalies
+  for the owner instead.
