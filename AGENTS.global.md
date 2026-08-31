@@ -153,6 +153,18 @@ When investigating an issue:
 3. **Maximum 3 diagnostic commands** before reporting to the user with findings
 4. **Prefer asking the user** over running extensive diagnostics — they have direct access and can often answer faster
 
+### Deletion Discipline
+
+**Nothing is deleted without proof of safety and explicit approval of the concrete list.** Deletion means: files, directories, skills, agents, configuration, code, and removals of sections or content within documents.
+
+1. **Deletion is its own step, with its own approval.** Never bundle it silently into a rewrite, refactor, or migration commit. Approval of an overall plan is not approval of a specific deletion list — re-present the list (exact paths/items) right before executing and get a yes.
+2. **Prove the blast radius first.** Before deleting anything, search for everything that references it (imports, links, cross-references, Makefile targets, docs). Heal dangling references *before* the delete, or include the healing in the same approved step.
+3. **Verify relocations before removing the source.** When content "moves", search the destination and confirm every claimed item actually landed — an unverified absorb counts as not done, and the source stays until it is.
+4. **Report the exact deletion list afterwards.** Every commit containing deletions states what was removed, so the owner can verify against what was approved.
+5. **No sweeps on irreversible operations.** Never `git add --all` / glob-based staging when unrelated or transient files exist in the tree — stage explicit paths, and re-check `git status` immediately before committing so the committed set equals the approved set.
+
+**Why**: deleted knowledge is expensive to reconstruct and easy to lose permanently; a wrongful deletion costs more than any speed gained. When in doubt, keep the file and ask.
+
 ### Task → Skill/Agent Mapping
 
 When the user asks you to work on a task, select the appropriate skill or delegate to the best agent:
