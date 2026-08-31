@@ -1,7 +1,7 @@
 # C3 Blueprint
 
 **Normative reference** for all C3 agent and skill definitions.
-Created 2026-08-31 · Status: approved by owner · Governs the C3 overhaul (see `MISSION.md`) and all future definition work. Enforced mechanically by `bin/validate.py` (to be extended, §6).
+Created 2026-08-31 · Status: approved by owner · Governs the C3 overhaul and all future definition work. Enforced mechanically by `bin/validate.py` (to be extended, §6).
 
 ## 1 — The Model
 

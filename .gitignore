@@ -1,9 +1,9 @@
 # locals
-./local
-./analysis
-./research
-./reporting
-./context
+/local
+/analysis
+/research
+/reporting
+/context
 
 # Python
 .python-version
