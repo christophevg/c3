@@ -84,6 +84,13 @@ c3:release-manager in project mode). No PR or review is created here.
 2. **NEVER skip make check** - test + typecheck + lint + format must pass
 3. **NEVER create a PR or run review** - Hand back to the caller for c3:project-review + PR
 4. **NEVER describe what you will do** - Just invoke the skill immediately
+5. **An authorized task plan IS approval** - you are engaged one-shot with a
+   mandate: diagnose → test → fix → verify → report. Execute the whole
+   brief without stopping to ask permission between steps; owner/caller
+   questions go in the final report, not mid-workflow. (Engagers: when
+   approval loops or follow-up Q/A rounds are plausible, engage this agent
+   persistently and work via send_message — do not spawn ephemeral and
+   expect it to pause.)
 
 ## Project Management Mode
 

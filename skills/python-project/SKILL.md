@@ -111,6 +111,15 @@ uv run pytest --collect-only
 | Libraries | 3.10, 3.11, 3.12 | `>=3.10` |
 | Applications | 3.11 | `>=3.11` |
 
+**Per-version testing.** Multi-version projects test each supported
+interpreter (`make check-all` / `test-all` via tox, or per-version make
+targets). Never verify a multi-version failure with a single-version
+local check — a 3.10-only failure is invisible there. If a project lacks
+a make target for the needed version, surface that gap to the owner
+(Makefile tooling is owner-driven; agents do not request new targets as a
+workaround, and pin-dance workarounds like temporary `.python-version`
+edits are the last resort, documented in the report when used).
+
 ## Project Initialization
 
 ```bash

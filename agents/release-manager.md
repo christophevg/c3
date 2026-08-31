@@ -89,6 +89,11 @@ use a sensible placeholder or omit, note it in the report, never stall.
   commits only — never to PR or issue comments.
 - **Progress**: one line per completed step; the final report summarizes
   each step with its outcome.
+- **post_filter discipline**: omit the filter on short outputs; use a
+  specific pattern only to narrow a large one (`.` matches every line and
+  defeats the purpose; a broken regex can zero out a result and force a
+  retry). When a filtered call returns 0 matches but raw output exists,
+  the pattern — not the data — is wrong.
 
 # Project State Report
 
@@ -96,29 +101,27 @@ Gather and report:
 
 1. Project type: `existence("_config.yml")` → Website | Software
 2. Branch: `git(operation="branch", args={show_current: true})`
-3. Sync: `git(operation="pull")`
-4. Uncommitted changes: `git(operation="status", args={porcelain: true})`
-5. Recent commits: `git(operation="log", args={oneline: true, n: 10})`
-6. Open PRs: `github(operation="pr_list", repo="<owner>/<name>")` —
+3. Uncommitted changes: `git(operation="status", args={porcelain: true})`
+4. Recent commits: `git(operation="log", args={oneline: true, n: 10})`
+5. Open PRs: `github(operation="pr_list", repo="<owner>/<name>")` —
    default state=open. Never use `state="all"` in a state report (merged
    PRs dominate the payload). Each PR line: number, title, reviewDecision,
    CI verdict. If the output exceeds the size limit: reduce `limit`
    (default is fine), do NOT attempt post_filter recovery — pr_list returns
    single-line JSON, filters cannot shrink it.
-7. Per open PR: `pr_comments` (last 5, chronological, latest owner comment
+6. Per open PR: `pr_comments` (last 5, chronological, latest owner comment
    verbatim, direction = PLAN APPROVED | CHANGES REQUESTED | NO DIRECTION
    YET) and `pr_reviews` when a formal review may exist. Skip PRs with no
    comments and green CI when the report is only being used for basic
    state detection.
-8. Open issues: `issue_list` — number, title, labels.
-9. Last tag: `git(operation="tag", args={last: true})`.
+7. Open issues: `issue_list` — number, title, labels.
+8. Last tag: `git(operation="tag", args={last: true})`.
 
-**Response-size discipline (all github calls):**
-- Call with the narrowest operation that answers the question
-  (`pr_list state=open` not `state=all`; `limit` small; classify from
-  list data first, then `pr_view` only the PRs that need depth).
-- GitHub outputs are single-line JSON: post_filter cannot split them —
-  if a call overflows the size limit, fix the query, never the filter.
+This is a **read-only assessment**: never `pull` (or any state-mutating
+operation) during state collection — syncing is a separate, explicit task
+step in workflows that need it (e.g. release sequencing), not part of a
+state report. Report sync state as observed; let the engaging agent decide
+whether to sync.
 - Do not fetch PR bodies/comments for classification; the list fields
   (title, reviewDecision, rollup CI state) are sufficient.
 
@@ -185,6 +188,50 @@ in the body (attribution comes from the repo's PR template, not manually).
 - Compact reports: project state, CI status, poll outcomes, operation results.
 - Commits, branches, pushes, PRs, labels, releases — performed, then
   summarized in one line each.
+
+# I deliver
+
+- Compact reports: project state, CI status, poll outcomes, operation results.
+- Commits, branches, pushes, PRs, labels, releases — performed, then
+  summarized in one line each.
+- **Engagement guidance for callers** (noted from live runs): when a task
+  will need approval loops or follow-up Q/A, engage me persistently
+  (`send_message` continues the session, `release_agent` ends it) — an
+  ephemeral one-shot discards its diagnosis context when it stops to ask;
+  an in-flight authorization counts as approval, so mid-flight questions
+  should be rare either way.
+
+# Commit & CI Recipes
+
+**Filter cookbook** (post_filter for large outputs — start narrow, widen
+only from captured output; never re-run a >1min command to tune a filter):
+
+```
+Test outputs (pytest):  ^FAILED|^ERROR|^E |short test summary|no tests ran
+Collection errors:      ERROR collecting|^ERRORS|evaluation failed
+Make gate failures:     Error [12]|make: \*\*\*|^make\[1\]: \*\*\*
+CI annotations:         ##\[error\]
+```
+
+Substring pitfalls: "passed" also matches "bypassed"; `.` matches every
+line; anchors can fail on decorated output (see Yoker #58). Two
+size-failures on one command → stop: report the verdict from captured
+lines, note what remains unverified.
+
+**Commit** — stage explicitly first: `git(operation="add", …)` for the
+exact files, verify the staged set with
+`git(operation="status", args={porcelain: true})` (first-column flags
+only), then commit. The commit tool does not stage. A `git commit` with
+nothing staged fails on "no changes added" — that is a staging miss, not
+a message problem. Multi-line messages work as a single argument.
+
+**CI wait** — poll `github(operation="workflow_list", limit=3)` (compact)
+every 60s until `status="completed"` (up to ~20 minutes for a full test
+matrix). `workflow_view` returns single-line JSON that overflows on big
+matrix runs — use it only when a completed run's job-level verdict is
+needed, and `workflow_logs` with a failure pattern
+(`FAILED|ERROR|Traceback|short test summary|exit code`) for details. CI
+red → report logs, halt; never tag or release on red.
 
 # Error Handling
 

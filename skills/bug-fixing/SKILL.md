@@ -105,7 +105,7 @@ Apply systematic debugging framework:
 1. Implement minimal fix
 2. Update test to expect correct behavior
 3. Run all tests (fix + no regressions)
-4. Run `make check` (test + typecheck + lint + format) — must pass before reporting done
+4. Run `make check` (test + typecheck + lint + format) — must pass before reporting done. **Verify against the exact gate that failed**: if the bug surfaced in a specific gate (e.g. CI's multi-version `check-all`, a specific interpreter, a platform-specific test), re-run *that* gate — passing an equivalent-but-narrower check does not verify the fix (a 3.10-only failure is invisible to a local single-version `make check`). If the exact gate is not runnable locally, report that gap explicitly rather than claiming verified.
 
 **Do NOT commit, create a branch, open a PR, or run review here.** This skill
 diagnoses and fixes; the caller runs the review cycle (`c3:project-review`) and
