@@ -58,7 +58,7 @@ KNOWN_YOKER = {
     "project-handle-pr", "project-post-merge", "project-review",
     "project-status", "project-todo-refine",
     "analysis-integration", "baseweb", "documentation", "fire",
-    "lessons-learned", "markdown-to-pdf", "naming", "ollama", "plan",
+    "lessons-learned", "naming", "ollama", "plan",
     "prepare-for-exam", "pymongo", "python", "python-comments",
     "python-project", "python-testing", "quart-webapp", "readme", "rich",
     "textual", "transcribe-session", "vue", "vue-form-generator",

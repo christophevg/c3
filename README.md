@@ -137,7 +137,6 @@ Skills provide focused guidance for specific technologies and workflows.
 | `/analysis-integration` | Integrate findings from multiple agents. |
 | `/lessons-learned` | Review session to improve skills/agents. |
 | `/documentation` | Sphinx/readthedocs setup. |
-| `/markdown-to-pdf` | Convert Markdown to PDF with TOC. |
 | `/readme` | Create and maintain README files. |
 | `/transcribe-session` | Curated session transcripts. |
 | `/api2mod` | Convert API docs to Python modules. |
