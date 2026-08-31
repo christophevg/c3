@@ -645,7 +645,7 @@ Agent({ subagent_type: "c3:release-manager",
   prompt: "Check current branch. If on main/master, create and checkout feature branch: feature/{issue-number}-{short-description}",
   description: "Create feature branch" })
 Agent({ subagent_type: "c3:release-manager",
-  prompt: "Stage and commit analysis documents in analysis/ and reporting/ with message: 'docs: add analysis for {task-name}'",
+  prompt: "Stage and commit analysis documents that are not gitignored (check .gitignore first; typically reporting/ is workflow-local and stays uncommitted — skip ignored paths, do not force-add, note exclusions) with message: 'docs: add analysis for {task-name}'",
   description: "Commit analysis docs" })
 Agent({ subagent_type: "c3:release-manager",
   prompt: "Create draft PR with title 'feat: {task title}' and body describing the analysis. Include links to analysis documents.",
@@ -761,6 +761,7 @@ then escalate). Handle its return value:
 - Ensure `reporting/{task-name}/` exists
 - Create `reporting/{task-name}/summary.md`: what was implemented, key decisions,
   lessons learned, files modified, PR link
+- Reporting/consensus files are workflow-local: write them, but do NOT commit them when .gitignore excludes the path (owner policy — they remain available to the working agents)
 
 ### 5.8 Commit, push, create PR, CI
 

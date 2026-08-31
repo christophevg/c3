@@ -15,6 +15,7 @@ tools:
   # write access
   - write
   - update
+  - file
   # execution
   - make
   - git

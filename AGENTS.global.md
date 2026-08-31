@@ -2,6 +2,10 @@
 
 These instructions are mandatory for all agents!
 
+## General Way of Working - !!! THIS IS IMPORTANT !!!
+
+Whenever the user asks to investigate, look into something, provides a bug report, something that went wrong,... You should investigate it, BUT then, BEFORE doing anything, you MUST present your case to the user! AND get his approval before continuing.
+
 ## Best Practices to Strictly Follow
 
 ### Python Standards
@@ -56,22 +60,6 @@ Targets:
 If a project contains a `pyproject.toml` file, it is managed using `uv`. This means that everything is done inside a `uv`-managed virtual environment. All executed commands should therefore be run using `uv`.
 
 **Important**: The Makefile targets also activate the correct virtual environment! So use the Makefile targets.
-
-### Tool Selection
-
-**NEVER use shell commands for file operations when a dedicated tool exists** — this is not negotiable:
-
-| Operation | Use | Never |
-|-----------|-----|-------|
-| Search for files | `list` | `find`, `ls` |
-| Search file contents | `search` | `grep`, `rg` |
-| Read files | `read` | `cat`, `head`, `tail` |
-| Edit existing files | `update` | `sed`, `awk` |
-| Create new files | `write` | `echo >`, `cat >`, heredocs |
-| Fetch web content | `webfetch` | `curl`, `wget` |
-| Search the web | `websearch` | manual browser lookup |
-
-**Why**: Dedicated tools provide structured output, proper permission handling, and make your actions transparent and reviewable. Shell commands bypass these controls.
 
 ### Research
 
@@ -173,12 +161,12 @@ When the user asks you to work on a task, select the appropriate skill or delega
 
 | Task Type | Use |
 |-----------|-----|
-| Analyze requirements, gather requirements, interview user | functional-analyst agent |
+| Analyze requirements, gather requirements, interview user | c3:functional-analyst agent |
 | Research a topic, investigate, gather information | c3:researcher agent |
 | Review code for quality, best practices | c3:code-reviewer agent |
 | Create Python code | c3:python-developer agent |
-| Learn from session, improve skills | lessons-learned skill |
-| Commit changes | commit skill |
+| Learn from session, improve skills | c3:lessons-learned skill |
+| Commit changes | c3:commit skill |
 
 ### Asking Questions
 

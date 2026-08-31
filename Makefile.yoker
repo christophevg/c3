@@ -25,10 +25,18 @@ ifdef YOKER_RESUME
 YOKER_ARGS += --resume $(YOKER_RESUME)
 endif
 
+ifdef YOKER_PROMPT
+YOKER_ARGS += --prompt $(YOKER_PROMPT)
+endif
+
+ifdef YOKER_AGENT
+YOKER_ARGS += --agent-name $(YOKER_AGENT)
+endif
+
 all: yoker-chat ## Main/default target, starts an interactive chat with Yoker
 
 yoker-chat: ## Start an interactive chat with Yoker
-	@$(YOKER) chat $(YOKER_ARGS)
+	$(YOKER) chat $(YOKER_ARGS)
 
 yoker-init: ## Initialize a local `yoker.toml` configuration using the Wizard
 	@$(YOKER) init --path yoker.toml
@@ -47,25 +55,24 @@ NC=\033[0m
 
 # the following targets activate a specific agent
 
-project: YOKER_ARGS += --agent project-manager
+project: YOKER_ARGS += --agent-name project-manager
 project: yoker-chat  ## Work on this project with the project-manager agent.
 
-analyst: YOKER_ARGS += --agent functional-analyst
+analyst: YOKER_ARGS += --agent-name functional-analyst
 analyst: yoker-chat  ## Work on this project with the functional-analyst agent.
 
-documenter: YOKER_ARGS += --agent end-user-documenter
+documenter: YOKER_ARGS += --agent-name end-user-documenter
 documenter: yoker-chat ## Work on this project with the end-user-documenter
 
 # the following targets select an agent and inject also an initial prompt to start
-# NOTE: this doesn't work right now, due to missing CLI prompt support in Yoker
 
-manage: YOKER_PROMPT = "manage the project!"
+manage: YOKER_ARGS += --prompt "manage the project!"
 manage: project  ## Manage the current project using the project-manager agent.
 
-review: YOKER_PROMPT = "I want to review the project. The goal is to update the requirements, functional analysis and backlog/TODO.md to match my intentions. Let's do this interactively and discuss each of the requirements and proposed features to evaluate if I still want them, and in what form, along with possibly other features I might want. Interview me until everything is clear, is consistent and I have confirmed everything."
+review: YOKER_ARGS += --prompt "I want to review the project. The goal is to update the requirements, functional analysis and backlog/TODO.md to match my intentions. Let's do this interactively and discuss each of the requirements and proposed features to evaluate if I still want them, and in what form, along with possibly other features I might want. Interview me until everything is clear, is consistent and I have confirmed everything."
 review: analyst ## Review the current project using the functional-analyst agent.
 
-refine: YOKER_PROMPT = "I want to review the project. The goal is to refine the backlog, to ensure it's optimally organized to deliver value. This includes reviewing the list of unstructured MBIs and/or TODOs to ensure all TODOs are well aligned with the intended MBIs, and ready to be processed by the development team. Don't decide anything on your own, ask me, guiding me through all open MBIs, TODOs. Before asking, check that open tasks aren't incorrectly marked as open, while they are already committed. You don't need to analyse everything in this session, just make sure that my intentions are clear enough to structured them into a prioritized overall backlog."
+refine: YOKER_ARGS += --prompt "I want to review the project. The goal is to refine the backlog, to ensure it's optimally organized to deliver value. This includes reviewing the list of unstructured MBIs and/or TODOs to ensure all TODOs are well aligned with the intended MBIs, and ready to be processed by the development team. Don't decide anything on your own, ask me, guiding me through all open MBIs, TODOs. Before asking, check that open tasks aren't incorrectly marked as open, while they are already committed. You don't need to analyse everything in this session, just make sure that my intentions are clear enough to structured them into a prioritized overall backlog."
 refine: analyst  ## Refine this project's backlog with the functional-analyst agent.
 
 

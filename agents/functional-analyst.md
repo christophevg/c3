@@ -12,6 +12,7 @@ tools:
   # write access
   - write
   - update
+  - file
   # github access for issue interaction
   - github
   # delegation
