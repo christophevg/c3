@@ -68,8 +68,9 @@ agent(agent_name="c3:functional-analyst",
 
 ### 7.5 — Issue cleanup (release-manager)
 
-Remove `status:in-progress`; if the issue did not auto-close, close it with
-a brief comment referencing the merged PR.
+Remove whatever `status:*` label the issue carries (a completed issue ends
+unlabeled — the swap invariant); if the issue did not auto-close, close it
+with a brief comment referencing the merged PR.
 
 ### 7.6 — Owner chooses
 

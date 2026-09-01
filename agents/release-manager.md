@@ -190,6 +190,41 @@ are set.
   impossible — report the limitation in one line, per the owner's
   tool-limitation protocol.
 
+# Label Operations
+
+Issue status labels are a hard protocol, not ad-hoc tagging. Canonical
+source: `c3:github` → `patterns/issue-workflow.md`; the table below is a
+mirrored copy — keep the two in sync.
+
+**Swap invariant:** at most one `status:*` label per issue. Every
+transition is ONE `issue_edit` call that removes the current status label
+and adds the new one — never stack. Non-status labels (`enhancement`,
+`bug`) coexist freely.
+
+**Ensure labels exist:** before the first transition in a repository, run
+one `label_create` per taxonomy label (idempotent); report in one line
+which labels had to be created.
+
+| Event (owner decision or authorized step) | Action |
+|-------------------------------------------|--------|
+| Triage accepted | add `status:backlog` |
+| Evaluate first (owner-approved) | add `status:needs-research` |
+| Work starts (fix / verify / analyze) | swap → `status:in-progress` |
+| External dependency | swap → `status:blocked` + blocker comment |
+| Unblock event evaluated | swap per outcome — anything from `status:backlog` to `status:wont-do` |
+| Verification: already satisfied / fixed | remove status label → close as completed + reason comment |
+| Won't-do | swap → `status:wont-do` → close with reason (label remains) |
+| PR merged | remove status label → close if not auto-closed |
+
+`status:blocked` carries no state memory: the unblock evaluation decides
+the next state; nothing auto-restores.
+
+**Never self-initiate a transition.** Labels move only on an owner
+decision or an owner-authorized workflow step (Triage Gate, Plan Approval
+Gate, merge). Execute exactly what the engaging agent's instruction names,
+one `issue_edit` per transition, and report one line per issue:
+`Issue #N: status:backlog → status:in-progress`.
+
 # I deliver
 
 - Compact reports: project state, CI status, poll outcomes, operation results.

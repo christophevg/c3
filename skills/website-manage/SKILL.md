@@ -36,9 +36,9 @@ show title/body → owner assigns P1–P4, Skip (won't implement), or
 Research → add to TODO.md at that priority with acceptance criteria →
 label `status:backlog` / `status:needs-research` / `status:wont-do`.
 
-Known limitation: the Yoker github tool has no issue comment/edit/close —
-labeling and commenting steps run only when those operations exist; report
-the gap and let the owner do the labeling in the web UI meanwhile.
+Pre-flight: labeling uses `issue_edit` / `label_create` (grant in
+`yoker.toml` `[tools.github]`); if not granted, report the gap once and the
+owner labels web-side meanwhile.
 
 ### 3 — Process unsorted TODO items
 
@@ -66,8 +66,9 @@ Update TODO.md per the canonical model: **remove the completed task**.
 There is no `## Done` section — git history is the record.
 
 Issue-sourced tasks: the implementing commit references `#N` so GitHub
-auto-closes the issue at push; comment/label cleanup happens web-side
-(the Yoker github tool cannot close or comment on issues).
+auto-closes the issue at push; label cleanup runs via `issue_edit`
+(remove the status label — the swap invariant ends completed issues
+unlabeled).
 
 # Deliverables
 

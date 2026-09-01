@@ -2,235 +2,165 @@
 
 ## Overview
 
-GitHub Issues are used for tracking work: features, bugs, tasks. This workflow handles reviewing, labeling, and managing issues.
+GitHub Issues track work: features, bugs, tasks. This document is the
+canonical status-label protocol: taxonomy, transition table, and the Yoker
+`github` operations that execute them. Orchestrating skills decide WHEN a
+transition happens; this document defines HOW.
 
-## Issue Review Process
+Authority: all labeling, commenting, and closing run through
+`c3:release-manager`. Only the repository owner's comments decide; a
+transition is never self-initiated — it executes on an owner decision or an
+owner-authorized workflow step (Triage Gate, Plan Approval Gate, merge).
 
-### Checking for New Issues
+## Tooling
 
-```bash
-# List all open issues
-gh issue list --limit 10 --state open
-
-# List issues with details
-gh issue list --limit 10 --state open --json number,title,labels,author
-
-# List issues without status labels (unreviewed)
-gh issue list --limit 10 --state open --json number,title,labels \
-  --jq '.[] | select(.labels | length == 0)'
+```yaml
+# granted per repo in yoker.toml [tools.github] allowed_operations
+github(operation="issue_list",    state="open", limit=10)
+github(operation="issue_view",    number=N)
+github(operation="issue_edit",    number=N, add_label="status:backlog")
+github(operation="issue_edit",    number=N, remove_label="status:backlog",
+                                  add_label="status:in-progress")  # the swap
+github(operation="issue_edit",    number=N, state="closed")
+github(operation="issue_comment", number=N, body="…")
+github(operation="label_create",  label="status:backlog", description="…")
 ```
 
-### Reviewing an Issue
+Pre-flight: before a phase that depends on these operations, confirm they
+are granted. A missing operation is reported once (durable work lands
+first); the owner labels web-side meanwhile. Never shell out to `gh`.
 
-For each unreviewed issue:
+## Ensure labels exist
 
-1. Read title and body
-2. Check for status label
-3. If no status: needs review
+The taxonomy assumes the five `status:*` labels exist in the repo. Before
+the first transition in a repository, ensure them: one `label_create` per
+label — the call is idempotent; existing labels are left untouched. Report
+in one line which labels had to be created. Suggested colors:
+`status:backlog` 1d76db, `status:in-progress` fbca04,
+`status:needs-research` 5319e7, `status:blocked` d93f0b,
+`status:wont-do` cccccc.
 
-```bash
-# View issue details
-gh issue view {number}
+## Taxonomy
 
-# View issue body
-gh issue view {number} --json body --jq '.body'
+| Label | Meaning | Issue state |
+|-------|---------|-------------|
+| `status:backlog` | Reviewed, accepted, recorded in TODO.md | open |
+| `status:in-progress` | Work started: fix, verify, or analyze | open |
+| `status:needs-research` | Evaluation/research before anything else | open |
+| `status:blocked` | Waiting on an external dependency | open |
+| `status:wont-do` | Decision: won't implement | closed — label remains as tombstone |
+
+## Swap invariant
+
+**At most one `status:*` label per issue.** Every transition removes the
+current status label and adds the new one in a single `issue_edit` call.
+Never stack status labels. An issue carries no status label only before
+triage and after completion (closed). Non-status labels (`enhancement`,
+`bug`, …) are unaffected and coexist freely.
+
+## Transition table — canonical
+
+| Event | Label action |
+|-------|--------------|
+| Triage accepted (feature, bug, dependency) | add `status:backlog` |
+| Route = evaluate first (owner-approved) | add `status:needs-research` |
+| Research completes → owner evaluates the outcome | swap per outcome: `status:backlog` / `status:in-progress` / `status:blocked` / `status:wont-do` (+ close) |
+| Work starts (branch + draft PR, bug-flow step 1, verify/analyze) | swap current → `status:in-progress` |
+| Waiting on external dependency | swap current → `status:blocked` + comment naming the blocker |
+| Unblock event evaluated | swap per outcome — anything from `status:backlog` to `status:wont-do` (+ close) |
+| Verification: already satisfied / already fixed | remove status label → close as completed with a reason comment |
+| Won't-do decision | swap → `status:wont-do` → close with reason (label remains) |
+| PR merged (post-merge cleanup) | remove whatever `status:*` label is present → close if not auto-closed |
+
+`status:blocked` carries no memory of the previous state: when the blocker
+resolves, the outcome of evaluating that event determines the next state —
+nothing is auto-restored.
+
+## Closing semantics
+
+- A close always carries its reason in a comment: wont-do (why not),
+  already-satisfied (what satisfies it), merged (PR reference).
+- `status:wont-do` is applied before closing and stays on the closed issue
+  as a tombstone; other status labels are removed at/before close.
+- `Fixes #N` in a PR auto-closes the issue at merge; label cleanup is the
+  separate post-merge step (`c3:project-post-merge` 7.5).
+
+## Recipes
+
+### Triage acceptance → backlog
+
+```
+github(operation="issue_edit", number=N, add_label="status:backlog")
+github(operation="issue_comment", number=N,
+       body="Reviewed and accepted. Added to TODO.md with priority P<n>.")
 ```
 
-## Issue Status Labels
+### Work starts → in-progress (the swap)
 
-| Label | Meaning | Action |
-|-------|---------|--------|
-| `status:backlog` | Reviewed, added to TODO.md | Keep open, implement later |
-| `status:in-progress` | Currently implementing | Keep open, track progress |
-| `status:wont-do` | Decision: won't implement | Close with explanation |
-| `status:needs-research` | Needs evaluation | Keep open, research first |
-| `status:blocked` | Blocked by dependency | Keep open, note blocker |
-
-## Issue Commands
-
-### Labeling Issues
-
-```bash
-# Add label
-gh issue edit {number} --add-label "status:backlog"
-
-# Remove label
-gh issue edit {number} --remove-label "status:in-progress"
-
-# Add multiple labels
-gh issue edit {number} --add-label "status:backlog,enhancement"
-
-# Replace all labels
-gh issue edit {number} --label "status:backlog,enhancement"
+```
+github(operation="issue_edit", number=N,
+       remove_label="status:backlog", add_label="status:in-progress")
 ```
 
-### Commenting on Issues
+When the current status label is uncertain, `issue_view` shows the labels;
+the swap removes whichever `status:*` label is present.
 
-```bash
-# Add comment
-gh issue comment {number} --body "Reviewed and accepted. Added to backlog."
+### Needs research
 
-# Multi-line comment
-gh issue comment {number} --body "$(cat <<'EOF'
-Thank you for this issue.
-
-After review, I've decided to:
-1. Add it to the backlog
-2. Schedule for next sprint
-
- ETA: Q2 2024
-EOF
-)"
+```
+github(operation="issue_edit", number=N, add_label="status:needs-research")
 ```
 
-### Closing Issues
+### Blocked
 
-```bash
-# Close with comment
-gh issue close {number} --comment "Closing: not in scope because..."
-
-# Close as completed
-gh issue close {number} --comment "Fixed in PR #123"
-
-# Reopen issue
-gh issue reopen {number} --comment "Reopening: issue persists"
+```
+github(operation="issue_edit", number=N,
+       remove_label="<current>", add_label="status:blocked")
+github(operation="issue_comment", number=N, body="Blocked by: <blocker>.")
 ```
 
-## Issue Resolution Actions
+### Won't-do
 
-### Accept Issue → Backlog
-
-```bash
-# Add status label
-gh issue edit {number} --add-label "status:backlog"
-
-# Add comment
-gh issue comment {number} --body "Reviewed and accepted. Added to TODO.md."
-
-# Add additional labels if applicable
-gh issue edit {number} --add-label "enhancement"
+```
+github(operation="issue_edit", number=N,
+       remove_label="<current>", add_label="status:wont-do")
+github(operation="issue_comment", number=N,
+       body="Closing: not in scope because …")
+github(operation="issue_edit", number=N, state="closed")
 ```
 
-### Reject Issue → Won't Do
+### Verification: already satisfied
 
-```bash
-# Add status label
-gh issue edit {number} --add-label "status:wont-do"
-
-# Close with explanation
-gh issue close {number} --comment "Closing: not in scope because..."
+```
+github(operation="issue_edit", number=N, remove_label="<current>")
+github(operation="issue_comment", number=N,
+       body="Already satisfied: <evidence>. Closing.")
+github(operation="issue_edit", number=N, state="closed")
 ```
 
-### Needs Research
+### Completed via merged PR
 
-```bash
-# Add status label
-gh issue edit {number} --add-label "status:needs-research"
-
-# Add comment
-gh issue comment {number} --body "Needs evaluation for technical feasibility."
+```
+github(operation="issue_edit", number=N, remove_label="<status-label>")
+# close only when the PR did not auto-close the issue:
+github(operation="issue_edit", number=N, state="closed")
+github(operation="issue_comment", number=N, body="Closed via PR #<n>.")
 ```
 
-### Blocked by Dependency
+## Reviewing new issues
 
-```bash
-# Add status label
-gh issue edit {number} --add-label "status:blocked"
+Only issues without a status label are new. Triage classifies and proposes;
+it never starts work — the owner decides at the Triage Gate.
 
-# Add comment with blocker details
-gh issue comment {number} --body "Blocked by: #{blocking-issue-number}. Will proceed after blocker is resolved."
+```
+github(operation="issue_list", state="open", limit=10)
+# unreviewed = no status:* label among the returned labels
+github(operation="issue_view", number=N)
 ```
 
-### Starting Implementation
-
-```bash
-# Add status label
-gh issue edit {number} --add-label "status:in-progress"
-
-# Link to branch/PR when ready
-gh issue comment {number} --body "Starting work on branch feature/{number}-{description}."
-```
-
-## Issue Linking in PRs
-
-### Auto-Close on Merge
-
-Use these keywords in PR body:
+## Issue linking in PRs
 
 | Keyword | Effect |
 |---------|--------|
-| `Closes #{number}` | Closes issue when PR merges |
-| `Fixes #{number}` | Closes issue when PR merges |
-| `Resolves #{number}` | Closes issue when PR merges |
-
-### Reference Without Closing
-
-| Keyword | Effect |
-|---------|--------|
-| `Related to #{number}` | Links issue without closing |
-| `See #{number}` | Links issue without closing |
-
-## Common Scenarios
-
-### Scenario: Review New Issues
-
-1. List unreviewed issues: `gh issue list --limit 10 --state open --json number,title,labels`
-2. For each issue without status label:
-   - View details: `gh issue view {number}`
-   - Assess: feature request? bug? question?
-   - Decide: backlog, wont-do, needs-research
-   - Apply label and comment
-3. Report summary to user
-
-### Scenario: Check Issue Status
-
-```bash
-# View issue
-gh issue view {number}
-
-# Check labels
-gh issue view {number} --json labels --jq '.labels'
-```
-
-### Scenario: Issue Completed via PR
-
-1. User confirms PR merged
-2. Issue should auto-close if PR body has `Closes #{number}`
-3. If not auto-closed:
-   ```bash
-   gh issue close {number} --comment "Closed via PR #{pr-number}"
-   ```
-
-### Scenario: Issue Needs Clarification
-
-```bash
-# Ask question in comment
-gh issue comment {number} --body "$(cat <<'EOF
-Thank you for this issue.
-
-Could you provide more details about:
-1. Expected behavior?
-2. Steps to reproduce?
-3. Environment (OS, version)?
-EOF
-)"
-```
-
-## Issue Search
-
-```bash
-# Search by title
-gh issue list --search "bug in auth"
-
-# Search by label
-gh issue list --label "bug"
-
-# Search by assignee
-gh issue list --assignee username
-
-# Search by author
-gh issue list --author username
-
-# Combined search
-gh issue list --state open --label "bug" --limit 20
-```
+| `Closes #{n}` / `Fixes #{n}` / `Resolves #{n}` | auto-closes the issue at merge |
+| `Related to #{n}` / `See #{n}` | links without closing |

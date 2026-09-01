@@ -168,7 +168,9 @@ ask — sort into backlog / analyze now / start next task.
 **2.3 Verify first (functional-analyst).** The functional-analyst confirms
 the chosen task's acceptance criteria are not already satisfied by the
 codebase and the task is still accurately described; if implemented or
-stale, it updates TODO.md and the orchestrator moves to the next task.
+stale, it updates TODO.md and the orchestrator moves to the next task —
+release-manager applies the verification close (remove status label →
+close as completed with evidence comment, per `patterns/issue-workflow.md`).
 
 **2.4 Propose next task to the owner in chat — do not pause.** State the
 selection (task id, title, one-line why) as a report and continue
@@ -222,7 +224,9 @@ criteria, dependencies) and reports the integrated result.
 
 **5.1 Branch + draft PR (release-manager).** Feature branch from the
 default branch; commit analysis docs (skip gitignored paths — never force-add);
-open a draft PR referencing the task/issue.
+open a draft PR referencing the task/issue. Issue work starts here:
+release-manager swaps the issue to `status:in-progress` (canonical table:
+`c3:github` → `patterns/issue-workflow.md`).
 
 **5.2 Implementation plan as PR comment** (release-manager): approach,
 files, steps, acceptance criteria — ending "Waiting for owner approval

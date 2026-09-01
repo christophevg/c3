@@ -104,11 +104,14 @@ whether to wait or push a trigger — never cancel/re-run it from here.
 
 ## Issue workflow
 
-The Yoker `github` tool offers `issue_list`, `issue_view`, `issue_create`.
-Reviewing, labeling and closing existing issues are owner-side actions for
-now — when definitions need them, report the limitation instead of shelling
-out to `gh`. Status labels and their meaning are the protocol
-(`patterns/issue-workflow.md`):
+Status labels are the protocol (`patterns/issue-workflow.md` — canonical
+taxonomy, transition table, swap invariant, close semantics). The Yoker
+`github` tool exposes `issue_edit`, `issue_comment` and `label_create`;
+grant them in `yoker.toml` `[tools.github] allowed_operations`. Pre-flight
+before a label-dependent phase: confirm the operations are granted; a
+missing operation is reported once (durable work lands first) and the
+owner labels web-side meanwhile. Never shell out to `gh`. All transitions
+run through `c3:release-manager` and are never self-initiated:
 
 | Label | Meaning |
 |-------|---------|
