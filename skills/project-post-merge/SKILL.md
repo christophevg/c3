@@ -34,7 +34,8 @@ project root (from the release-manager state report).
 7.2  release-manager: switch to default branch + pull    ← FIRST
 7.3  functional-analyst: mark task done — REMOVE from TODO.md
        (no ## Done section; git history keeps the record)
-7.4  release-manager: commit TODO.md
+7.4  release-manager: commit + push TODO.md    (unpushed default-branch
+       commits are the fuel for branch-rides-along divergence)
 7.5  release-manager: clean up issue labels / close issue
 7.6  owner: release or next task?
        release → release-manager → c3:release
@@ -48,7 +49,11 @@ one-shot prompts — this skill never touches git or gh itself).
 
 ```
 agent(agent_name="c3:release-manager",
-      prompt="Switch to the default branch and pull latest.",
+      prompt="Switch to the default branch and pull latest.
+              If pull reports divergence: STOP — never auto-resolve.
+              Fetch, diff both sides by content, determine which side
+              is authoritative, and present the owner with rebase-pull
+              vs reset options.",
       ephemeral=true)
 ```
 

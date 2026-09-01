@@ -127,8 +127,11 @@ commenting, and closing go through c3:release-manager. Only the repository
 owner's comments decide; verify ownership before treating feedback as
 authoritative. Full protocol:
 [references/issue-review-workflow.md](references/issue-review-workflow.md).
-Commit TODO.md updates promptly (via release-manager) — never let triage
-accumulate uncommitted changes.
+Commit AND push TODO.md updates promptly (via release-manager) — never let
+triage accumulate uncommitted changes, and never leave commits unpushed on
+the default branch: a later feature branch created from an unsynced default
+branch silently carries those commits, and a rebase-merge then duplicates
+them with new hashes (divergence).
 
 ---
 
@@ -222,9 +225,14 @@ criteria, dependencies) and reports the integrated result.
 
 ## Phase 5 — Implementation
 
-**5.1 Branch + draft PR (release-manager).** Feature branch from the
-default branch; commit analysis docs (skip gitignored paths — never force-add);
-open a draft PR referencing the task/issue. Issue work starts here:
+**5.1 Branch + draft PR (release-manager).** Sync pre-flight FIRST:
+verify the local default branch is identical to origin's (compare `log`
+of the local branch against `origin/<default>` — zero commits either
+side). Ahead or diverged → STOP, report the unpushed commits, owner
+decides: push first or investigate. Never branch from an unsynced
+default branch. Then: feature branch from the default branch; commit
+analysis docs (skip gitignored paths — never force-add); open a draft PR
+referencing the task/issue. Issue work starts here:
 release-manager swaps the issue to `status:in-progress` (canonical table:
 `c3:github` → `patterns/issue-workflow.md`).
 

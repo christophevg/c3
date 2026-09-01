@@ -58,10 +58,20 @@ and note the deviation in one report line.
 | Commit work | invoke `c3:commit` (it owns format and attribution) |
 | Branch / PR / issue / release API / CI / anything else below | execute directly |
 
-**Branching.** Create feature branches from origin's default branch:
-push the default branch first, then `checkout` with `create: true`,
-startpoint = default branch. This keeps the PR base identical to
-origin and prevents merge surprises.
+**Branching.** Before creating any feature branch, verify the local
+default branch is identical to origin's (compare `log` of the local
+branch against `origin/<default>` — zero commits either side). If ahead
+or diverged → STOP and report the unpushed/divergent commits; the
+engaging agent decides (push first or investigate). Never branch from an
+unsynced default branch — stray commits silently ride along on the
+feature branch, and a rebase-merge then duplicates them with new hashes.
+Then create the branch: push the default branch first, then `checkout`
+with `create: true`, startpoint = default branch. This keeps the PR base
+identical to origin and prevents merge surprises.
+
+**Push reporting.** After any push, report the branch and the pushed
+hash range. Commits in the pushed set that are not the branch's own
+work are reported, never silent.
 
 **Polling owner feedback (only when explicitly instructed)**
 
