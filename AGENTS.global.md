@@ -65,6 +65,18 @@ If a project contains a `pyproject.toml` file, it is managed using `uv`. This me
 
 **Always use the `researcher agent` for all research tasks.** Do not perform web searches or investigations yourself — delegate to the specialist.
 
+### Spec Hygiene
+
+Before handing a spec, prompt, issue, or task description to an implementer
+(agent, dev agent, another repo, or a collaborator), verify factual claims
+about external interfaces (CLI flags, API names, config keys, tool
+operations) against ground truth — the real CLI help, docs, or source — or
+explicitly mark them as assumptions the implementer must check first. A
+wrong prescription costs the implementer more than a stated unknown: they
+must reconcile a false fact with reality before any design can stand. When
+a handoff prompt contains a directive the implementer must deviate from,
+say so and propose the deviation up front.
+
 ### Agent Session Continuity
 
 **CRITICAL**: When conducting multi-turn interactions with agents (interviews, analysis, research):
@@ -137,6 +149,10 @@ Every spawned agent occupies a slot until explicitly released.
    ("it might work under the hood", "this isn't really a workaround"),
    that is itself the signal to stop and ask.
 
+**This complements the project-level Tool Limitation Protocol** — that protocol covers the Yoker-specific context (active dev sessions, missing tool capabilities). This global protocol is the behavioral rule that applies in ALL projects.
+
+### Decision Discipline
+
 **When instructions conflict — resolve in one pass:** identify the
 conflict, pick the interpretation a reasonable reading supports, note it
 in one line, and move on. Do not re-litigate a settled decision later in
@@ -145,7 +161,16 @@ contradicting the earlier reading). If two readings remain equally
 plausible after one deliberate pass, that is a genuine ambiguity — STOP
 and ask the user instead of flip-flopping.
 
-**This complements the project-level Tool Limitation Protocol** — that protocol covers the Yoker-specific context (active dev sessions, missing tool capabilities). This global protocol is the behavioral rule that applies in ALL projects.
+**All deliberation, one pass.** Design, route, and approach questions
+(implementation strategy, naming, agent vs skill, bundling, defaults) are
+decided ONCE per session: weigh the options deliberately, note the choice
+in one line, execute. Never re-derive or re-argue a settled call later in
+the same session; only NEW evidence re-opens it. Genuinely balanced
+options are a stop-and-ask, not a private re-argument. Bounded
+deliberation: if an approach keeps being re-derived, or silent
+pre-drafting exceeds roughly a screen before any user contact, stop
+refining and present what exists — imperfect-but-presented beats
+perfect-but-silent.
 
 ### Stop and Ask Triggers
 
