@@ -95,14 +95,31 @@ open issues, last tag, recent commits.
 Approval already present in PR comments is final: never re-post the plan,
 never re-wait, never re-ask. Read the comment timeline and act.
 
-**0.3 Issue triage.** Only issues without status labels are new.
+**0.3 Issue triage — ends at an owner decision.** Only issues without
+status labels are new. Triage classifies and proposes; it never starts
+work.
 
 | Type | Route |
 |------|-------|
-| Bug | Bug flow (below) — immediate, no confirmation ask |
+| Bug | Bug flow (below) — only after owner selection at the Triage Gate |
 | Feature | functional-analyst reviews; clarifies in issue comments; owner accepts → `status:backlog` + TODO.md entry |
 | Question | researcher evaluates or close |
 | Dependency | researcher → backlog |
+
+Batch triage is the default: classify all new issues and post per-issue
+triage comments in ONE pass, deciding route questions once (no
+re-litigating classifications mid-pass). Issues reporting the same pain
+form a cluster — propose related bugs as one bundled fix PR unless the
+owner asks for per-issue handling.
+
+**Triage Gate (mandatory pause).** When triage completes, STOP and present
+the full triage table to the owner in chat — every issue with its
+classification, proposed route, and a one-line rationale — then ASK what
+to do next. The owner selects what starts, what waits, and what is
+dropped; certain issues wanted, others not. A bug classification does not
+authorize a bug flow. Exception: explicit pre-approval for this triage
+round ("proceed with the bugs", "work everything") skips the gate —
+silence never does.
 
 Labels: `status:backlog` / `status:in-progress` / `status:needs-research` /
 `status:wont-do` (closed with reason) / `status:blocked`. All labeling,
@@ -111,8 +128,7 @@ owner's comments decide; verify ownership before treating feedback as
 authoritative. Full protocol:
 [references/issue-review-workflow.md](references/issue-review-workflow.md).
 Commit TODO.md updates promptly (via release-manager) — never let triage
-accumulate uncommitted changes. After issues, continue to Phase 1 or the
-next item; do not pause for feedback.
+accumulate uncommitted changes.
 
 ---
 
@@ -265,8 +281,9 @@ response and go to `c3:project-post-merge`; changes requested →
 
 ## Bug Flow
 
-Bugs skip the Plan Approval Gate (owner-reported, urgent); everything else
-funnels identically:
+Bugs enter this flow only via owner selection at the Triage Gate (0.3) —
+classification alone never starts it. Once selected, bugs skip the Plan
+Approval Gate (owner-picked, urgent); everything else funnels identically:
 
 1. Branch + `status:in-progress` label (release-manager)
 2. c3:bug-fixer (ephemeral): diagnose → test first → fix → `make check`; reports diagnosis + files

@@ -46,7 +46,7 @@ Review everything you have done and learned in this session. Propose improvement
 
 4. **Repetitive patterns** — Did you repeat the same action multiple times? Could a skill automate or guide it?
 5. **Missing guidance** — Was there a situation where you lacked clear instructions? Should a skill or agent be updated?
-6. **Error corrections** — Did the user correct your approach? Save this as feedback memory.
+6. **Error corrections** — Did the user correct your approach? Record the correction where it takes effect (skill, agent definition, or documentation).
 7. **Documentation gaps** — Did you need to reference something that wasn't documented?
 8. **Tool improvements** — Could existing skills be clearer, more comprehensive, or better structured?
 
@@ -118,12 +118,14 @@ Are there learnings that apply to multiple skills?
 - **Skills to Update:** [List of skills that should include this pattern]
 - **Implementation:** [How to add this to each skill]
 
-### 5. Memories to Save
+### 5. Decisions and Corrections to Record
 
-User corrections and preferences to remember:
-- Save to feedback memory if user corrected approach
-- Save to project memory if discovered new workflow preference
-- Save to reference memory if found useful external resource
+User corrections and preferences to remember — recorded in active artifacts,
+not memory files (C3 has no memory infrastructure; see BLUEPRINT decision log):
+
+- User correction → codify as a rule in the skill/agent where it takes effect
+- New workflow preference → playbook/skill text or BLUEPRINT decision log entry
+- Useful external resource → the relevant skill's references/
 
 ### 6. Validation Plan
 
@@ -147,8 +149,7 @@ Based on this analysis, I propose to:
 1. Update skill X: [description of change]
 2. Update skill Y: [description of change]
 3. Create new skill Z: [description]
-4. Save memory A: [description]
-5. Save memory B: [description]
+4. Record decision/correction A: [in which skill/agent/doc]
 
 Should I proceed with implementing these updates?
 ```
@@ -174,11 +175,10 @@ Only after user confirmation:
    - Add to skill index if needed
    - Create symlink if following incubator workflow
 
-3. **Save memories**
-   - Write feedback memories for user corrections
-   - Write project memories for workflow preferences
-   - Write reference memories for external resources
-   - Update MEMORY.md index
+3. **Record decisions and corrections**
+   - Codify user corrections as rules in the skill/agent where they apply
+   - Add workflow preferences to the relevant playbook/skill text
+   - Log owner decisions in the BLUEPRINT decision log
 
 4. **Commit changes**
    - Stage all modified files
@@ -188,7 +188,7 @@ Only after user confirmation:
 
 After implementing:
 - List all changes made
-- Confirm memories saved
+- Confirm decisions recorded in their active artifacts
 - Confirm commits created
 - Note any follow-up actions needed
 ## Related

@@ -129,6 +129,21 @@ Every spawned agent occupies a slot until explicitly released.
 2. **Ask the user:** "Could you perform Y manually, or should we work around it?"
 3. **Do NOT silently continue** with a degraded workflow unless the user says so.
 4. **Do NOT try to hack around it** with unrelated tool operations.
+5. **No capability probing.** Using a tool outside its documented scope to
+   "see whether it happens to work" is a workaround attempt, not a check.
+   A missing sub-operation is reported after the FIRST failure — never
+   probed with near-miss variants, and never talked into being acceptable
+   mid-deliberation. If a rationalization for continuing appears
+   ("it might work under the hood", "this isn't really a workaround"),
+   that is itself the signal to stop and ask.
+
+**When instructions conflict — resolve in one pass:** identify the
+conflict, pick the interpretation a reasonable reading supports, note it
+in one line, and move on. Do not re-litigate a settled decision later in
+the same session; re-opening is only for NEW information (e.g. evidence
+contradicting the earlier reading). If two readings remain equally
+plausible after one deliberate pass, that is a genuine ambiguity — STOP
+and ask the user instead of flip-flopping.
 
 **This complements the project-level Tool Limitation Protocol** — that protocol covers the Yoker-specific context (active dev sessions, missing tool capabilities). This global protocol is the behavioral rule that applies in ALL projects.
 

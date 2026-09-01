@@ -161,6 +161,13 @@ conversation and inline review comments — preferred for polling.
 body=…, head=…, base=…)`. Include Summary / Changes / Test Plan sections
 in the body (attribution comes from the repo's PR template, not manually).
 
+**Notify the owner — assign AND request review.** After every PR reaches
+ready-for-review, do BOTH in one `pr_edit` call:
+`add_assignee="<owner-login>", add_reviewer="<owner-login>"`. Assignment
+alone or review-request alone is incomplete — both actions are what put
+the PR in the owner's queues. Never consider a PR handed over before both
+are set.
+
 **Create GitHub release** —
 `github(operation="release_create", repo=…, tag="vX.Y.Z", title=…, notes=…)`
 — optional `draft=true`, `prerelease=true`. For the full release workflow

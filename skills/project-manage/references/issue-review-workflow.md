@@ -13,8 +13,12 @@ c3:release-manager.
 
 ### Step 1 — Mark and Review
 
-Release-manager adds `status:in-progress` and comments "Reviewing this
-feature request". The functional-analyst assesses definition quality:
+Batch mode is the default: the functional-analyst reviews ALL new feature
+issues in one pass and drafts every triage comment before anything is
+posted — durable analysis lands first, so a later tool gap cannot erase
+it. Per-issue "Reviewing this feature request" comments are then posted in
+one release-manager call. The functional-analyst assesses definition
+quality:
 
 | Quality | Indicators | Action |
 |---------|-----------|--------|
@@ -59,4 +63,5 @@ Triage is complete only when all four steps are done:
 
 - functional-analyst — reviews, clarifies, records in TODO.md
 - release-manager — labels, comments, git operations
-- bug-fixer — bugs bypass review entirely (immediate fix flow)
+- bug-fixer — bugs skip analyst review (diagnose→fix); entry still requires
+  owner selection at the Triage Gate (playbook Phase 0.3)
