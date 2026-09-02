@@ -100,7 +100,7 @@ Skills provide focused guidance for specific technologies and workflows.
 
 | Skill | Description |
 |-------|-------------|
-| `/plan` | Structured feature planning with PLAN.md templates. |
+| `/plan` | MBI planning (optional PLAN.md tracker); clarifies PLAN.md vs TODO.md (master backlog). |
 | `/wsjf` | Interactive WSJF (Weighted Shortest Job First) scoring for prioritization. |
 | `/bug-hunting` | Systematic debugging with patterns, templates, and integration guides. |
 

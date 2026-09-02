@@ -2,7 +2,7 @@
 name: plan
 type: workflow
 description: |
-  Manage PLAN.md (Intake Backlog with Minimal Business Increments). Use when user asks about MBIs, wants to create/analyze/score MBIs, or says "/plan". Examples: "/plan", "analyze MBI", "create MBI", "score MBIs with WSJF".
+  Manage PLAN.md (Intake Backlog with Minimal Business Increments). Use when user asks about MBIs, wants to create/analyze/score MBIs, or says "/plan". Also clarifies where to capture work: PLAN.md (optional MBI tracker) vs TODO.md (master task backlog). Examples: "/plan", "analyze MBI", "create MBI", "score MBIs with WSJF".
 ---
 
 # Plan Management
@@ -43,6 +43,13 @@ An MBI (Minimal Business Increment) is the smallest piece of value that can be d
 - Internal refactoring without user-facing changes
 - Technical debt cleanup
 - Architecture improvements without new capabilities
+
+## Planning hierarchy
+
+- **TODO.md is the master task backlog.** Always present; day-to-day work is handled here.
+- **PLAN.md is optional.** Use it for MBI topics: large, very functional topics that warrant the full MBI workflow behind them.
+- An MBI is split into tasks that live in the TODO.md backlog; activating an MBI schedules its tasks there.
+- **No PLAN.md is a normal state.** Capture work directly in TODO.md.
 
 ## PLAN.md Structure
 
@@ -138,7 +145,9 @@ Look for PLAN.md in:
 1. Current directory
 2. Parent directories (up to 3 levels)
 
-If not found, ask user if they want to create one from template.
+If not found, ask the user whether the topic is MBI-worthy:
+- "MBI-worthy" — create PLAN.md from template
+- "Regular work" — capture directly in TODO.md (master backlog); do not create PLAN.md
 
 ### Step 2: Read Current State
 
@@ -262,8 +271,8 @@ Higher scores indicate higher priority. See `c3/skills/wsjf/SKILL.md` for detail
 
 | File | Purpose |
 |------|---------|
-| `PLAN.md` | Project-level MBI tracking |
-| `TODO.md` | Task-level backlog |
+| `PLAN.md` | Optional project-level MBI tracker (large functional topics) |
+| `TODO.md` | Master task backlog — all day-to-day work lives here |
 | `c3/skills/plan/SKILL.md` | This skill definition — includes the PLAN.md template |
 
 ## Integration with Other Skills
@@ -338,7 +347,9 @@ Agent: Added to Unsorted MBIs in PLAN.md.
 - Only one Active MBI at a time (focus principle)
 - Unsorted MBIs are raw ideas — functional-analyst processes them
 - Active MBI tasks are prioritized at top of TODO.md
+- A project without PLAN.md is normal — TODO.md is the master backlog
 - WSJF scoring is optional but recommended for backlog prioritization
+
 ## Related
 
 - `wsjf` — WSJF scoring over the MBI backlog this skill manages
