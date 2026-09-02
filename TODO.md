@@ -15,6 +15,22 @@
   - Enhancement: release-manager hands the feedback digest directly to the interpretation step (or a persistent release-manager session carries it)
   - Acceptance: one delegation hop; the feedback text arrives at interpretation once
 
+- [ ] **Slim down bug-fix workflow**
+  - Recent rework aligned the bug-fix flow with the full managed workflow, making it heavy and time-consuming
+  - Define a slimmed-down fast path for day-to-day bug fixes; keep the full flow for managed projects
+  - Acceptance: c3:bug-fixing supports a lightweight day-to-day mode
+
+- [ ] **Genericize skill output locations**
+  - develop-skill and by extension all skills hardcode output paths
+  - Replace hardcoded paths with sensible defaults plus explicit user decision at invocation
+  - Acceptance: no hardcoded output paths in skills; defaults documented and overridable
+
+- [ ] **Split agents/skills into workflow vs optional sets**
+  - Split the current flat set into: workflow-required and optional standalone (not workflow-related)
+  - Enables fine-grained injection into the system prompt
+  - Avoids unused agents/skills polluting the context
+  - Acceptance: per-profile injection configured in yoker.toml; unused agents/skills stay out of context
+
 - [ ] **AI Overview skill**
   - Create skill for browser-based Google search with AI Overview extraction
   - Enables research workflows with synthesized answers
