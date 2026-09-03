@@ -10,11 +10,17 @@
 -include .env.local
 -include Makefile.local
 
+# UV ARGUMENTS
+
+UV_ARGS?=
+
 ifdef YOKER_FROM
-YOKER=uv run --with-editable ${YOKER_FROM} yoker
-else
-YOKER=uvx yoker
+UV_ARGS += --with-editable ${YOKER_FROM}
 endif
+
+YOKER=uvx $(UV_ARGS) yoker
+
+# YOKER ARGUMENTS
 
 YOKER_ARGS ?=
 ifdef YOKER_SESSION

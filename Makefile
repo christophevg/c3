@@ -1,4 +1,3 @@
-YOKER_FROM = ../yoker
 -include Makefile.yoker
 
 install: $(HOME)/.yoker/Makefile $(HOME)/.yoker/AGENTS.md ## Install a Yoker supporting Makefile and global AGENTS.md

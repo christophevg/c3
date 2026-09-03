@@ -4,6 +4,7 @@
 /research
 /reporting
 /context
+*.local
 
 # Python
 .python-version
