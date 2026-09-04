@@ -2,6 +2,33 @@
 
 These instructions are mandatory for all agents!
 
+## System-Prompt Stack (project files)
+
+Every session's system prompt is built from up to three project files,
+loaded in order, **all optional** (missing files are silently skipped):
+
+1. `AGENTS.global.md` — **this file**. Cross-project rules shared by all
+   projects (tooling standards, protocols, discipline).
+2. `AGENTS.md` — **project instructions**. Project-specific facts ONLY:
+   positioning, conventions, module structure, project-runbooks. Never
+   duplicate content that lives at the global level (see de-duplication
+   rule below).
+3. `SESSION.md` — **session-level notes**. Where agents record
+   project-specific information they want to be informed of on the NEXT
+   session. Examples: warnings that tools may be unstable right after a
+   major refactoring (instruct to stop and report immediately), pointers
+   to in-flight work, environment quirks. Agents read this file at session
+   start (it is part of the stack) and **update it when session-worthy
+   knowledge emerges** — it is a living note-to-next-session, kept in the
+   repo.
+
+**De-duplication rule.** Project-generic guidance (Makefile/uv standards,
+retry policies, tool-failure protocols) belongs in `AGENTS.global.md`;
+an `AGENTS.md` repeating it wastes context and risks divergence. When
+working on a project's `AGENTS.md`: keep project facts, lift project-
+generic content to the global level when missing there, delete duplication
+(deletion discipline applies — report the exact list first).
+
 ## General Way of Working - !!! THIS IS IMPORTANT !!!
 
 Whenever the user asks to investigate, look into something, provides a bug report, something that went wrong,... You should investigate it, BUT then, BEFORE doing anything, you MUST present your case to the user! AND get his approval before continuing.
@@ -126,6 +153,20 @@ Every spawned agent occupies a slot until explicitly released.
 - **Never exceed capacity**: If you get a "max_agents limit reached" error,
   release agents you no longer need before spawning new ones.
 
+### Retry Policy
+
+**Never retry the same failing command more than 3 times.** After 3 failed attempts, STOP and ask the user for permission before trying again. Repeatedly retrying a failing command wastes context budget and processing credit without making progress. When a command fails:
+1. **First attempt**: Run it, observe the error.
+2. **Second attempt**: Adjust parameters (e.g. tighter `post_filter`, higher `timeout_ms`) and try once more.
+3. **Third attempt**: Try a different approach if one is obvious.
+4. **Stop**: Ask the user — "I've tried 3 times and it's still failing with [error]. Should I continue trying, or do you want to investigate?"
+
+Do NOT silently keep retrying with the same or slightly tweaked parameters.
+
+### Denied Permissions
+
+When the user denies the use of a tool, don't look for a work around. ASK what to do instead! There is a reason why the user denied the use of the tool.
+
 ### Tool Failure Protocol
 
 **When a tool returns unexpected results** (empty, error, wrong data):
@@ -249,11 +290,12 @@ When the user asks you to work on a task, select the appropriate skill or delega
 * Always begin with an overview of your plan
 * Always explain your actions before executing them
 
-### Style and Formatting
+## Conventions
 
-* Always use two spaces for indentation in all file types
-
-### Things to Ignore
-
-* Ignore the `local` folder
-* Ignore files with `.local` extension
+- **Indentation**: Two spaces in all file types.
+- **Package manager**: `uv` (see `Makefile` for standard targets).
+- **Code quality**: `make check` runs format, lint, typecheck, and test.
+- **Entry point**: `python -m yoker` is the application entry point.
+- **Version source of truth**: `src/yoker/__init__.py` must match `pyproject.toml`.
+- **Commit attribution**: Use `🤖 Implemented together with Yoker` as the trailer line on agent-made commits. No `Co-authored-by` format.
+- **Fully qualified imports**: `from yoker.backends.protocol import ChatChunk` — not `from yoker.backends import ChatChunk`.
