@@ -319,7 +319,9 @@ Feature issues and dependency upgrades:
 ## Release
 
 On owner request, delegate to release-manager → `c3:release`
-(version decision, changelog, checks, build, tag, GitHub release, PyPI).
+(readiness audit, content & documentation sync incl. functional-analysis
+consolidation, version decision, changelog, checks, build, tag, GitHub
+release, PyPI, ecosystem sync).
 
 ## Conventions
 
