@@ -64,6 +64,10 @@ merge means it:
    reflects reality.
 5. **PLAN.md clean** — `## Unsorted MBIs` and `## Active MBI` empty or
    accurately reflecting state.
+6. **Publish toolchain present** — `twine` is in the dev dependency
+   group (`pyproject.toml [dependency-groups] dev`); the publish target
+   fails hard at the final step when it is missing (uv has nothing to
+   spawn). Discovering this at R7b costs a publish run; check here.
 
 ### R1 — Content & documentation sync (before Gate 1)
 
@@ -169,13 +173,36 @@ rebuild.
 
 ### R7a — Tag and GitHub release
 
-After CI green: annotated tag `vX.Y.Z` pushed; GitHub release via
+After CI green: annotated tag `vX.Y.Z` pushed (verify the project's
+existing tag convention first via `git(operation="tag", args={list: true})`
+— some projects tag bare `X.Y.Z`, e.g. schema-tools); GitHub release via
 `github_tool release_create` with notes extracted from the changelog
-(Summary, Changes, Installation). The tag push is not itself release
+(Summary, Changes, Installation). `release_create` requires the `workflow`
+gh scope: on failure ("workflow scope may be required"), report
+`gh auth refresh -h github.com -s workflow` to the owner and stop — do not
+probe alternatives. After an auth refresh or collaborator/grant change,
+retry once before reporting. The tag push is not itself release
 gated beyond CI green — the owner's version decision (gate 1) already
 covered it.
 
 ### R7b — PyPI upload — after gate 2
+
+**Run the publish ONCE, with the prescribed post-filter.** The publish
+target re-runs the whole check suite; its verbose pytest/coverage output
+(15–20KB) overflows the 20KB tool-result limit and prunes the twine tail —
+the upload verdict — unless filtered:
+
+```
+post_filter: "twine|Uploading|ERROR|HTTPError|WARNING|Pre-publication|Versions match|Error "
+```
+
+This keeps the command echo, upload progress lines, any twine error, and
+the pre-publish gate echoes, dropping pytest noise. If the outcome is STILL
+unclear (truncated again): do NOT re-run the upload — the first run may
+have succeeded (an HTTP 400 "already exists" on a second attempt proves a
+prior success). Use a read-only check (PyPI project page / JSON API) or ask
+the owner; owner statements about the outcome are authoritative (see
+AGENTS.global.md, "Owner Statements Are Ground Truth").
 
 `make(operation="publish")` — the full pipeline (**all** pre-publish
 checks included). The granular retry path is the existing per-target
@@ -256,9 +283,12 @@ per-release consolidation in R1 stays lightweight forever after.
 | Issue | Action |
 |-------|--------|
 | CI fails after push | Fix, commit, push, wait again |
+| Publish output truncated, upload verdict unknown | Do NOT re-run (may double-publish). Read-only check: PyPI page/JSON API, or ask the owner. HTTP 400 "already exists" on a later attempt proves prior success |
+| `twine` not found at publish (`Failed to spawn`) | Add `twine` to the dev dependency group (owner-approved write), then re-run `make publish` — checks re-run safely; only the upload is irreversible |
 | Empty wheel (module not found after install) | Fix hatch `packages` config (see R6b), rebuild |
 | Version already on PyPI | Cannot overwrite — bump the version |
 | Upload HTTP 400 | May have partially succeeded — check pypi.org before retrying; retry upload-only; max 3 attempts |
 | Upload fails with "Invalid URL" | `[tool.uv.sources]` / `[tool.uv.workspace]` still present — remove them |
 | Broken images on PyPI page | README uses relative image paths — switch to `raw.githubusercontent.com` URLs |
+| `release_create` fails with workflow-scope error | Report `gh auth refresh -h github.com -s workflow` to the owner; retry once after they refresh |
 | Issue fixed by a commit but still open | Reconcile in R0 — close with evidence comment before proceeding |

@@ -2,16 +2,20 @@
 
 These instructions are mandatory for all agents!
 
-## System-Prompt Stack (project files)
+## System-Prompt Stack
 
-Every session's system prompt is built from up to three project files,
-loaded in order, **all optional** (missing files are silently skipped):
+Every session's system prompt is built from a stack of instruction
+files, loaded in order, **all optional** (missing files are silently
+skipped). The full list is wired per project via `yoker.toml`
+`[context] files`; the global file always comes first:
 
-1. `AGENTS.global.md` — **this file**. Cross-project rules shared by all
-   projects (tooling standards, protocols, discipline).
+1. `AGENTS.global.md` — **this file** (`~/.yoker/AGENTS.md`).
+   Cross-project rules shared by ALL projects (tooling standards,
+   protocols, discipline). Never organization- or project-specific
+   content.
 2. `AGENTS.md` — **project instructions**. Project-specific facts ONLY:
    positioning, conventions, module structure, project-runbooks. Never
-   duplicate content that lives at the global level (see de-duplication
+   duplicate content that lives at a higher level (see de-duplication
    rule below).
 3. `SESSION.md` — **session-level notes**. Where agents record
    project-specific information they want to be informed of on the NEXT
@@ -19,15 +23,22 @@ loaded in order, **all optional** (missing files are silently skipped):
    major refactoring (instruct to stop and report immediately), pointers
    to in-flight work, environment quirks. Agents read this file at session
    start (it is part of the stack) and **update it when session-worthy
-   knowledge emerges** — it is a living note-to-next-session, kept in the
-   repo.
+   knowledge emerges** — it is a living note-to-next-session. Transient:
+   **gitignored in every repo, never committed**.
 
-**De-duplication rule.** Project-generic guidance (Makefile/uv standards,
-retry policies, tool-failure protocols) belongs in `AGENTS.global.md`;
-an `AGENTS.md` repeating it wastes context and risks divergence. When
-working on a project's `AGENTS.md`: keep project facts, lift project-
-generic content to the global level when missing there, delete duplication
-(deletion discipline applies — report the exact list first).
+Projects may wire additional context files between this file and the
+project level; what belongs there is defined by the organization's own
+instructions, not in this file.
+
+**De-duplication rule.** Each level holds only its own content:
+cross-project guidance (Makefile/uv standards, retry policies,
+tool-failure protocols) belongs in `AGENTS.global.md`; organization-wide
+facts belong at the organization's context level; project facts in the
+project `AGENTS.md`. An `AGENTS.md` repeating a higher level wastes
+context and risks divergence. When working on a project's `AGENTS.md`:
+keep project facts, lift project-generic content to the global level
+when missing there, delete duplication (deletion discipline applies —
+report the exact list first).
 
 ## General Way of Working - !!! THIS IS IMPORTANT !!!
 
@@ -45,6 +56,13 @@ The goal is that all of our Python projects adhere to our standards as defined i
 ### Makefile Usage
 
 **Prefer Makefile targets over constructing custom commands.**
+
+**Availability (explicit):** agents have **no Bash tool** — but the
+**`make` tool** executes any target of any Makefile, including in other
+repo folders via its `cwd` parameter. When a repo has a Makefile, do not
+claim "cannot execute": its targets are the execution environment.
+(2026-09-12 correction: an agent claimed "nothing was executed — no
+shell" while `make check` sat one call away; the owner corrected it.)
 
 When a project has a `Makefile`, check it first and use its targets:
 
@@ -163,6 +181,24 @@ Every spawned agent occupies a slot until explicitly released.
 
 Do NOT silently keep retrying with the same or slightly tweaked parameters.
 
+### Owner Statements Are Ground Truth
+
+When the owner states an outcome ("it succeeded", "it's published", "it
+failed"), that statement is authoritative — do NOT re-verify it with other
+tools (webfetch, websearch, re-running the operation). Second-guessing an
+owner statement wastes resources and erodes trust. If verification is
+genuinely required for the next workflow step, use a **read-only** check,
+and state in one line why it is needed.
+
+Related: **irreversible operations with unclear outcomes** (uploads,
+publishes, releases). If the tool output of such an operation was truncated
+or pruned and the outcome is unclear, NEVER re-run the operation to "see
+what happens" — re-running an upload can double-publish or corrupt state,
+and a retry is not a diagnosis. Use a read-only check instead, or ask the
+owner. (2026-09-24: a truncated `make publish` output led to a blind
+second upload attempt after the first had already succeeded; the owner then
+had to correct a wasted verification spree on top.)
+
 ### Denied Permissions
 
 When the user denies the use of a tool, don't look for a work around. ASK what to do instead! There is a reason why the user denied the use of the tool.
@@ -222,8 +258,21 @@ perfect-but-silent.
 - A git operation produces unexpected state (wrong branch, extra commits, merge conflicts)
 - The same operation fails twice with different approaches
 - Any situation where you're considering asking the user to run a shell command
+- An agreed plan depends on something that does not exist or does not
+  work (missing framework mechanism, write-protected file, etc.)
 
 **In ALL these cases:** STOP, report the issue clearly, and ask for direction. Do NOT continue with a workaround unless the user explicitly approves it.
+
+### Design-Freeze Discipline
+
+**The owner's architecture decisions are hard boundaries; obstacles are stop points — never self-approved detours.** (Established 2026-09-12, after an agent silently changed an agreed architecture mid-implementation: it adapted around a missing framework capability, added code to a file the owner had excluded, and re-routed a projection's data access — all without asking.)
+
+1. **Do not start changes until the owner says so.** "Proceed" is an explicit owner word, never inferred from engagement or a good planning conversation.
+2. **Obstacle → STOP, not substitute.** When the agreed design depends on something missing or broken: STOP → report the exact gap → present options → owner decides. No substitutes, no adaptations, no "flagged" workarounds — however reasonable they look. A rationalized workaround ("MVP adaptation", "equivalent mechanism", "flagged, not hacked around") is the failure signature.
+3. **Directives outrank architecture reasoning.** An explicit owner instruction ("X does not change", "only layer L may change") is a hard boundary; own pattern-derived logic never overrides it. If an instruction seems to conflict with an agreed pattern, surface the conflict and wait.
+4. **Report-then-act on any deviation from the discussed plan**, even small ones. "Interpretations I locked unless you veto" is for trivial wording only; when in doubt, it is a question.
+5. **Self-red flag:** noticing a problem and fixing it inline instead of reporting it is precisely the moment to stop and ask. The owner cannot intervene on work they cannot see.
+6. **Evidence discipline: agent narration about tool output is never evidence.** A claimed defect (syntax error, corruption, broken diff) without a failing gate is, by default, the agent misreading — the only admissible proofs of file state are executed gates (`make check`/tests failing on it), `no content change` edit results, and fresh reads **actually quoted** in the response. Never diagnose code from a rendered diff by eyeball; never "confirm" a defect against a read that visibly contradicts it; never invent a tooling explanation ("rendering artifact") when the simpler truth is "I misread." (Established 2026-09-12: an agent claimed unbalanced parens twice, "confirmed" them on a read that showed balanced text, then blamed a rendering artifact — the owner's grep of the tool results proved no defect ever existed. The misreading was the LLM's.)
 
 ### Investigation Discipline
 
